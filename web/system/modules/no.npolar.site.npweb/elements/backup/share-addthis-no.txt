@@ -1,0 +1,24 @@
+
+<!-- AddThis Button BEGIN -->
+<script type="text/javascript">
+var addthis_config = {
+     ui_language: "no"
+}
+</script>
+<div class="addthis_toolbox addthis_default_style">
+	<!--
+        <a href="http://www.addthis.com/bookmark.php?v=250&amp;username=xa-4c6ead601f06be40" class="addthis_button_compact">Del</a>
+	<span class="addthis_separator">|</span>
+	<a class="addthis_button_facebook"></a>
+	<a class="addthis_button_twitter"></a>
+	<a class="addthis_button_email"></a>
+	<a class="addthis_button_print"></a>
+        -->
+        <h5>Del denne siden</h5>
+        <a class="addthis_button_facebook">Facebook</a>
+	<a class="addthis_button_twitter">Twitter</a>
+	<a class="addthis_button_email">E-post</a>
+	<a class="addthis_button_print">Skriv ut</a>
+</div>
+<script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#username=xa-4c6ead601f06be40"></script>
+<!-- AddThis Button END -->

@@ -1,0 +1,99 @@
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+	
+    <xsd:include schemaLocation="opencms://opencms-xmlcontent.xsd"/>
+    <!--<xsd:include schemaLocation="opencms://system/modules/no.npolar.common.newsbulletin/schemas/image.xsd"/>
+    <xsd:include schemaLocation="opencms://system/modules/no.npolar.site.npweb/schemas/linklist.xsd"/>
+    <xsd:include schemaLocation="opencms://system/modules/no.npolar.site.npweb/schemas/linklistgroup.xsd"/>
+    <xsd:include schemaLocation="opencms://system/modules/no.npolar.site.npweb/schemas/paragraph.xsd"/>-->
+    
+    <!--<xsd:include schemaLocation="opencms://system/modules/no.npolar.common.pageelements/schemas/image.xsd"/>-->
+    <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.pageelements/schemas/linklist.xsd"/>
+    <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.pageelements/schemas/linklistgroup.xsd"/>
+    <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.pageelements/schemas/paragraph.xsd"/>
+    <xsd:element name="NewsBulletins" type="OpenCmsNewsBulletins"/>
+
+    <xsd:complexType name="OpenCmsNewsBulletins">
+        <xsd:sequence>
+            <xsd:element name="NewsBulletin" type="OpenCmsNewsBulletin" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="OpenCmsNewsBulletin">
+        <xsd:sequence>
+            <xsd:element name="MappingURL" type="OpenCmsString" />
+            <xsd:element name="Title" type="OpenCmsString" />
+            <xsd:element name="Teaser" type="OpenCmsString" />
+            <xsd:element name="TeaserImage" type="OpenCmsVfsFile" />
+            <xsd:element name="Ingress" type="OpenCmsHtml" minOccurs="0" maxOccurs="1" />
+            <!--<xsd:element name="Image" type="OpenCmsImage" minOccurs="0" maxOccurs="15" />
+            <xsd:element name="Text" type="OpenCmsHtml" /> OLD STUFF -->
+            <xsd:element name="Paragraph" type="OpenCmsParagraph" minOccurs="1" maxOccurs="15" />
+            <xsd:element name="Published" type="OpenCmsDateTime" />			
+            <xsd:element name="Author" type="OpenCmsString" />
+            <xsd:element name="AuthorMail" type="OpenCmsString" />
+            <xsd:element name="Translator" type="OpenCmsString" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="TranslatorMail" type="OpenCmsString" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="ShareLinks" type="OpenCmsBoolean" default="true" />
+            <xsd:element name="Category" type="OpenCmsString" minOccurs="0" maxOccurs="20" />
+            <xsd:element name="FactPages" type="OpenCmsVfsFile" minOccurs="0" maxOccurs="10" />
+            <!-- attached links -->
+            <xsd:element name="Attachments" type="OpenCmsLinkList" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="RelatedPages" type="OpenCmsLinkList" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="FactSheets" type="OpenCmsLinkList" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="ExternalLinks" type="OpenCmsLinkList" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="MediaLinks" type="OpenCmsLinkList" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="OtherLinks" type="OpenCmsLinkListGroup" minOccurs="0" maxOccurs="1" />
+        </xsd:sequence>
+        <xsd:attribute name="language" type="OpenCmsLocale" use="required"/>
+    </xsd:complexType>
+
+    <xsd:annotation>
+        <xsd:appinfo>
+            <resourcebundle name="no.npolar.common.newsbulletin.workplace"/>
+            <mappings>
+                <mapping element="MappingURL" mapto="property:mapping-url" />
+                <mapping element="Title" mapto="property:Title" />
+                <mapping element="Teaser" mapto="property:Description" />
+                <mapping element="TeaserImage" mapto="property:image.thumb" />
+                <mapping element="Published" mapto="property:collector.date" />
+                <mapping element="Published" mapto="attribute:datereleased" />
+                <mapping element="Category" mapto="propertyList:collector.categories" />
+                <mapping element="FactPages" mapto="propertyList:uri.related" />
+            </mappings>
+            <layouts>
+                <!--<layout element="Text" widget="HtmlWidget" configuration="formatselect,link,source,imagegallery" />-->
+                <layout element="Ingress" widget="HtmlWidget" configuration="height:120px,link,source" />
+                <layout element="TeaserImage" widget="ImageGalleryWidget" />
+                <layout element="Category" widget="CategoryWidget" configuration="onlyleafs=true|property=category" />
+            </layouts>
+            <validationrules>
+                <rule element="Title" regex="!.*[Ee]rror.*" message="${key.editor.errormessage.Article.mustnotcontainerror|${validation.path}}" />
+                <rule element="Title" regex="!.*[Ww]arn.*" type="warning" message="${key.editor.warning.Article.mustnotcontainwarn|${validation.path}}"/>
+                <rule element="Ingress" regex="!.*[Ww]arn.*" type="warning" message="${key.editor.warning.Article.mustnotcontainwarn|${validation.path}}"/>
+                <!--<rule element="Text" regex="!.*[Ww]arn.*" type="warning" message="${key.editor.warning.Article.mustnotcontainwarn|${validation.path}}"/>-->
+            </validationrules>
+            <defaults>
+                <default element="Published" value="${currenttime}"/>
+                <default element="Author" value="${currentuser.fullname}"/>
+                <default element="AuthorMail" value="${currentuser.email}"/>
+            </defaults>
+            <searchsettings>
+                <searchsetting element="MappingURL" searchcontent="false" />
+                <searchsetting element="Category" searchcontent="false" />
+                <searchsetting element="Published" searchcontent="false" />
+                <searchsetting element="Attachments" searchcontent="false" />
+                <searchsetting element="RelatedPages" searchcontent="false" />
+                <searchsetting element="FactSheets" searchcontent="false" />
+                <searchsetting element="FactPages" searchcontent="false" />
+                <searchsetting element="ExternalLinks" searchcontent="false" />
+                <searchsetting element="MediaLinks" searchcontent="false" />
+                <searchsetting element="OtherLinks" searchcontent="false" />
+                <searchsetting element="ShareLinks" searchcontent="false" />
+            </searchsettings>
+            <relations>
+                    <relation element="TeaserImage" type="strong" invalidate="false" />
+            </relations>
+        </xsd:appinfo>
+    </xsd:annotation>
+    
+</xsd:schema>

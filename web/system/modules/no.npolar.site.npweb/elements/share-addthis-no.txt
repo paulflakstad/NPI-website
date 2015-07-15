@@ -1,0 +1,34 @@
+
+<!-- AddThis Button BEGIN -->
+<script type="text/javascript">
+var addthis_config = {
+     ui_language: "no"
+}
+</script>
+<div class="addthis_toolbox addthis_default_style" id="share-tools-normal">
+    <h5>Del denne siden:</h5>
+    <div class="addthis_sharers">
+        <a class="addthis_button_facebook_send"></a>
+        <a class="addthis_button_tweet" tw:count="none"></a>
+        <a class="addthis_button_google_plusone" g:plusone:count="false"></a>
+    </div>
+    <div class="addthis_tools">
+        <a class="addthis_button_email">E-post</a>
+        <a class="addthis_button_print">Utskrift</a>
+    </div>
+</div>
+<div class="addthis_toolbox addthis_default_style addthis_32x32_style" id="share-tools-smallscreen">
+    <h5>Del denne siden:</h5>
+    <div class="addthis_sharers">
+        <a class="addthis_button_facebook"></a>
+        <a class="addthis_button_twitter" tw:count="none"></a>
+        <a class="addthis_button_google_plusone" g:plusone:count="false"></a>
+        <a class="addthis_button_compact"></a>
+    </div>
+    <div class="addthis_tools">
+        <a class="addthis_button_email"></a>
+        <a class="addthis_button_print"></a>
+    </div>
+</div>
+<script type="text/javascript" src="http://s7.addthis.com/js/300/addthis_widget.js#username=xa-4c6ead601f06be40"></script>
+<!-- AddThis Button END -->

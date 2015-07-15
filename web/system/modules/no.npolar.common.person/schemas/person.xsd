@@ -1,0 +1,95 @@
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+	
+    <xsd:include schemaLocation="opencms://opencms-xmlcontent.xsd" />
+    <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.person/schemas/simpleparagraph.xsd" />
+    <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.person/schemas/pubopts.xsd" />
+    <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.person/schemas/projectopts.xsd" />
+    
+    <xsd:element name="Persons" type="OpenCmsPersons" />
+
+    <xsd:complexType name="OpenCmsPersons">
+        <xsd:sequence>
+            <xsd:element name="Person" type="OpenCmsPerson" minOccurs="0" maxOccurs="unbounded" />
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="OpenCmsPerson">
+        <xsd:sequence>
+            <xsd:element name="Surname"             type="OpenCmsString" />
+            <xsd:element name="GivenName"           type="OpenCmsString" />
+            <xsd:element name="Position"            type="OpenCmsString" />
+            <xsd:element name="EmploymentType"      type="OpenCmsString" />
+            <xsd:element name="Workplace"           type="OpenCmsString" />
+            <xsd:element name="Organizational"      type="OpenCmsString"    minOccurs="1" maxOccurs="10" />
+            <!--<xsd:element name="Affiliation"         type="OpenCmsString" />-->
+            <xsd:element name="CurrentlyEmployed"   type="OpenCmsBoolean"   default="true" />
+            <xsd:element name="OnLeave"             type="OpenCmsBoolean"   default="false" />
+            <xsd:element name="BackFromLeave"       type="OpenCmsDateTime"  minOccurs="0" maxOccurs="1" />
+            <xsd:element name="Image"               type="OpenCmsVfsFile"   minOccurs="0" maxOccurs="1" />
+            <xsd:element name="AutoPubs"            type="OpenCmsBoolean"   default="true" />
+            <xsd:element name="PubOpts"             type="OpenCmsPubOpt"    minOccurs="0" maxOccurs="1" />
+            <xsd:element name="AutoProjects"        type="OpenCmsBoolean"   default="true" />
+            <xsd:element name="ProjectOpts"         type="OpenCmsProjectOpt"    minOccurs="0" maxOccurs="1" />
+            <xsd:element name="Email"               type="OpenCmsString" />
+            <xsd:element name="Phone"               type="OpenCmsString"    minOccurs="0" maxOccurs="1" />
+            <xsd:element name="Cellphone"           type="OpenCmsString"    minOccurs="0" maxOccurs="1" />
+            <xsd:element name="Degree"              type="OpenCmsString"    minOccurs="0" maxOccurs="1" />
+            <xsd:element name="Nationality"         type="OpenCmsString"    minOccurs="0" maxOccurs="1" />
+            <xsd:element name="PersonalWebsite"     type="OpenCmsString"    minOccurs="0" maxOccurs="1" />
+            <xsd:element name="Description"         type="OpenCmsHtml"      minOccurs="0" maxOccurs="1" />
+            <xsd:element name="Career"              type="OpenCmsHtml"      minOccurs="0" maxOccurs="1" />
+            <xsd:element name="Activities"          type="OpenCmsHtml"      minOccurs="0" maxOccurs="1" />
+            <xsd:element name="InterestsExpertise"  type="OpenCmsHtml"      minOccurs="0" maxOccurs="1" />
+            <xsd:element name="Bibliography"        type="OpenCmsString"    minOccurs="0" maxOccurs="1" />
+            <xsd:element name="Other"               type="OpenCmsSimpleParagraph" minOccurs="0" maxOccurs="5" />
+        </xsd:sequence>
+        <xsd:attribute name="language" type="OpenCmsLocale" use="optional"/>
+    </xsd:complexType>
+
+    <xsd:annotation>
+        <xsd:appinfo>
+            <resourcebundle name="no.npolar.common.person.workplace"/>
+            <handler class="no.npolar.common.person.content.PersonContentHandler" />
+            <layouts>
+                <layout element="Organizational"        widget="CategoryWidget" configuration="onlyleafs=false|property=category" />
+                <layout element="Image"                 widget="ImageGalleryWidget" configuration="{startup:'/images/people/'}" />
+                <layout element="Workplace"             widget="SelectorWidget" configuration="Tromsø|
+                                                                                               Longyearbyen|
+                                                                                               Ny-Ålesund|
+                                                                                               Troll" />
+                <layout element="EmploymentType"        widget="SelectorWidget" configuration="Permanent|
+                                                                                               Contract|
+                                                                                               PhD|
+                                                                                               Post-doc" />
+                <layout element="Description"           widget="HtmlWidget" configuration="source,link,height:130px,formatselect" />
+                <layout element="Career"                widget="HtmlWidget" configuration="source,link,height:130px,formatselect" />
+                <layout element="Activities"            widget="HtmlWidget" configuration="source,link,height:130px,formatselect" />
+                <layout element="InterestsExpertise"    widget="HtmlWidget" configuration="source,link,height:130px,formatselect" />
+                <layout element="Bibliography"          widget="HtmlWidget" configuration="source,link,height:130px,formatselect" />
+            </layouts>
+            <mappings>
+                <mapping element="Organizational" mapto="propertyList:collector.categories" />
+                <mapping element="Position" mapto="property:Description" />
+            </mappings>
+            <relations>
+                <relation element="Image" type="strong" invalidate="false" />
+            </relations>
+            <searchsettings>
+                <searchsetting element="EmploymentType" searchcontent="false" />
+                <searchsetting element="Workplace" searchcontent="false" />
+                <searchsetting element="Organizational" searchcontent="false" />
+                <searchsetting element="CurrentlyEmployed" searchcontent="false" />
+                <searchsetting element="OnLeave" searchcontent="false" />
+                <searchsetting element="BackFromLeave" searchcontent="false" />
+                <searchsetting element="Degree" searchcontent="false" />
+                <searchsetting element="Image" searchcontent="false" />
+                <searchsetting element="AutoPubs" searchcontent="false" />
+                <searchsetting element="PubOpts" searchcontent="false" />
+                <searchsetting element="AutoProjects" searchcontent="false" />
+                <searchsetting element="ProjectOpts" searchcontent="false" />
+                <searchsetting element="Nationality" searchcontent="false" />
+                <searchsetting element="PersonalWebsite" searchcontent="false" />
+            </searchsettings>
+        </xsd:appinfo>
+    </xsd:annotation>
+</xsd:schema>

@@ -1,0 +1,134 @@
+@charset "utf-8";
+/* CSS Document */
+/* See contentcalendar.css for calendar styles */
+.calendar-wrap { overflow:auto; padding-bottom:0.5em; border-bottom:3px solid #eee; }
+.calendar-navi a,
+.calendar-navi a:visited { color:#fff; cursor:pointer; }
+
+.day-info h4:first-child { padding-top:0; margin-top:0; border-top:none; }
+.day-info h4 { margin-bottom:0.2em; padding-bottom:0.25em; padding-top:0.5em; margin-top:0.5em; border-top:1px solid #ddd; }
+.day-info { padding:0.25em; background:#111; border:1px solid #ddd; opacity:0.75; color:white; width:250px; }
+.day-info h4 { color:white; font-weight:bold; text-transform:none; }
+.event-time {  }
+
+.event-list { margin:0; padding:0; }
+ul.event-list li { display:block; overflow:hidden; border-bottom:1px solid #eee; padding:0.25em 0; }
+ul.event-list li:first-child { border-top:1px solid #eee; }
+.event-time { display:block; width:29%; float:left; }
+.event-list li p { margin:0 0 0.25em 0; }
+.event-list li .event-info { display:block; float:right; width:69%; }
+.event-list li .event-info a { font-weight:bold; }
+
+a.event-pastevent { color:#888; }
+
+
+.event-venue {  } /* previous wrapper, now using "event-links nofloat" as wrapper */
+.event-venue-text { float:left; }
+.event-venue-map { float:right; }
+.event-venue h3 { margin-top:0; }
+.event-venue h4 { margin-top:0; }
+
+.day-info .event-time { float:none; width:auto; } /* override event-info for overlib boxes */
+.detail.event-time { font-weight:bold; margin-bottom:1em; float:none; width:auto; }
+ul.blocklist { list-style:none; margin:0; padding:0; }
+ul.blocklist li { margin-left:0; padding-left:0; }
+.categories {  }
+.categories li.category {  }
+.event-links { padding:0.5em; overflow:auto; background:#f4f4f4; margin-bottom:1em; }
+.event-links.nav { float:right; clear:right; width:70%; max-height:12em; }
+.event-links.nav.nofloat { float:none; width:auto; }
+.cat-set { max-width:19%; float:left; overflow:hidden; padding:0 0.25em; margin-right:1%; display:table; } /* display:table helps Chrome render correctly */
+.cat-set a.remove { background-color:#900; color:#fff; display:inline-block; text-align:center; width:1.2em; height:1.2em; line-height:1.2em; padding-bottom:0.1em; font-weight:bold; }
+.cat-set a.remove:hover { background-color:#f00; text-decoration:none; }
+.event-links h4,
+.event-links h5 { margin:0.2em 0; color:#999; }
+.view-select { float:none; overflow:auto; padding:0.25em; margin-bottom:0.5em; border:1px solid #ddd; background:#eee; }
+.view-option { float:left; margin-right:1em; padding:0; }
+.view-option a { display:inline-block; border:1px solid #ddd; background:#eee; padding:0.25em 0.75em; height:1em; line-height:1.0em; } /* "Display all"-button */
+.view-option a:hover { background:#fff; text-decoration:none; }
+.view-select form { float:left; padding:0; margin:0; }
+
+/* Define all the container that should have a smaller font-size */
+.view-select,
+.view-select form,
+.event-list,
+.event-links,
+.view-option a { font-size:0.95em; }
+.view-select form select { font-size:1.0em; } /* relative to 0.9em */
+
+/*.event-nav.nofloat h4 { float:left; }*/
+
+
+.nofloat { float:none; clear:both; }
+.noair { margin:0; padding:0; }
+.floatleft { float:left; }
+.floatright { float:right; }
+
+/* Default calendar styles (copypaste from contentcalendar.css) */
+table.calendar { float:left; margin:0 1em 0 0; width:auto; border:1px solid #ddd; border-spacing:0; text-align:center; color:#aaa; font-family: Myriad, 'Trebuchet MS', Verdana, Tahoma, Arial, Helvetica, sans-serif; }
+table.calendar th { background:#81ADC8; color:#fff; font-weight:bold; }
+table.calendar th.month { text-align:center; width:auto; color:#fff; }
+table.calendar th.month a { color:#fff; margin:0 auto; }
+table.calendar th,
+table.calendar td {
+	line-height:1.75em;
+	width:2em;
+	height:1.75em;
+	padding:0;
+}
+table.calendar tr.weekday-names * { font-weight:normal; border-bottom:1px solid #b4cfdf; }
+/*table.calendar tr.weekday-names *:first-child { border-bottom:none; }*/
+table.calendar tr.weekday-names .weeklabel { border-bottom:none; }
+/*table.calendar tr.weekday-names th { width:14%; }*/
+table.calendar tr.weekday-names *,
+table.calendar td.week-of-year { background-color:#afccdd; color:#fff; }
+table.calendar td.week-of-year { border-right:1px solid #b4cfdf; }
+table.calendar td.nodate { background:#eeeeee; }
+table.calendar td.calendar-navi a { display:block; width:100%; height:100%; }
+table.calendar th a,
+table.calendar td a { display:inline-block; width:100%; height:100%; }
+table.calendar th a:hover,
+table.calendar th.month a:hover,
+table.calendar td a:hover { color:#c00; background:#D9E7F0; text-decoration:none; }
+table.calendar .today { border:1px solid #c00; }
+table.calendar .selected { font-weight:bold; background:#D9E7F0; }
+
+a.pdf { 
+	background:url('pdf.gif') no-repeat;
+	display:inline-block;
+	padding-left:20px;
+	margin:0.25em 0;
+	line-height:16px;
+}
+
+/*a.pdf:after { content:' (PDF)'; }*/
+
+table.events { width:100%; }
+table.events { vertical-align:top; font-size:0.9em; border-bottom:2px solid #ddd; }
+table.events th { text-align:left; background:#ddd; font-size:1em; }
+table.events tr {  }
+table.events tr.even { background:#eee; }
+table.events td h4 { margin:0; }
+table.events td p { margin:0; }
+table.events th,
+table.events td { padding:0.25em; }
+table.events td.event-time { display:table-cell; width:20%; float:none; }
+table.events td.event-cat { width:10%; }
+
+
+
+
+
+
+
+#overlay {
+    width: 100%;
+    min-height: 100%;
+	position: fixed;
+    top: 0;
+    left: 0;
+	display:block;
+    z-index: 1000;
+    background: url(img/loading.gif) no-repeat 0 0;
+    text-align: center;
+}

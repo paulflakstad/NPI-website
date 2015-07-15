@@ -1,0 +1,96 @@
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+
+    <xsd:include schemaLocation="opencms://opencms-xmlcontent.xsd"/>
+    <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.newsbulletin/schemas/newslistlink.xsd" />
+    <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.category/schemas/categoryfilter.xsd"/>
+
+    <xsd:element name="NewsLists" type="OpenCmsNewsLists"/>
+
+    <xsd:complexType name="OpenCmsNewsLists">
+        <xsd:sequence>
+            <xsd:element name="NewsList" type="OpenCmsNewsList" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="OpenCmsNewsList">
+        <xsd:sequence>
+            <!--<xsd:element name="Type" type="OpenCmsString" />-->
+            <xsd:element name="Title" type="OpenCmsString" />
+            <xsd:element name="Text" type="OpenCmsHtml" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="ListFolder" type="OpenCmsVfsFile" />
+            <xsd:element name="SubTree" type="OpenCmsBoolean" default="false" />
+            <xsd:element name="DisplayRangeSelect" type="OpenCmsBoolean" default="true" />
+            <xsd:element name="DisplayDescription" type="OpenCmsBoolean" default="true" />
+            <xsd:element name="DisplayTimestamp" type="OpenCmsBoolean" default="true" />
+            <xsd:element name="ItemsAsPortalPageCards" type="OpenCmsBoolean" default="false" />
+            <xsd:element name="Category" type="OpenCmsString" minOccurs="0" maxOccurs="10" />
+            <xsd:element name="CategoryFilter" type="OpenCmsCategoryFilter" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="ShowCategoryFilters" type="OpenCmsBoolean" />
+            <xsd:element name="SortOrder" type="OpenCmsString" />
+            <xsd:element name="MaxEntries" type="OpenCmsString" default="10" />
+            <xsd:element name="ItemsWithImages" type="OpenCmsString" />
+            <xsd:element name="ItemImageWidth" type="OpenCmsString" default="140" />
+            <xsd:element name="EditableItems" type="OpenCmsBoolean" default="false" />
+            <xsd:element name="DateFormat" type="OpenCmsString" minOccurs="0" maxOccurs="1" /><!-- custom date format for the timestamp (override default) -->
+            <xsd:element name="Sticky" type="OpenCmsVfsFile" minOccurs="0" maxOccurs="100" />
+            <xsd:element name="MoreLink" type="OpenCmsNewsListLink" minOccurs="0" maxOccurs="1" />
+            <!--<xsd:element name="StickyPlacement" type="OpenCmsString" />-->
+        </xsd:sequence>
+        <xsd:attribute name="language" type="OpenCmsLocale" use="optional" />
+    </xsd:complexType>
+
+    <xsd:annotation>
+        <xsd:appinfo>
+            <resourcebundle name="no.npolar.common.resourcelist.workplace"/>
+            <mappings>
+                <mapping element="Title" mapto="property:Title" />
+                <!--<mapping element="Type" mapto="property:head.snippet" />-->
+            </mappings>
+            <layouts>
+                <!--<layout element="Type" widget="SelectorWidget"
+                        configuration="/system/modules/no.npolar.common.newsbulletin/resources/snippets/nothing.js:Regular|
+                                       /system/modules/no.npolar.common.newsbulletin/resources/snippets/news-archive.js:Archive" />-->
+                <layout element="SortOrder" widget="SelectorWidget"
+                        configuration="Path|
+                                       PriorityDateDesc*:Newest first|
+                                       PriorityDate:Oldest first|
+                                       DateReleasedDesc:Date released, descending|
+                                       PriorityTitleDesc:Title, descending" />
+                <layout element="ItemsWithImages" widget="SelectorWidget"
+                        configuration="0:None|3|5*|10|-1:All" />
+                <layout element="Text" widget="HtmlWidget" configuration="height:120px,format,link,source,imagegallery" />
+            <layout element="Category" widget="CategoryWidget" configuration="onlyleafs=true|property=category" />
+                <!--<layout element="StickyPlacement" widget="SelectorWidget"
+                        configuration="0*:Bottom|1:Top" />-->
+            </layouts>
+            <searchsettings>
+                <!--<searchsetting element="Type" searchcontent="false" />-->
+                <searchsetting element="ListFolder" searchcontent="false" />
+                <searchsetting element="SubTree" searchcontent="false" />
+                <searchsetting element="DisplayRangeSelect" searchcontent="false" />
+                <searchsetting element="DisplayDescription" searchcontent="false" />
+                <searchsetting element="DisplayTimestamp" searchcontent="false" />
+                <searchsetting element="ItemsAsPortalPageCards" searchcontent="false" />
+                <searchsetting element="Category" searchcontent="false" />
+                <searchsetting element="CategoryFilter" searchcontent="false" />
+                <searchsetting element="ShowCategoryFilters" searchcontent="false" />
+                <searchsetting element="SortOrder" searchcontent="false" />
+                <searchsetting element="MaxEntries" searchcontent="false" />
+                <searchsetting element="ItemsWithImages" searchcontent="false" />
+                <searchsetting element="ItemImageWidth" searchcontent="false" />
+                <searchsetting element="EditableItems" searchcontent="false" />
+                <searchsetting element="DateFormat" searchcontent="false" />
+                <searchsetting element="Sticky" searchcontent="false" />
+                <searchsetting element="MoreLink" searchcontent="false" />
+            </searchsettings>
+            <validationrules>
+                <!--<rule element="ListTitle" regex="!.*[Ee]rror.*" message="${key.editor.errormessage.Article.mustnotcontainerror|${validation.path}}" />
+                <rule element="ListTitle" regex="!.*[Ww]arn.*" type="warning" message="${key.editor.warning.Article.mustnotcontainwarn|${validation.path}}"/>-->
+                <rule element="ItemsWithImages" regex="[0-9]*|-1" type= "warning" message="The value must be a number."/>
+                <rule element="ItemImageWidth" regex="[0-9]*" type= "warning" message="The value must be a number."/>
+                <rule element="MaxEntries" regex="[0-9]*" type= "warning" message="The value must be a number."/>
+            </validationrules>
+        </xsd:appinfo>
+    </xsd:annotation>
+    
+</xsd:schema>
