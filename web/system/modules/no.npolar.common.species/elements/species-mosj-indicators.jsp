@@ -13,6 +13,7 @@
 --%><%@ page import="org.opencms.jsp.*,
                  org.opencms.main.OpenCms,
                  org.opencms.file.*,
+                 org.opencms.json.*,
                  java.util.*,
                  java.io.*,
                  java.net.*,
@@ -52,6 +53,27 @@
         }
         return;
     }
+    /**
+     * Requests the given URL and returns the response as a String.
+     * 
+     * @param url The URL to request.
+     * @return The response, as a string.
+     * @throws MalformedURLException
+     * @throws IOException
+     */
+    public static String httpResponseAsString(String url) 
+            throws MalformedURLException, IOException {
+        
+        BufferedReader in = new BufferedReader(new InputStreamReader(new URL(url).openConnection().getInputStream(), "UTF-8"));
+        StringBuilder s = new StringBuilder();
+        String oneLine;
+        while ((oneLine = in.readLine()) != null) {
+            s.append(oneLine);
+        }
+        in.close();
+
+        return s.toString();
+    }
 %><%
 /*
         String url = "http://mosj.npolar.no/no/inddb-search.html?"
@@ -70,10 +92,10 @@
                         + "&f.location_exact.facet.limit=25";
 */
 CmsAgent cms = new CmsAgent(pageContext, request, response);
-CmsObject cmso = cms.getCmsObject();
+//CmsObject cmso = cms.getCmsObject();
 // Get the URI of the requesting file
-String requestResourceUri = cms.getRequestContext().getUri();
-String requestFolderUri = cms.getRequestContext().getFolderUri();
+//String requestResourceUri = cms.getRequestContext().getUri();
+//String requestFolderUri = cms.getRequestContext().getFolderUri();
 Locale locale = cms.getRequestContext().getLocale();
 String loc = locale.toString();
 session = request.getSession(true);
@@ -82,6 +104,7 @@ List<String> keywords = null;
 String indLocale = request.getParameter("locale").toLowerCase();
 if (indLocale == null)
     indLocale = loc;
+
 cms.getRequestContext().setLocale(new Locale(indLocale));
 
 try {
@@ -101,112 +124,98 @@ try {
     return;
 }
 
-boolean loggedInUser        = OpenCms.getRoleManager().hasRole(cms.getCmsObject(), CmsRole.WORKPLACE_USER);
+boolean loggedInUser = OpenCms.getRoleManager().hasRole(cms.getCmsObject(), CmsRole.WORKPLACE_USER);
 
 final boolean COMMENTS = false;
 
 //String xmlPath      = "http://indapi.data.npolar.no/indicators.xml"; // The search URL, without parameters. (Replace "select" with "admin" and open in a browser to get a full UI.);
-String xmlPath      = "http://mosj.npolar.no/indicators.xml"; // The search URL, without parameters. (Replace "select" with "admin" and open in a browser to get a full UI.);
-
-try {
-    /*
-    List<String> keywords = Arrays.asList(request.getParameterValues("keyword"));
-    Iterator<String> iKeywords = keywords.iterator();
-    while (iKeywords.hasNext()) {
-        String kw = iKeywords.next();
-        kw = kw.toLowerCase();
+String servicePath = "http://www.mosj.no/indicators.json"; // The search URL, without parameters. (Replace "select" with "admin" and open in a browser to get a full UI.);
+servicePath = servicePath.concat("?locale=" + indLocale);
+if (COMMENTS) {
+    out.println("<!-- Constructed URL to indicators list: " + servicePath + " -->");
+}
+    
+try {    
+    JSONObject indicatorsObj = null; 
+    try {
+        indicatorsObj = new JSONObject(httpResponseAsString(servicePath));
+    } catch (Exception e){
+        // Cannot connect to the MOSJ service
+        showError(cms, out, "Unable to connect to MOSJ.".concat(loggedInUser ? " Error was: ".concat(e.getMessage()) : ""));
+        return;
     }
-    */
+    
+    JSONArray indicatorsArr = indicatorsObj.getJSONArray("indicators");
         
     String indTitle             = null;
     String indId                = null;
     String indUrl               = null;        
         
     //xmlPath = xmlPath.concat("?lang=" + (loc.equals("no") ? "nb" : loc));
-    xmlPath = xmlPath.concat("?locale=" + indLocale);
-    if (COMMENTS) {
-        out.println("<!-- Constructed URL to indicators XML: " + xmlPath + " -->");
-    }
 
-    List<Element> indicatorList = new ArrayList<Element>();
-
-    // Parse XML
-    InputStream is                      = new URL(xmlPath).openStream(); // Create an input stream for the XML data
-    DocumentBuilderFactory domFactory   = DocumentBuilderFactory.newInstance(); // A DOM factory
-    domFactory.setNamespaceAware(true); // Be aware - never forget this!
-    DocumentBuilder builder             = domFactory.newDocumentBuilder(); // DOM builder
-    Document doc                        = builder.parse(is); // Parse the XML from stream
-
-    Element docEl = doc.getDocumentElement();
-
-    NodeList indicators = docEl.getElementsByTagName("indicator"); // Get all the <indicator> nodes
+    List<JSONObject> indicatorObjects = new ArrayList<JSONObject>();
 
     // Put all indicators in a sortable list, and sort them
-    for (int i = 0; i < indicators.getLength(); i++) { // Iterate over all the <indicator> nodes
-        Object obj = indicators.item(i);
-        if (obj instanceof Element) {
-            Element ind = (Element)obj;
+    
+    
+    for (int i = 0; i < indicatorsArr.length(); i++) {
+        try {
+            JSONObject indicatorObj = (JSONObject)indicatorsArr.get(i);
+            String indicatorTitle = indicatorObj.getString("title");
             Iterator<String> iKeywords = keywords.iterator();
-            
-            try {
-                // A strange problem is that every other item in the NodeList is NOT an indicator.
-                // Run a test to retain ONLY indicator objects:
-                String indicatorTitle = ind.getElementsByTagName("title").item(0).getFirstChild().getNodeValue(); // Will cause NPE if it's not an indicator
-                List<String> iTitleWords = Arrays.asList(indicatorTitle.toLowerCase().split("\\s"));
-                while (iKeywords.hasNext()) {
-                    keyword = iKeywords.next().toLowerCase();
-                    String regex = ("(^|\\W)(") + keyword.replaceAll("\\s", "\\\\s") + ")($|\\W)";
-                    if (COMMENTS) out.println("<!-- Using regex: " + regex + " -->");
-                    Pattern p = Pattern.compile(regex);
-                    Matcher m = p.matcher(indicatorTitle.toLowerCase());
+            //List<String> iTitleWords = Arrays.asList(indicatorTitle.toLowerCase().split("\\s"));
+            while (iKeywords.hasNext()) {
+                keyword = iKeywords.next().toLowerCase();
+                String regex = ("(^|\\W)(") + keyword.replaceAll("\\s", "\\\\s") + ")($|\\W)";
+                if (COMMENTS) out.println("<!-- Using regex: " + regex + " -->");
+                Pattern p = Pattern.compile(regex);
+                Matcher m = p.matcher(indicatorTitle.toLowerCase());
 
-                    if (m.find())
-                        indicatorList.add(ind); // Match on keyword: add this indicator
-                    else {
-                        if (COMMENTS) out.println("<!-- indicatorTitle " + indicatorTitle + " did not match keyword(s) -->");
-                    }
+                if (m.find())
+                    indicatorObjects.add(indicatorObj); // Match on keyword: add this indicator
+                else {
+                    if (COMMENTS) out.println("<!-- indicatorTitle " + indicatorTitle + " did not match keyword(s) -->");
                 }
-            } catch (NullPointerException npe) {
-                // Don't add this object to the list, it is not an indicator
             }
+        } catch (Exception e) {
+            
         }
     }
 
-    final Comparator<Element> IND_TITLE_COMPARATOR = 
-            new Comparator<Element>() {
-                    public int compare(Element e1, Element e2) {
-                        if (e1 instanceof Element && e2 instanceof Element) {
-                            try {
-                                String thisStr = ((Element)e1).getElementsByTagName("title").item(0).getFirstChild().getNodeValue().trim();
-                                String thatStr = ((Element)e2).getElementsByTagName("title").item(0).getFirstChild().getNodeValue().trim();
-                                return thisStr.compareTo(thatStr);
-                            } catch (Exception e) {
-                                return 0;
-                            }
-                        }
-                        return 0;
-                    }
-                };
-    Collections.sort(indicatorList, IND_TITLE_COMPARATOR);
+    final Comparator<JSONObject> IND_TITLE_COMPARATOR = new Comparator<JSONObject>() {
+        public int compare(JSONObject e1, JSONObject e2) {
+            if (e1 instanceof JSONObject && e2 instanceof JSONObject) {
+                try {
+                    String thisStr = ((JSONObject)e1).getString("title");
+                    String thatStr = ((JSONObject)e2).getString("title");
+                    return thisStr.compareTo(thatStr);
+                } catch (Exception e) {
+                    return 0;
+                }
+            }
+            return 0;
+        }
+    };
+    Collections.sort(indicatorObjects, IND_TITLE_COMPARATOR);
 
     List<String> listed = new ArrayList<String>(); // Keep track of which indicators are already listed
     
-    Iterator<Element> itr = indicatorList.iterator();
+    Iterator<JSONObject> itr = indicatorObjects.iterator();
     if (itr.hasNext()) {
         out.println("<ul>");
         while (itr.hasNext()) {
-            Element ind = (Element)itr.next();
+            JSONObject ind = itr.next();
 
             try {
-                indId = ind.getElementsByTagName("id").item(0).getFirstChild().getNodeValue(); // Get the indicator's ID
+                indId = ind.getString("id"); // Get the indicator's ID
                 
                 if (listed.contains(indId))
                     continue;
                 else
                     listed.add(indId);
                     
-                indTitle = ind.getElementsByTagName("title").item(0).getFirstChild().getNodeValue(); // Get the indicator's title
-                indUrl = ind.getElementsByTagName("url").item(0).getFirstChild().getNodeValue(); // Get the indicator's title
+                indTitle = ind.getString("title"); // Get the indicator's title
+                indUrl = ind.getString("url"); // Get the indicator's title
             } catch (NullPointerException npe) {
                 // Avoid NPE
                 continue;
@@ -214,7 +223,7 @@ try {
             //out.println("<li><a href=\"http://mosj.npolar.no/i?id=" + indId + "&amp;locale=" + loc + "\">" + "<span>" + indTitle + "</span>" + "</a></li>");
             out.println("<li><a href=\"" + indUrl + "\">" + "<span>" + indTitle + "</span>" + "</a></li>");
         }
-        out.println("</ul>"); // .menu
+        out.println("</ul>");
     } else {
         out.println("<p>" + cms.labelUnicode("label.species.mosjindicators.none") + ".</p>");
     }
