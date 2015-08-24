@@ -7,6 +7,9 @@
 /src/conf/
 /web/META-INF/
 /web/WEB-INF/
+# Our eyes only stuff
+*-credentials.jsp
+*comp-pers-search-test.jsp
 *~
 # Subversion files
 .svn/
