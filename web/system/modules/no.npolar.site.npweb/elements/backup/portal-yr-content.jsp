@@ -81,7 +81,7 @@ String yrHtml = "";
 try {     
     // Login admin and switch to Offline project
     CmsObject cmsoAdmin = OpenCms.initCmsObject(cmso);
-    cmsoAdmin.loginUser("cmsbot", "2p45jgmrxv");
+    cmsoAdmin.loginUser("cmsbot", "2p45jgmrxv"); // This user has since been removed, so login will fail
     cmsoAdmin.getRequestContext().setCurrentProject(cmsoAdmin.readProject("Offline"));
     
     while (iLocations.hasNext()) {
