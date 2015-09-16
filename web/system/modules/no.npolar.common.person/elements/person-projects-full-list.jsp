@@ -53,6 +53,8 @@ if (email == null || email.isEmpty()) {
     // crash
     out.println("<!-- Missing identifier. An identifier is required in order to view a person's publications. -->");
     return; // IMPORTANT!
+} else if (!email.contains("@")) {
+    email = email.concat("@npolar.no");
 }
 email = URLEncoder.encode(email, "utf-8");
 

@@ -2,10 +2,10 @@
     Document   : person-service-provided
     Created on : Oct 9, 2013, 12:20:51 PM
     Author     : flakstad
---%><%@page import="no.npolar.data.api.ProjectService"%>
-<%@page import="no.npolar.data.api.Project"%>
-<%@page import="no.npolar.data.api.Publication"%>
-<%@page import="no.npolar.util.*,
+--%><%@page import="no.npolar.util.*,
+                no.npolar.data.api.ProjectService,
+                no.npolar.data.api.Project,
+                no.npolar.data.api.Publication,
                 org.opencms.file.CmsObject,
                 org.opencms.file.CmsResource,
                 org.opencms.file.CmsResourceFilter,
@@ -16,6 +16,7 @@
                 org.opencms.main.OpenCms,
                 org.opencms.main.CmsException,
                 org.opencms.util.CmsStringUtil,
+                org.opencms.util.CmsRequestUtil,
                 org.opencms.security.CmsRole,
                 org.opencms.json.*,
                 org.opencms.mail.CmsSimpleMail,
@@ -904,26 +905,66 @@ if (CmsAgent.elementExists(descr)) {
 </div>
 <%
 Map params = new HashMap();
-params.put("email", email);
+String emailId = email.substring(0, email.indexOf("@"));
+//params.put("email", email);
+params.put("email", emailId);
 params.put("locale", loc);
 params.put("pubtypes", autoPubsTypes);
 params.put("projecttypes", autoProjectTypes);
 
 if (autoPubs) {
     out.println("<div id=\"employee-pubs-full\" class=\"toggleable collapsed\">");
+    out.println("<p id=\"pub-list-working\" style=\"text-align:center; padding:0.4em 1%; line-height:2em; height:2em; background-color:#f5f5f5; color:#666;\">"
+            + "<img src=\"" + cms.link("/system/modules/no.npolar.site.npweb/resources/style/loader.gif") + "\" style=\"width:1.5em; vertical-align:middle;\" alt=\"\" />"
+            + " " + cms.labelUnicode("label.np.publist.loading") + " &hellip;</p>");
     try { 
-        cms.include(PUB_LIST, null, params); 
-    } catch (Exception e) { 
+        //cms.include(PUB_LIST, null, params);
+    } catch (Exception e) {
         if (LOGGED_IN_USER) {
             out.println("<p>Auto-listing publications failed! Error was: " + e.getMessage() + "</p>");
         }
     }
     out.println("</div>");
+    
+    %>
+    <script type="text/javascript">
+        $('#employee-pubs-full').load('<%= cms.link(CmsRequestUtil.appendParameters(PUB_LIST, params, true)) %>', function( response, status, xhr ) {
+            if ( status === "error" ) {
+                var msg = "<%= cms.labelUnicode("label.np.publist.error") %>";//"Sorry, an error occurred while looking for publications: ";
+                $( "#pub-list-working" ).html( msg + " (" + xhr.status + " " + xhr.statusText + ")" );
+            } else {
+                initToggleable( $('#employee-pubs-full') );
+            }
+        });
+    </script>
+    <%
 }
 if (autoProjects) {
     out.println("<div id=\"employee-proj-full\" class=\"toggleable collapsed\">");
-    try { cms.include(PROJ_LIST, null, params); } catch (Exception e) { }
+    out.println("<p id=\"proj-list-working\" style=\"text-align:center; padding:0.4em 1%; line-height:2em; height:2em; background-color:#f5f5f5; color:#666;\">"
+            + "<img src=\"" + cms.link("/system/modules/no.npolar.site.npweb/resources/style/loader.gif") + "\" style=\"width:1.5em; vertical-align:middle;\" alt=\"\" />"
+            + " " + cms.labelUnicode("label.np.projectlist.loading") + " &hellip;</p>");
+    try { 
+        //cms.include(PROJ_LIST, null, params);
+    } catch (Exception e) {
+        if (LOGGED_IN_USER) {
+            out.println("<p>Auto-listing projects failed! Error was: " + e.getMessage() + "</p>");
+        }
+    }
     out.println("</div>");
+    
+    %>
+    <script type="text/javascript">
+        $('#employee-proj-full').load('<%= cms.link(CmsRequestUtil.appendParameters(PROJ_LIST, params, true)) %>', function( response, status, xhr ) {
+            if ( status === "error" ) {
+                var msg = "<%= cms.labelUnicode("label.np.projectlist.error") %>";//"Sorry, an error occurred while looking for projects: ";
+                $( "#proj-list-working" ).html( msg + " (" + xhr.status + " " + xhr.statusText + ")" );
+            } else {
+                initToggleable( $('#employee-proj-full') );
+            }
+        });
+    </script>
+    <%
 }
 //out.println("</div>");
 

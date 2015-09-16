@@ -61,6 +61,8 @@ if (email == null || email.isEmpty()) {
     // crash
     out.println("<!-- Missing identifier. An identifier is required in order to view a person's publications. -->");
     return; // IMPORTANT!
+} else if (!email.contains("@")) {
+    email = email.concat("@npolar.no");
 }
 // Suddenly caused trouble ... outcommented for now ...
 //email = URLEncoder.encode(email, "utf-8");
@@ -98,6 +100,7 @@ defaultParams.put("not-draft",              new String[]{ "yes" }); // Don't inc
 defaultParams.put("filter-state",           new String[]{ "published|accepted" }); // Must be published or accepted
 defaultParams.put("facets",                 new String[]{ "false" }); // No facets
 defaultParams.put("sort",                   new String[]{ "-published_sort" }); // Sort by publish time, descending
+defaultParams.put("fields",                 new String[]{ "id,_id,title,publication_type,state,published_helper,published_sort,volume,issue,suppl,art_no,page_count,journal,conference,pages,people,organisations,isbn,issn,links,comment" }); // Don't include unnecessary fields (currently no syntax to exlude fields, so we need an exhaustive list of the ones we want)
 //defaultParams.put("sort",                   new String[]{ "-published-year,-published-date" }); // Sort by publish date, descending (and this is the sort parameter for that)
 //defaultParams.put("q",                      new String[]{ "" }); // Catch-all query (this is set in regular params)
 //defaultParams.put("limit",                  new String[]{ "all" }); // Fetch everything (this is set in regular params)
