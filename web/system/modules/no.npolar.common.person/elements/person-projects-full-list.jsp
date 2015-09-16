@@ -108,7 +108,7 @@ if (projects != null && !projects.isEmpty()) {
     //out.println("<h2 class=\"toggletrigger\">" + cms.labelUnicode("label.np.publist.heading") + "</h2>");
     %>
     <a class="toggletrigger" href="javascript:void(0);"><%= cms.labelUnicode("label.np.projectlist.heading") %></a>
-    <div class="toggletarget collapsed">
+    <div class="toggletarget collapsed" style="display:none;">
     <%
     // Get types of publications
     Iterator<String> iTypes = projects.getTypesContained().iterator();
@@ -153,6 +153,9 @@ if (projects != null && !projects.isEmpty()) {
 }
 else {
     // No projects found on serviceUrl 
+    %>
+    <div class="toggletrigger inactive" style="color:#aaa; cursor:initial;"><%= cms.labelUnicode("label.np.projectlist.heading.none") %></div>
+    <%
     if (DEBUG) { out.println("No projects. Publications = " + (projects == null ? "null" : projects.size()) + "."); }
 }
 %>

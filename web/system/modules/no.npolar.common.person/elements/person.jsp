@@ -914,9 +914,17 @@ params.put("projecttypes", autoProjectTypes);
 
 if (autoPubs) {
     out.println("<div id=\"employee-pubs-full\" class=\"toggleable collapsed\">");
-    out.println("<p id=\"pub-list-working\" style=\"text-align:center; padding:0.4em 1%; line-height:2em; height:2em; background-color:#f5f5f5; color:#666;\">"
+    /*out.println("<div class=\"\" style=\"color:#aaa;\">"
+                    + cms.labelUnicode("label.np.publist.heading") + " <img src=\"/system/modules/no.npolar.site.npweb/resources/style/loader.gif\" alt=\"\" style=\"width:0.7em;\">"
+                + "</div>");*/
+    out.println("<div id=\"pub-list-working\" style=\"text-align:center; padding:0.4em 1%; line-height:2em; height:2em; background-color:#f5f5f5; color:#666; margin-bottom:0.2rem;\">"
+                    + "<div style=\"text-align:left; font-size:2em; color:#aaa;\">"
+                        + cms.labelUnicode("label.np.publist.heading") + " <img src=\"/system/modules/no.npolar.site.npweb/resources/style/loader.gif\" alt=\"\" style=\"width:0.7em;\">"
+                    + "</div>"
+                + "</div>");
+    /*out.println("<p id=\"pub-list-working\" style=\"text-align:center; padding:0.4em 1%; line-height:2em; height:2em; background-color:#f5f5f5; color:#666;\">"
             + "<img src=\"" + cms.link("/system/modules/no.npolar.site.npweb/resources/style/loader.gif") + "\" style=\"width:1.5em; vertical-align:middle;\" alt=\"\" />"
-            + " " + cms.labelUnicode("label.np.publist.loading") + " &hellip;</p>");
+            + " " + cms.labelUnicode("label.np.publist.loading") + " &hellip;</p>");*/
     try { 
         //cms.include(PUB_LIST, null, params);
     } catch (Exception e) {
@@ -941,9 +949,15 @@ if (autoPubs) {
 }
 if (autoProjects) {
     out.println("<div id=\"employee-proj-full\" class=\"toggleable collapsed\">");
-    out.println("<p id=\"proj-list-working\" style=\"text-align:center; padding:0.4em 1%; line-height:2em; height:2em; background-color:#f5f5f5; color:#666;\">"
+    /*out.println("<p id=\"proj-list-working\" style=\"text-align:center; padding:0.4em 1%; line-height:2em; height:2em; background-color:#f5f5f5; color:#666;\">"
             + "<img src=\"" + cms.link("/system/modules/no.npolar.site.npweb/resources/style/loader.gif") + "\" style=\"width:1.5em; vertical-align:middle;\" alt=\"\" />"
-            + " " + cms.labelUnicode("label.np.projectlist.loading") + " &hellip;</p>");
+            + " " + cms.labelUnicode("label.np.projectlist.loading") + " &hellip;</p>");*/
+    
+    out.println("<div id=\"proj-list-working\" style=\"text-align:center; padding:0.4em 1%; line-height:2em; height:2em; background-color:#f5f5f5; color:#666; margin-bottom:0.2rem;\">"
+                    + "<div style=\"text-align:left; font-size:2em; color:#aaa;\">"
+                        + cms.labelUnicode("label.np.projectlist.heading") + " <img src=\"/system/modules/no.npolar.site.npweb/resources/style/loader.gif\" alt=\"\" style=\"width:0.7em;\">"
+                    + "</div>"
+                + "</div>");
     try { 
         //cms.include(PROJ_LIST, null, params);
     } catch (Exception e) {

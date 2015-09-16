@@ -142,7 +142,7 @@ if (publications != null && !publications.isEmpty()) {
     //out.println("<h2 class=\"toggletrigger\">" + cms.labelUnicode("label.np.publist.heading") + "</h2>");
     %>
     <a class="toggletrigger" href="javascript:void(0);"><%= cms.labelUnicode("label.np.publist.heading") %></a>
-    <div class="toggletarget">
+    <div class="toggletarget" style="display:none;">
     <%
     // Get types of publications
     Iterator<String> iTypes = publications.getTypesContained().iterator();
@@ -207,6 +207,9 @@ if (publications != null && !publications.isEmpty()) {
 }
 else {
     // No publications found on serviceUrl 
+    %>
+    <div class="toggletrigger inactive" style="color:#aaa; cursor:initial;"><%= cms.labelUnicode("label.np.publist.heading.none") %></div>
+    <%
     if (DEBUG) { out.println("No publications. Publications = " + (publications == null ? "null" : publications.size()) + "."); }
 }
 %>
