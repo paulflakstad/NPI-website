@@ -479,6 +479,8 @@ CmsLinkManager lm       = OpenCms.getLinkManager();
 
 // Common page element handlers
 final String PARAGRAPH_HANDLER = "/system/modules/no.npolar.common.pageelements/elements/paragraphhandler.jsp";
+final String PUB_LIST = "/system/modules/no.npolar.common.project/elements/project-publications-full-list.jsp";
+
 final boolean EDITABLE = false;
 final boolean T_EDIT = false;
 final boolean LOGGED_IN_USER = OpenCms.getRoleManager().hasRole(cms.getCmsObject(), CmsRole.WORKPLACE_USER);
@@ -612,6 +614,8 @@ try {
 boolean suppressApiText = false;
 String ocmsDescr = null;
 String ocmsLogo = null;
+String autoPubsStr = null;
+boolean autoPubs = false;
 
 String moreUri = requestFolderUri + "" + pid + ".html";
 if (cmso.existsResource(moreUri)) {
@@ -624,6 +628,12 @@ if (cmso.existsResource(moreUri)) {
             ocmsLogo = null;
         if (suppressApiText)
             ocmsDescr = cms.contentshow(container, "Description");
+        
+        //
+        // Auto-publications
+        //
+        autoPubsStr = cms.contentshow(container, "AutoPubs");
+        autoPubs    = Boolean.valueOf(autoPubsStr).booleanValue(); // Default is false
     }
 }
 
@@ -1267,6 +1277,52 @@ if (cmso.existsResource(moreUri)) {
     request.setAttribute("paragraphContainer", container);
     cms.include(PARAGRAPH_HANDLER);
 }
+
+
+if (autoPubs) {
+    Map params = new HashMap();
+    String emailId = "";
+    //params.put("email", email);
+    params.put("id", pid);
+    params.put("locale", loc);
+    //params.put("pubtypes", autoPubsTypes);
+    //params.put("projecttypes", autoProjectTypes);
+
+    out.println("<div id=\"employee-pubs-full\" class=\"toggleable collapsed\">");
+    /*out.println("<div class=\"\" style=\"color:#aaa;\">"
+                    + cms.labelUnicode("label.np.publist.heading") + " <img src=\"/system/modules/no.npolar.site.npweb/resources/style/loader.gif\" alt=\"\" style=\"width:0.7em;\">"
+                + "</div>");*/
+    out.println("<div id=\"pub-list-working\" style=\"text-align:center; padding:0.4em 1%; line-height:2em; height:2em; background-color:#f5f5f5; color:#666; margin-bottom:0.2rem;\">"
+                    + "<div style=\"text-align:left; font-size:2em; color:#aaa;\">"
+                        + cms.labelUnicode("label.np.publist.heading") + " <img src=\"/system/modules/no.npolar.site.npweb/resources/style/loader.gif\" alt=\"\" style=\"width:0.7em;\">"
+                    + "</div>"
+                + "</div>");
+    /*out.println("<p id=\"pub-list-working\" style=\"text-align:center; padding:0.4em 1%; line-height:2em; height:2em; background-color:#f5f5f5; color:#666;\">"
+            + "<img src=\"" + cms.link("/system/modules/no.npolar.site.npweb/resources/style/loader.gif") + "\" style=\"width:1.5em; vertical-align:middle;\" alt=\"\" />"
+            + " " + cms.labelUnicode("label.np.publist.loading") + " &hellip;</p>");*/
+    try { 
+        //cms.include(PUB_LIST, null, params);
+    } catch (Exception e) {
+        if (LOGGED_IN_USER) {
+            out.println("<p>Auto-listing publications failed! Error was: " + e.getMessage() + "</p>");
+        }
+    }
+    out.println("</div>");
+
+    %>
+    <script type="text/javascript">
+        $('#employee-pubs-full').load('<%= cms.link(CmsRequestUtil.appendParameters(PUB_LIST, params, true)) %>', function( response, status, xhr ) {
+            if ( status === "error" ) {
+                var msg = "<%= cms.labelUnicode("label.np.publist.error") %>";//"Sorry, an error occurred while looking for publications: ";
+                $( "#pub-list-working" ).html( msg + " (" + xhr.status + " " + xhr.statusText + ")" );
+            } else {
+                initToggleable( $('#employee-pubs-full') );
+            }
+        });
+    </script>
+    <%
+}
+
 } catch (Exception e) {
     //out.println(error("An unexpected error occured while constructing the project details."));
     out.println("<div class=\"paragraph\">");
