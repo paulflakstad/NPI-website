@@ -1,0 +1,84 @@
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+	
+    <xsd:include schemaLocation="opencms://opencms-xmlcontent.xsd"/>
+    <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.pageelements/schemas/paragraph.xsd"/>
+    <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.pageelements/schemas/image.xsd"/>
+    <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.project/schemas/sub-project.xsd"/>
+    <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.project/schemas/optionallink.xsd"/>
+    <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.project/schemas/person.xsd"/>
+    
+    <xsd:element name="Projects" type="OpenCmsProjects"/>
+
+    <xsd:complexType name="OpenCmsProjects">
+        <xsd:sequence>
+            <xsd:element name="Project" type="OpenCmsProject" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="OpenCmsProject">
+        <xsd:sequence>
+            <xsd:element name="Title"           type="OpenCmsString" />
+            <xsd:element name="AbbrevTitle"     type="OpenCmsString" />
+            <xsd:element name="Featured"        type="OpenCmsBoolean" default="false" />
+            <xsd:element name="SuppressAPIText" type="OpenCmsBoolean" default="false" />
+            <xsd:element name="AutoPubs"        type="OpenCmsBoolean" default="false" />
+            <xsd:element name="NpiIdentifier"   type="OpenCmsString" />
+            <xsd:element name="RisIdentifier"   type="OpenCmsString" />
+            <xsd:element name="Keywords"        type="OpenCmsString" />
+            <xsd:element name="Website"         type="OpenCmsOptionalLink" minOccurs="0" maxOccurs="20" />
+            <xsd:element name="Begin"           type="OpenCmsDateTime" />
+            <xsd:element name="End"             type="OpenCmsDateTime" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="TimeDisplay"     type="OpenCmsString" />
+            <xsd:element name="Programme"       type="OpenCmsOptionalLink" minOccurs="0" maxOccurs="20" />
+            <xsd:element name="SubProject"	type="OpenCmsSubProject" minOccurs="0" maxOccurs="20" />
+            <xsd:element name="Partner"         type="OpenCmsOptionalLink" minOccurs="0" maxOccurs="20" />
+            <xsd:element name="Area"            type="OpenCmsString" />
+            <!-- Status: Use category instead? -->
+            <!--<xsd:element name="Status"          type="OpenCmsString" />-->
+            <xsd:element name="Category"        type="OpenCmsString" minOccurs="0" maxOccurs="20" />
+            <xsd:element name="Leaders"         type="OpenCmsPerson" minOccurs="0" maxOccurs="10" />
+            <xsd:element name="Participants"    type="OpenCmsPerson" minOccurs="0" maxOccurs="100" />
+            <xsd:element name="Logo"            type="OpenCmsVfsFile" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="Image"           type="OpenCmsImage" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="Description"     type="OpenCmsHtml" />
+            <xsd:element name="Paragraph"       type="OpenCmsParagraph" minOccurs="1" maxOccurs="50" />
+        </xsd:sequence>
+        <xsd:attribute name="language" type="OpenCmsLocale" use="optional" />
+    </xsd:complexType>
+
+    <xsd:annotation>
+        <xsd:appinfo>
+            <resourcebundle name="no.npolar.common.project.workplace" />
+            <mappings>
+                <mapping element="Title"        mapto="property:Title" />
+                <mapping element="Description"  mapto="property:Description" />
+                <mapping element="Keywords"     mapto="property:Keywords" />
+                <mapping element="Category"     mapto="propertyList:collector.categories" />
+                <mapping element="Begin"        mapto="property:collector.date" />
+                <mapping element="End"          mapto="property:collector.time" />
+                <mapping element="TimeDisplay"  mapto="property:display" />
+                <mapping element="Image/URI"    mapto="property:image.thumb" />
+            </mappings>
+            <layouts>
+		<!--<layout element="NpiIdentifier" widget="TextareaWidgetPlaintext" configuration="width:140px,height:1em" />-->
+                <layout element="Logo"          widget="ImageGalleryWidget" configuration="{useformat:true}" />
+                <!--<layout element="Status"        widget="SelectorWidget"     configuration="1:Active|0:Discontinued|2:Planned" />-->
+                <layout element="Category"      widget="CategoryWidget"     configuration="onlyleafs=true|property=category" />
+                <layout element="TimeDisplay"   widget="SelectorWidget"     configuration="date:Date|month:Month|year:Year" />
+            </layouts>
+            <searchsettings>
+                <searchsetting element="Category"       searchcontent="false" />
+                <searchsetting element="TimeDisplay"    searchcontent="false" />
+                <searchsetting element="Website"        searchcontent="false" />
+                <searchsetting element="Image"          searchcontent="false" />
+                <searchsetting element="Logo"           searchcontent="false" />
+                <searchsetting element="Featured"       searchcontent="false" />
+            </searchsettings>
+            <validationrules>
+                <rule element="Title" regex="!.*[Ee]rror.*" message="${key.editor.errormessage.Article.mustnotcontainerror|${validation.path}}" />
+                <rule element="Title" regex="!.*[Ww]arn.*" type="warning" message="${key.editor.warning.Article.mustnotcontainwarn|${validation.path}}" />			
+            </validationrules>
+        </xsd:appinfo>
+    </xsd:annotation>
+    
+</xsd:schema>
