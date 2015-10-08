@@ -69,6 +69,7 @@ if (!loggedInUser && !request.getServerName().equals(ONLINE_DOMAIN)) {
 }
 
 // Redirect requests for np_project resources to the correct URL
+// ToDo: Move to project template /system/modules/no.npolar.common.project/elements/project.jsp
 try {
     if (requestFileTypeId == OpenCms.getResourceManager().getResourceType("np_project").getTypeId()) {
         String projectId = CmsResource.getName(requestFileUri);
