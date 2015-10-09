@@ -54,8 +54,14 @@ if (id == null || id.isEmpty()) {
 final boolean ONLINE = cmso.getRequestContext().currentProject().isOnlineProject();
 
 try {
+    Map<String, String[]> defaultParams = new HashMap<String, String[]>();
+    //defaultParams.put("not-draft", new String[]{ "yes" });
+    defaultParams.put("facets", new String[]{ "false" });
+    defaultParams.put("sort", new String[]{ "-published_sort" });
+    
     ResourceBundle labels = ResourceBundle.getBundle(Labels.getBundleName(), locale);
     PublicationService pubService = new PublicationService(locale);
+    pubService.setDefaultParameters(defaultParams);
     Publication pub = pubService.getPublication(id);
 
     out.print(pub.toString());

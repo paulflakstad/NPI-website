@@ -96,7 +96,7 @@ if (pubTypes != null && !pubTypes.isEmpty())
 //          - "hidden" parameters (not visible to the user in the URL) - is this the same as "default parameters"?
 //          - unmodifiable parameters (should be unmodifiable) - e.g. format=json
 Map<String, String[]> defaultParams = new HashMap<String, String[]>();
-defaultParams.put("not-draft",              new String[]{ "yes" }); // Don't include drafts ("draft=no" will not work, as entries with a missing "draft" flag will also be included)
+//defaultParams.put("not-draft",              new String[]{ "yes" }); // Don't include drafts ("draft=no" will not work, as entries with a missing "draft" flag will also be included)
 defaultParams.put("filter-state",           new String[]{ "published|accepted|submitted" }); // Limit publications by state
 defaultParams.put("facets",                 new String[]{ "false" }); // No facets
 defaultParams.put("sort",                   new String[]{ "-published_sort" }); // Sort by publish time, descending
