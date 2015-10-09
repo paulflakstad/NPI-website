@@ -529,13 +529,22 @@ if (!events.isEmpty()) {
 
             }
             //*/
+            String eventUri = event.getUri(cmso);
+            String notificationLinkUri = cmso.readPropertyObject(eventUri, "uri.referenced", false).getValue(eventUri);
+            if ("none".equalsIgnoreCase(notificationLinkUri) || "-".equals(notificationLinkUri)) {
+                notificationLinkUri = null;
+            }
             %>
             <!--<div class="item" style="background-color:#fff; padding:0.5em; margin-bottom: 0.5em; box-shadow: 0 0 2px rgba(0,0,0,0.1) inset;">-->
             <!--<li class="notification">-->
             <li>
-                <a class="" href="<%= cms.link(event.getUri(cmso)) %>">
+                <% if (notificationLinkUri != null) { %> 
+                <a class="" href="<%= cms.link(notificationLinkUri) %>">
+                <%}%>
                     <h3 class=""><%= event.getTitle() %></h3>
+                <% if (notificationLinkUri != null) { %> 
                 </a>
+                <%}%>
                 <% if (!recurrences.contains(event)) { %>
                 <!--<div class="timestamp"><i class="icon-calendar"></i><%= getTimespanHtml(cms, event) %></div>-->
                 <% } %>
