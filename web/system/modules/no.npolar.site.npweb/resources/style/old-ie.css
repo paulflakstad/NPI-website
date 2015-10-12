@@ -1,0 +1,201 @@
+@charset "utf-8";
+/*****************************************************************************
+* Fixes for IE6 (and perhaps older versions as well, but only tested for IE6) 
+*****************************************************************************/
+html { font-size: 100%; }
+.news-images .illustration { float:left; width:100%; }
+/* News list items */
+/*.news-list .news { float:left; }*/
+/*.news-list .news a img, 
+.news-list .news .frame { margin:-4px 0 0 0.5em; }*/
+
+#header.no {
+	background-image:url("header-banner3-960x96-no.jpg");
+	background-repeat:no-repeat;
+}
+#header.en {
+	background-image:url("header-banner3-960x96-en.jpg");
+	background-repeat:no-repeat;
+}
+#nav_topmenu {
+	width:959px;
+	background-color:#97B6FF;
+    background-image:url("top-menu-button-fullwidth_v2.png");
+	background-repeat:repeat-y;
+    padding-left:1px;
+}
+.twocol {
+    /*width: 530px;*/
+	width:550px;
+	margin-left:5px; /* This has to be set to 5px (overriding 10px) to achieve a total of 20px spacing between columns */
+}
+#nav_quicklinks {
+    /*font-size: 85%;*/
+	float:left;
+}
+
+#footer {
+	/*font-size:0.5em;*/
+}
+
+#footer .fourcol-equal.left,
+#footer .fourcol-equal.right {
+    /*width:206px;*/
+}
+#footer li {
+	zoom:1;
+}
+
+.fourcol-equal.double {
+    width: 470px;
+	margin-right:8px; /*  This has to be set to 8px (overriding 10px) to achieve a total of 20px spacing between columns */
+}
+.fourcol-equal.double.right {
+	margin-right:0;
+}
+/*h1, h2.big-heading { 
+	padding:5px 0;
+}*/
+
+.onecol a, 
+.fourcol-equal a {
+	zoom:1;
+	/*font-size:0.2em;*/
+}
+
+#featured {
+	width:100%;
+}
+
+#slidemenu .slide-nav {
+	/*margin-left:0;*/
+}
+
+#slider ul li .info {
+	margin-top:-82px;
+}
+
+.portal-box {
+	zoom:1;
+}
+p.social-media-links {
+	zoom:1;
+}
+.onecol {
+	/*margin-left:0;
+	background-color:orange;*/
+}
+
+/* Gallery fixes */
+.gallerythumb a img { 
+	vertical-align:middle; /* Removes a mystical "padding" in IE6 */
+}
+
+/* ---------------- GIVE UP TRYING TO FIX FOR IE6, REMOVE STUFF INSTEAD ---------------- */
+
+#docwrap {
+	background:#fff;
+}
+/*
+#featured,
+#featured #slider,
+#featured #slider .content,
+#featured #slider .content a,
+#featured #slider .content a img {
+	z-index:1;
+}
+*/
+#slider {
+	width:550px;
+	z-index:10;
+	/*overflow:auto;
+	display:block;*/
+}
+
+.twocol.left {
+	margin-left:0;
+}
+.twocol.right {
+	width:390px;
+}
+.heading-more {
+	position:relative;
+	top:-1.5em;
+}
+.news-list .news {
+	float:none;
+	zoom:1;
+	width:98%;
+}
+.news-list .news a {
+	width:50px;
+	float:right;
+}
+.news-list .news h4 a {
+	float:none;
+	width:auto;
+}
+.news-list .news .timestamp {
+	font-size:80%;
+}
+#nav_topmenu li ul li a {
+	/*border-top:1px solid red;
+	border-bottom:1px solid red;*/
+	/*z-index:999 !important;*/
+}
+#nav_top_wrap, 
+#nav_topmenu, 
+#nav_topmenu li, 
+#nav_topmenu li a {
+	background:#0092C7;
+}
+#nav_topmenu li.inpath a,
+#nav_topmenu li a:hover {
+	background:#00A9E7;
+}
+/*#nav_quicklinks_wrap,
+#nav_quicklinks_wrap ul {
+	zoom:1;
+}*/
+#nav_quicklinks_wrap ul {
+	float:none;
+}
+.twocol.right ul.event-list {
+	font-size:70%;
+	zoom:1;
+}
+.twocol.right .calendar-wrap {
+	float:right;
+	margin-right:0;
+	right:0;
+	zoom:1;
+}
+.twocol.right #events-month-list {
+	/*padding-right:0;
+	margin-right:0;
+	float:none;*/
+	width:100%;
+	/*position:relative;
+	zoom:1;*/
+}
+.portal-box .event-list li {
+	zoom:1;
+}
+#footer .fourcol-equal.right h5 {
+	font-size:0.65em;
+}
+#footer .fourcol-equal.left {
+	margin-left:0;
+}
+#footer .fourcol-equal.right {
+	margin-right:0;
+}
+.portal-box ul {
+	zoom:1;
+	
+	overflow:auto;
+	float:none;
+}
+.portal-box ul li {
+	float:none;
+}

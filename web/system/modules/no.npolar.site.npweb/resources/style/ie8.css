@@ -1,0 +1,69 @@
+@charset "utf-8";
+/* CSS Document */
+
+#docwrap {
+	width:960px;
+}
+#nav_topmenu, 
+.fullwidth-centered {
+	width:986px;
+}
+#nav_sticky {
+	min-width:960px;
+}
+#header {
+	overflow:hidden;
+}
+#identity {
+	/*height:65px;*/
+	height:5.2em;
+}
+#identity span {
+	line-height:2.6em;
+}
+
+#global-site-tools {
+	/*margin-bottom:10px;*/
+}
+#header #nav-toggler {
+	height:2.75em;
+}
+
+a.featured-link .overlay {
+	background: url("transparent-white-80.png");
+}
+.banner-buttons li a {
+	background: url("transparent-black-40.png");
+}
+.banner-buttons li a:hover {
+	background: url("transparent-black-20.png");
+}
+
+#homepage #leftside {
+	width:0%;
+	margin-left:-500px;
+}
+
+#homepage #content {
+	width:100%;
+}
+.span1 {
+	margin:0;
+}
+
+.banner-buttons li a {
+	border:1px solid #999;
+}
+.banner-buttons li a:hover {
+	border:1px solid #fff;
+}
+
+#service-list {
+	margin-top:2em;
+}
+.portal .news-list .news {
+	width:23%;
+}
+.portal-box {
+	margin-bottom:2em;
+}
