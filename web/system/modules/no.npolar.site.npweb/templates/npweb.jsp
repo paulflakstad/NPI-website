@@ -446,6 +446,9 @@ css.add("");
 <link rel="stylesheet" type="text/css" href="<%= cms.link("/system/modules/no.npolar.site.npweb/resources/style/npweb-2014-base.css") %>" />
 <link rel="stylesheet" type="text/css" href="<%= cms.link("/system/modules/no.npolar.site.npweb/resources/style/npweb-2014-smallscreens.css") %>" media="(min-width:310px)" />
 <link rel="stylesheet" type="text/css" href="<%= cms.link("/system/modules/no.npolar.site.npweb/resources/style/npweb-2014-largescreens.css") %>" media="(min-width:801px)" />
+<% if (homePage) { %>
+<link rel="stylesheet" type="text/css" href="<%= cms.link("/system/modules/no.npolar.site.npweb/resources/style/layout-atomic.css") %>" />
+<% } %>
 <link rel="stylesheet" type="text/css" href="<%= cms.link("/system/modules/no.npolar.site.npweb/resources/style/npweb-2014-print.css") %>" media="print" />
 
 
@@ -852,7 +855,7 @@ if (!loggedInUser) {
             </div>
         </div>
     </footer>
-    <%    
+    <%
     /*
     //if (request.getAttribute("share") != null && request.getAttribute("share").equals("true")) {
     if (sess.getAttribute("share") != null && sess.getAttribute("share").equals("true")) {
