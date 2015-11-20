@@ -476,10 +476,13 @@ String requestFolderUri = cms.getRequestContext().getFolderUri();
 Locale locale           = cms.getRequestContext().getLocale();
 String loc              = locale.toString();
 CmsLinkManager lm       = OpenCms.getLinkManager();
+String projectFilePath  = null;
 
 // Common page element handlers
 final String PARAGRAPH_HANDLER = "/system/modules/no.npolar.common.pageelements/elements/paragraphhandler.jsp";
 final String PUB_LIST = "/system/modules/no.npolar.common.project/elements/project-publications-full-list.jsp";
+final String PROJECTS_FOLDER = loc.equalsIgnoreCase("no") ? "/no/prosjekter/" : "/en/projects/";
+final int TYPE_ID_PROJECT = OpenCms.getResourceManager().getResourceType("np_project").getTypeId();
 
 final boolean EDITABLE = false;
 final boolean T_EDIT = false;
@@ -499,6 +502,24 @@ if (pid == null || pid.isEmpty()) {
     cms.include(T, T_ELEM[1], T_EDIT);
     return; // IMPORTANT!
 }
+
+try {
+    CmsResource projectResource = cmso.readResourcesWithProperty(PROJECTS_FOLDER, "api-id", pid, CmsResourceFilter.DEFAULT_FILES.addRequireType(TYPE_ID_PROJECT)).get(0);
+    projectFilePath = cmso.getSitePath(projectResource);
+    
+    //out.println("<!-- request uri is " + requestFileUri + ", JSP is " + cms.info("opencms.uri") + " -->");
+    //out.println("<!-- " + OpenCms.getSystemInfo().getOpenCmsContext() + " -->");
+    
+    // Ensure canonical URL for projects that have files in the CMS:
+    // If the requested resource's URI is this JSP (e.g. /en/projects/details?pid=...)
+    // AND a project file exists in the CMS, redirect to that project file
+    if (requestFileUri.endsWith( cms.info("opencms.uri").replace(OpenCms.getSystemInfo().getOpenCmsContext(), "") )) {
+        //String redirectTargetPath = detailPageUri + "?pid=" + projectId;// e.g. "/en/" to redirect to the localized english folder
+        String redirAbsPath = request.getScheme() + "://" + request.getServerName() + projectFilePath;
+        CmsRequestUtil.redirectPermanently(cms, redirAbsPath);
+        return;
+    }
+} catch (Exception ignore) {}
 
 // Service details
 final String SERVICE_PROTOCOL = "http";
@@ -617,7 +638,7 @@ String ocmsLogo = null;
 String autoPubsStr = null;
 boolean autoPubs = false;
 
-String moreUri = requestFolderUri + "" + pid + ".html";
+String moreUri = projectFilePath;//requestFolderUri + "" + pid + ".html";
 if (cmso.existsResource(moreUri)) {
     // An OpenCms file exists for this project: check for special settings
     I_CmsXmlContentContainer container = cms.contentload("singleFile", moreUri, EDITABLE);

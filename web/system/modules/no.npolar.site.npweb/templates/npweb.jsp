@@ -68,23 +68,6 @@ if (!loggedInUser && !request.getServerName().equals(ONLINE_DOMAIN)) {
     return;
 }
 
-// Redirect requests for np_project resources to the correct URL
-// ToDo: Move to project template /system/modules/no.npolar.common.project/elements/project.jsp
-try {
-    if (requestFileTypeId == OpenCms.getResourceManager().getResourceType("np_project").getTypeId()) {
-        String projectId = CmsResource.getName(requestFileUri);
-        if (projectId.endsWith(".html"))
-            projectId = projectId.substring(0, projectId.length() - ".html".length());
-        String detailPageUri = locale.equalsIgnoreCase("no") ? "/no/prosjekter/detaljer" : "/en/projects/details";
-        String redirectTargetPath = detailPageUri + "?pid=" + projectId;// e.g. "/en/" to redirect to the localized english folder
-        String redirAbsPath = request.getScheme() + "://" + request.getServerName() + redirectTargetPath;
-        CmsRequestUtil.redirectPermanently(cms, redirAbsPath);
-        return;
-    }
-} catch (Exception e) {
-    // oh well ...
-}
-
 // #############################################################################
 //  Redirect somewhere?
 // -----------------------------------------------------------------------------

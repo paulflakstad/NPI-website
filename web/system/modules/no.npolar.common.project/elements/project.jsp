@@ -79,10 +79,21 @@ String requestFolderUri     = cms.getRequestContext().getFolderUri();
 String resourceUri          = request.getParameter("resourceUri") == null ? requestFileUri : request.getParameter("resourceUri");
 Locale locale               = cms.getRequestContext().getLocale();
 String loc                  = locale.toString();
+String pid                  = cmso.readPropertyObject(requestFileUri, "api-id", false).getValue(""); // Read the API ID, if present
 
 final boolean JSON          = request.getParameter("format") != null && request.getParameter("format").equalsIgnoreCase("json");
 
 if (!JSON) {
+    
+    if (!pid.isEmpty()) {
+        String detailPageUri = loc.equalsIgnoreCase("no") ? "/no/prosjekter/detaljer" : "/en/projects/details";
+        Map<String, String[]> params = new HashMap<String, String[]>();
+        params.put("pid", new String[] { pid });
+        cms.include(detailPageUri, null, params);
+        return;
+    } else {
+        
+    
     %>
     <style type="text/css">
         
@@ -446,6 +457,7 @@ while (container.hasMoreContent()) {
 
 // Include lower part of main template
 cms.include(template, elements[1], EDITABLE_TEMPLATE);
+}
 }
     
     
