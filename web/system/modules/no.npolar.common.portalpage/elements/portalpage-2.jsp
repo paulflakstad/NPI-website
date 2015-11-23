@@ -278,6 +278,8 @@ while (container.hasMoreContent()) {
         boolean textAsHoverBox = Boolean.valueOf(cms.contentshow(section, "TextAsHoverBox")).booleanValue();
         String dynamicContentUri = cms.contentshow(section, "DynamicContent");
         boolean isDynamicContentSection = CmsAgent.elementExists(dynamicContentUri);
+        String sectionMoreLink = cms.contentshow(section, "MoreLink");
+        String sectionMoreLinkText = cms.contentshow(section, "MoreLinkText");
                 
         // Start the right column
         out.println("<section class=\"clearfix " 
@@ -493,9 +495,19 @@ while (container.hasMoreContent()) {
             }
         }
         if (!isDynamicContentSection) {
+            // "More" link?
+            if (CmsAgent.elementExists(sectionMoreLink) && !sectionMoreLink.isEmpty()) {
+                out.println("<a class=\"cta more\" href=\"" + cms.link(sectionMoreLink) + "\">" + (CmsAgent.elementExists(sectionMoreLinkText) ? sectionMoreLinkText : "Read more") + "</a>");
+            }
             // End the "boxes" wrapper
             out.println("</div>");
+        } else {
+            // "More" link?
+            if (CmsAgent.elementExists(sectionMoreLink) && !sectionMoreLink.isEmpty()) {
+                out.println("<a class=\"cta more\" href=\"" + cms.link(sectionMoreLink) + "\">" + (CmsAgent.elementExists(sectionMoreLinkText) ? sectionMoreLinkText : "Read more") + "</a>");
+            }
         }
+        
         // End the section wrapper
         out.println("</section><!-- .layout-group -->");
     }
