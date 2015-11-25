@@ -435,7 +435,11 @@ while (container.hasMoreContent()) {
                         out.print("<h3 style=\"color:#777; font-size:1.6em; border-bottom:1px solid #999; margin-top:0.2em; text-shadow: 1px 1px 2px #ddd;\">");
                     }
                     */
-                    out.print("<h2 class=\"portal-box-heading" + (overlayHeadings ? " overlay" : " bluebar-dark") + "\">");
+                    String scHeadingType = "h3";
+                    if (!CmsAgent.elementExists(sectionHeading))
+                        scHeadingType = "h2";
+                    
+                    out.print("<" + scHeadingType + " class=\"portal-box-heading" + (overlayHeadings ? " overlay" : " bluebar-dark") + "\">");
                     out.println("<span>");
                     out.print(scTitle);
                     /*
@@ -446,7 +450,7 @@ while (container.hasMoreContent()) {
                     */
                     //out.println("</h3>");
                     out.println("</span>");
-                    out.println("</h2>");
+                    out.println("</" + scHeadingType + ">");
                 }
                 if (!htmlSectionImage.isEmpty()) {
                     out.println(htmlSectionImage);
