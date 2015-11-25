@@ -2236,6 +2236,11 @@ aside h4,
 .portal ul {
 	list-style-image:url("arrow-right.png");
 }
+ul.layout-group {
+    list-style:none;
+    padding-left:0;
+    margin-left:0;
+}
 .column.small ul li {
     margin:0.5em 0;
 }
@@ -2772,7 +2777,8 @@ a:hover .portal-box-heading.bluebar-dark {
     background:#08f;
 }
 .portal .card .autonomous .overlay {
-	margin-bottom:0;
+    margin-bottom:0;
+    text-align:center;
 }
 .portal-box .box-text,
 .featured-box .box-text {
@@ -2897,7 +2903,8 @@ a:hover .portal-box-heading.bluebar-dark {
     line-height:0;
 }
 .portal a > .card,
-.portal a > .autonomous {
+.portal a > .autonomous,
+.portal a.card--symbolic {
 	display:block;
 	box-sizing:border-box;
 	-moz-box-sizing:border-box;
@@ -2906,11 +2913,14 @@ a:hover .portal-box-heading.bluebar-dark {
 	transition:box-shadow 0.3s, border 0.3s;
 	transition:all 0.4s;
 	line-height:0;
+    text-decoration:none;
 }
 .portal a:hover > .card, 
 .portal a:hover > .autonomous,
 .portal a:focus > .card,
 .portal a:focus > .autonomous,
+.portal a.card--symbolic:hover,
+.portal a.card--symbolic:focus,
 #service-list li a:hover,
 #service-list li a:focus/*,
 .portal .news:hover*/ {
@@ -2929,6 +2939,10 @@ a:hover .portal-box-heading.bluebar-dark {
 	-moz-box-sizing:border-box;
 	-webkit-box-sizing:border-box;
 	box-sizing:border-box;
+}
+.portal .card--symbolic .card__title {
+    line-height:1em;
+    font-size:1.3em;
 }
 .featured-box > a,
 .portal-box > a,
@@ -2978,12 +2992,22 @@ a.featured-link:hover .overlay {
     padding:0.5em;
 }
 .portal .dynamic a .card .card-heading {
-	font-size:1.35em;
-	text-decoration:underline;
+    font-size:1em;
+    font-weight:bold;
+    text-decoration:underline;
 }
 .portal .dynamic .featured-box a .card p {
 	padding-left:0;
 	padding-right:0;
+}
+
+.portal .blocklist h3 {
+    font-size:1em; 
+    font-weight:bold;
+}
+.portal .blocklist .timestamp {
+    font-size:smaller;
+    color:#666;
 }
 
 /* Overlays */
@@ -2995,11 +3019,11 @@ a.featured-link:hover .overlay {
     top:0;
 }
 h3.overlay {
-	padding:0 2%;
-	margin:0.8em 0 0 0;
-	box-shadow:none;
-	line-height:1.8em;
-	text-shadow:1px 1px 1px #444;
+    padding:0 2%;
+    margin:0.8em 0 0 0;
+    box-shadow:none;
+    line-height:1.8em;
+    text-shadow:1px 1px 1px #444;
 }
 a .overlay {
     bottom:0;
@@ -3018,6 +3042,9 @@ a .overlay {
 }
 h2.portal-box-heading.overlay {
     font-size: 1.65em;
+}
+h3.portal-box-heading.overlay {
+    font-size: 1.25em;
 }
 section > h2 {
 }
