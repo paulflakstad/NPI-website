@@ -10,6 +10,7 @@
                 org.opencms.main.OpenCms,
                 org.opencms.mail.CmsSimpleMail,
                 org.opencms.util.CmsStringUtil,
+                org.opencms.security.CmsRole,
                 java.net.URL,
                 java.util.List,
                 java.util.Iterator,
@@ -17,11 +18,28 @@
                 java.util.Locale,
                 java.text.SimpleDateFormat" 
 %><%!
-public String stdErr(CmsObject cmso, String altUrl) throws EmailException  {
-    sendErrorNotification(cmso);
-    return "<h2>Whoops, sorry!</h2>"
-            + "<p>We're experiencing problems with our list of available positions!</p>"
+public String stdErr(CmsObject cmso, String altUrl, ServletContext application) throws EmailException  {
+    
+    String lastErrorNotificationTimestampName = "last_err_notification_avail_pos";
+    int errorNotificationTimeout = 1000*60*60*6; // 6 hours
+    Date lastErrorNotificationTimestamp = (Date)application.getAttribute(lastErrorNotificationTimestampName);
+    if (lastErrorNotificationTimestamp == null // No previous error
+            || (lastErrorNotificationTimestamp.getTime() + errorNotificationTimeout) < new Date().getTime()) { // Previous error sent, but timeout exceeded
+        application.setAttribute(lastErrorNotificationTimestampName, new Date());
+        sendErrorNotification(cmso);
+    }
+    
+    String html;
+    if (cmso.getRequestContext().getLocale().toString().equalsIgnoreCase("no")) {
+        html = "<h2>Noe gikk galt</h2>"
+                + "<p>Vi har problemer med å vise våre ledige stillinger.</p>"
+                + "<p>Vennligst prøv igjen senere, eller prøv <a href=\"" + altUrl + "\">" + altUrl + "</a></p>";
+    } else {
+        html = "<h2>Something went wrong</h2>"
+            + "<p>We're experiencing problems with our list of available positions.</p>"
             + "<p>Please come back later, or try <a href=\"" + altUrl + "\">" + altUrl + "</a></p>";
+    }
+    return html;
 }
 
 private void sendErrorNotification(CmsObject cmso) throws EmailException {
@@ -41,6 +59,8 @@ CmsObject cmso = cms.getCmsObject();
     Locale locale = cms.getRequestContext().getLocale();
     String loc = locale.toString();
     
+    final boolean LOGGED_IN_USER = OpenCms.getRoleManager().hasRole(cms.getCmsObject(), CmsRole.WORKPLACE_USER);
+    
     // Localized strings
     final String BACKLINK = "https://www.jobbnorge.no/" + (loc.equalsIgnoreCase("no") ? "ledige-stillinger/norsk-polarinstitutt" : "en/available-jobs/norwegian-polar-institute");
     final String LABEL_SUMMARY = loc.equalsIgnoreCase("no") ? "Ledige stillinger akkurat nå" : "Currently available positions";
@@ -58,7 +78,7 @@ CmsObject cmso = cms.getCmsObject();
     
     // The feed URL
     
-    final String URL = "http://www.jobbnorge.no/apps/joblist/joblistbuilder.ashx?id=f80a5414-0e95-425a-82e1-a64fa9060bc5" 
+    final String URL = "https://www.jobbnorge.no/apps/joblist/joblistbuilder.ashx?id=f80a5414-0e95-425a-82e1-a64fa9060bc5" 
                         + (loc.equalsIgnoreCase("no") ? "" : "&trid=2"); // trid=2 ==> English
         
     // This is now the URL
@@ -84,7 +104,14 @@ CmsObject cmso = cms.getCmsObject();
             feed.selectNodes("//rss/channel");
         } catch (Exception e) {
             // RSS not available
-            out.println(stdErr(cmso, BACKLINK));
+            out.println(stdErr(cmso, BACKLINK, application));
+            if (LOGGED_IN_USER) {
+                out.println("<h2>Error:</h2><pre>");
+                out.println(e.getMessage());
+                //e.printStackTrace(cms.getResponse().getWriter());
+                out.println("<pre>");
+            }
+            out.println("</section>");
             return;
         }
         //String feedTitle = doc.selectSingleNode("//rss/channel/title").getStringValue();
@@ -147,7 +174,13 @@ CmsObject cmso = cms.getCmsObject();
         }
         
     } catch (Exception e) {
-        out.println(stdErr(cmso, BACKLINK));
+        if (LOGGED_IN_USER) {
+            out.println("<h2>Error:</h2><pre>");
+            out.println(e.getMessage());
+            //e.printStackTrace(response.getWriter()); 
+            out.println("<pre>");
+        }
+        out.println(stdErr(cmso, BACKLINK, application));
     }
     %>
     </section>
