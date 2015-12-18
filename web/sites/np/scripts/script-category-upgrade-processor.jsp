@@ -170,24 +170,24 @@ public void unlock(CmsObject cmso, Object resourceOrUri, boolean alreadyLocked) 
     // pipe-separated format to the new comma-separated format.
     //
     // Example: This XML ("control code"):
-    // ...
-    // <Category><![CDATA[/sites/mosj/no/.categories/topic/climate/]]></Category>
-    // <Category><![CDATA[/sites/mosj/no/.categories/type/meeting/]]></Category>
-    // ...
+    //      ...
+    //      <Category><![CDATA[/sites/mysite/en/.categories/topic/climate/]]></Category>
+    //      <Category><![CDATA[/sites/mysite/en/.categories/type/meeting/]]></Category>
+    //      ...
     //
     // Will be changed to this:
-    // ...
-    // <Category>
-    //   <link type="WEAK">
-    //     <target><![CDATA[/sites/mosj/no/.categories/topic/climate/]]></target>
-    //     <uuid>be8e9550-9e91-11e5-968d-d067e5371a66</uuid>
-    //   </link>
-    //   <link type="WEAK">
-    //     <target><![CDATA[/sites/mosj/no/.categories/type/meeting/]]></target>
-    //     <uuid>0b6aa3b1-9e92-11e5-968d-d067e5371a66</uuid>
-    //   </link>
-    // </Category>
-    // ...
+    //      ...
+    //      <Category>
+    //        <link type="WEAK">
+    //          <target><![CDATA[/sites/mysite/en/.categories/topic/climate/]]></target>
+    //          <uuid>be8e9550-9e91-11e5-968d-d067e5371a66</uuid>
+    //        </link>
+    //        <link type="WEAK">
+    //          <target><![CDATA[/sites/mysite/en/.categories/type/meeting/]]></target>
+    //          <uuid>0b6aa3b1-9e92-11e5-968d-d067e5371a66</uuid>
+    //        </link>
+    //      </Category>
+    //      ...
     // 
     //--------------------------------------------------------------------------
     //
@@ -254,21 +254,20 @@ while (iFilesInFolder.hasNext()) {
             }
                         
             ArrayList<String> pathsToExistingCategoryElements = new ArrayList<String>();
-            List<String> names = xmlContent.getNames(locale);
-            Iterator<String> iNames = names.iterator();
-            while (iNames.hasNext()) {
-                String name = iNames.next();
-                boolean isCatName = name.matches("^" + XML_ELEMENT_CATEGORY + "\\[\\d+\\]$");
+            List<String> availablePaths = xmlContent.getNames(locale);
+            Iterator<String> iAvailablePaths = availablePaths.iterator();
+            while (iAvailablePaths.hasNext()) {
+                String path = iAvailablePaths.next();
+                boolean isCatName = path.matches("^" + XML_ELEMENT_CATEGORY + "\\[\\d+\\]$");
                 if (isCatName) {
-                    pathsToExistingCategoryElements.add(name);
+                    pathsToExistingCategoryElements.add(path);
                 }
             }
             
-            String oldPropValue = property.getValue("");
+            String existingPropValue = property.getValue("");
             String newPropValue = "";
             if (!pathsToExistingCategoryElements.isEmpty()) {
-                newPropValue = oldPropValue;
-                newPropValue = newPropValue.replaceAll("\\|", ",").replaceAll("/_categories/", "/.categories/");
+                newPropValue = existingPropValue.replaceAll("\\|", ",").replaceAll("/_categories/", "/.categories/");
             } else {
                 // Means: Property had a value, but no category node was found 
                 // in the XML. This is an edge case, that typically occurs when 
@@ -279,13 +278,13 @@ while (iFilesInFolder.hasNext()) {
             }
             
             
-            if (oldPropValue.equals(newPropValue)) {
-                out.println("Good existing value on property <code>" + PROPERTY_NAME + "</code> – no need to upgrade! :)");
-                out.println("<br /> - Value was " + oldPropValue);
+            if (existingPropValue.equals(newPropValue)) {
+                out.println("Existing value on property <code>" + PROPERTY_NAME + "</code> was good - no need to upgrade! :)");
+                out.println("<br /> - Value was " + existingPropValue);
             } else {
                 // Set and write the property value
                 out.println("Upgrading value on property <code>" + PROPERTY_NAME + "</code>"
-                            + "<br />Current value: <code>" + oldPropValue + "</code>"
+                            + "<br />Current value: <code>" + existingPropValue + "</code>"
                             + "<br />Upgrade value: <code>" + newPropValue + "</code>");
 
                 // Write to object
