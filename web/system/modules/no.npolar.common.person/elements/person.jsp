@@ -655,7 +655,7 @@ try {
     //
     // Read the details from the .json
     //
-    try { title = p.getString(JSON_KEY_TITLE); } catch (Exception e) { title = "Unknown title"; }
+    //try { title = p.getString(JSON_KEY_TITLE); } catch (Exception e) { title = "Unknown title"; }
     try { id = p.getString(JSON_KEY_ID_WEB); } catch (Exception e) { }
     try { position = p.getJSONObject(JSON_KEY_JOB_TITLE).getString(loc); } catch (Exception e) { }
     try { workplace = p.getString(JSON_KEY_WORKPLACE); } catch (Exception e) { }
@@ -671,6 +671,7 @@ try {
     try { orgTrees = jsonArrayToStringArray(p.getJSONArray(JSON_KEY_ORGTREE)); } catch (Exception e) { }
     try { lastUpdated = DATE_FORMAT_JSON.parse(p.getString(JSON_KEY_UPDATED)); } catch (Exception e) {}
     try { imageUri = getImageUri(id, cmso); } catch (Exception e) {}
+    try { title = fname + " " + lname; } catch (Exception e) { title = "Unknown title"; }
 
 
 
