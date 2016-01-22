@@ -49,7 +49,7 @@ public List<String> getPaths(String path, Locale locale, CmsXmlContent content) 
     }
     
     for (String possiblePath : content.getNames(locale)) {
-        if (possiblePath.equals(path) || possiblePath.replaceAll("\\[\\d\\]", "").equals(path)) {
+        if (path.equals("*") || possiblePath.equals(path) || possiblePath.replaceAll("\\[\\d\\]", "").equals(path)) {
             paths.add(possiblePath);
         }
     }
@@ -127,7 +127,7 @@ while (iFilesInFolder.hasNext()) {
         //out.println("<pre>" + CmsStringUtil.escapeHtml((new String(xmlContentFile.getContents()))) + "</pre>");
 
         List<String> paths = getPaths(XML_ELEMENT_PATH, locale, xmlContent);
-        out.println("<p>" + paths.size() + " element(s) matched " + XML_ELEMENT_PATH + ". <em>Checking&hellip;</em></p>");
+        out.println("<p>" + paths.size() + " element(s) matched the path '" + XML_ELEMENT_PATH + "'. <em>Checking&hellip;</em></p>");
         for (String path : paths) {
             I_CmsXmlContentValue elementValue = xmlContent.getValue(path, locale);
             String elementValueString = elementValue.getStringValue(cmso);
