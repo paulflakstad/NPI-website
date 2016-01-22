@@ -61,7 +61,7 @@ final String FOLDER = "/foo/";
 // The resource type name
 final String RESOURCE_TYPE_NAME = "resource_type_name"; // E.g. "containerpage" or "newsbulletin"
 // The XML content element's path
-final String XML_ELEMENT_PATH = "ElementPath"; // E.g. "Category" or "Paragraph/Image/URI", or even "Paragraph[3]/Image/URI"
+final String XML_ELEMENT_PATH = "ElementPath"; // E.g. "Category", or "Paragraph/Image/URI", or "Paragraph[3]/Image/URI", or even "*" (= match ANY element)
 
 // Old value (change FROM this)
 // Note that if you're working with links/URIs (e.g. images), provide the current site path (event though the control code uses the root path)
@@ -130,8 +130,14 @@ while (iFilesInFolder.hasNext()) {
         out.println("<p>" + paths.size() + " element(s) matched the path '" + XML_ELEMENT_PATH + "'. <em>Checking&hellip;</em></p>");
         for (String path : paths) {
             I_CmsXmlContentValue elementValue = xmlContent.getValue(path, locale);
-            String elementValueString = elementValue.getStringValue(cmso);
-            out.println(" - " + XML_ELEMENT_PATH + " value was '" + CmsStringUtil.escapeHtml(elementValueString) + "'<br />");
+            String elementValueString = null;
+            try {
+                elementValueString = elementValue.getStringValue(cmso);
+            } catch (Exception e) {
+                // nested element - skip it, can't change anything here
+                continue;
+            }
+            out.println(" - '" + path + "' value was '" + CmsStringUtil.escapeHtml(elementValueString) + "'<br />");
             if (elementValueString != null && elementValueString.equals(OLD_VAL)) {
                 out.print("<strong style=\"color:#c00;\"> -- Changing this value to '" + CmsStringUtil.escapeHtml(NEW_VAL) + "'&hellip;</strong><br />");
                 // Change the content value
