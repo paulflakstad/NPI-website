@@ -62,8 +62,10 @@ public List<String> getPaths(String path, Locale locale, CmsXmlContent content) 
     return paths;
 }
 %><%
-// Folders to read files from
+// Folder to read files from
 final String FOLDER = "/foo/";
+// false => process only locale as set on FOLDER, true => process all available locales
+final boolean PROCESS_ALL_LOCALES = false;
 // The resource type name
 final String RESOURCE_TYPE_NAME = "resource_type_name"; // E.g. "containerpage" or "newsbulletin"
 // The XML content element's path
@@ -76,16 +78,26 @@ final String OLD_VAL = "something_to_remove"; // E.g. "/images/lolcat.gif"
 // Same note here - use site path
 final String NEW_VAL = "something_to_insert"; // E.g. "/images/crazydog.png"
 
-// Set to true to actually write changes. (false = test mode, no changes written)
+// true => actually write changes, false => no changes written ("test mode")
 final Boolean WRITE_CHANGES = false;
 // Require that resources be locked before running this script? (Typically true)
 final boolean REQUIRE_LOCKED_RESOURCES = true;
+
+// Display a list of all possible paths for each file?
+final boolean DISPLAY_POSSIBLE_PATHS = true;
+// Display the actual XML content before / after modification?
+final boolean DISPLAY_XML_CHANGES = false;
 
 //----------------------------------------------------------------------------//
 
 CmsJspActionElement cms = new CmsJspActionElement(pageContext, request, response);
 CmsObject cmso = cms.getCmsObject();
-Locale locale = cms.getRequestContext().getLocale();
+
+// Initial locales list and add 1 item - the locale of FOLDER, or the default 
+// locale, if FOLDER has no defined locale
+// Note that this list will change (further down) if PROCESS_ALL_LOCALES==true
+List<Locale> locales = new ArrayList<Locale>();
+locales.add(OpenCms.getLocaleManager().getDefaultLocale(cmso, FOLDER));
 
 // Filter for resource type
 CmsResourceFilter rf = CmsResourceFilter.ALL.addRequireType(OpenCms.getResourceManager().getResourceType(RESOURCE_TYPE_NAME).getTypeId());
@@ -119,47 +131,63 @@ while (iFilesInFolder.hasNext()) {
         // Build up the xml content instance
         CmsXmlContent xmlContent = CmsXmlContentFactory.unmarshal(cmso, xmlContentFile);
         
-        //*
-        out.println("<h4>Available paths in this file</h4><ul>");
-        List<String> pathsInXml = xmlContent.getNames(locale);
-        Iterator<String> iPathsInXml = pathsInXml.iterator();
-        while (iPathsInXml.hasNext()) {
-            out.println("<li>" + iPathsInXml.next() + "</li>");
+        if (DISPLAY_XML_CHANGES) {
+            out.println("<h4>Before modification</h4>");
+            out.println("<pre style=\"line-height:0.6em; font-size:0.85em; padding:1em; background-color:#eee;\">" 
+                            + CmsStringUtil.escapeHtml((new String(xmlContentFile.getContents()))) 
+                        + "</pre>");
         }
-        out.println("</ul>");
-        //*/
         
-        //out.println("<h4>Before modification</h4>");
-        //out.println("<pre>" + CmsStringUtil.escapeHtml((new String(xmlContentFile.getContents()))) + "</pre>");
-
-        List<String> paths = getPaths(XML_ELEMENT_PATH, locale, xmlContent);
-        out.println("<p>" + paths.size() + " element(s) matched the path '" + XML_ELEMENT_PATH + "'. <em>Checking&hellip;</em></p>");
-        for (String path : paths) {
-            I_CmsXmlContentValue elementValue = xmlContent.getValue(path, locale);
-            String elementValueString = null;
-            try {
-                elementValueString = elementValue.getStringValue(cmso);
-            } catch (Exception e) {
-                // nested element - skip it, can't change anything here
-                continue;
-            }
-            out.println(" - '" + path + "' value was '" + CmsStringUtil.escapeHtml(elementValueString) + "'<br />");
-            if (elementValueString != null && elementValueString.equals(OLD_VAL)) {
-                out.print("<strong style=\"color:#c00;\"> -- Changing this value to '" + CmsStringUtil.escapeHtml(NEW_VAL) + "'&hellip;</strong><br />");
-                // Change the content value
-                elementValue.setStringValue(cmso, NEW_VAL);
-                fileModified = true;
-                out.println("OK!<br />");
-            } else {
-                out.println("<em> -- Skipping (nothing to change here)</em><br />");
-            }
+        // Set up locales
+        if (PROCESS_ALL_LOCALES) {
+            locales = xmlContent.getLocales();
         }
+        
+        // Process XML content per locale
+        for (Locale locale : locales) {
+            
+            if (DISPLAY_POSSIBLE_PATHS) {
+                out.println("<h4>Available paths (in locale <code>" + locale.getLanguage() + "</code>)</h4><ul>");
+                List<String> pathsInXml = xmlContent.getNames(locale);
+                Iterator<String> iPathsInXml = pathsInXml.iterator();
+                while (iPathsInXml.hasNext()) {
+                    out.println("<li><code>" + iPathsInXml.next() + "</code></li>" + (iPathsInXml.hasNext() ? "" : "</ul>"));
+                }
+            }
+
+            List<String> paths = getPaths(XML_ELEMENT_PATH, locale, xmlContent);
+            out.println("<p>" + paths.size() + " element(s) matched the path '" + XML_ELEMENT_PATH + "'. <em>Checking&hellip;</em></p>");
+            for (String path : paths) {
+                I_CmsXmlContentValue elementValue = xmlContent.getValue(path, locale);
+                String elementValueString = null;
+                try {
+                    elementValueString = elementValue.getStringValue(cmso);
+                } catch (Exception e) {
+                    // nested element - skip it, can't change anything here
+                    continue;
+                }
+                out.println(" - <code>" + path + "</code> value was '<code>" + CmsStringUtil.escapeHtml(elementValueString) + "</code>'<br />");
+                if (elementValueString != null && elementValueString.equals(OLD_VAL)) {
+                    out.print("<strong style=\"background-color:#faa;\"> -- Changing this value to '<code>" + CmsStringUtil.escapeHtml(NEW_VAL) + "</code>'&hellip;</strong><br />");
+                    // Change the content value
+                    elementValue.setStringValue(cmso, NEW_VAL);
+                    fileModified = true;
+                    out.println("OK!<br />");
+                } else {
+                    out.println("<em> -- Skipping (nothing to change here)</em><br />");
+                }
+            }
+        } // for (each locale)
         
         if (fileModified) {
             xmlContentFile.setContents(xmlContent.marshal());
-
-            //out.println("<h4>After modification</h4>");
-            //out.println("<pre>" + CmsStringUtil.escapeHtml((new String(xmlContent.marshal()))) + "</pre>");
+            
+            if (DISPLAY_XML_CHANGES) {
+                out.println("<h4>After modification</h4>");
+                out.println("<pre style=\"line-height:0.6em; font-size:0.85em; padding:1em; background-color:#eee;\">" 
+                                + CmsStringUtil.escapeHtml((new String(xmlContent.marshal()))) 
+                            + "</pre>");
+            }
 
             // Write changes?
             if (WRITE_CHANGES) {
