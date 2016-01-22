@@ -62,9 +62,11 @@ public List<String> getPaths(String path, Locale locale, CmsXmlContent content) 
     return paths;
 }
 %><%
-// Folder to read files from
+// Path to the folder that contains the files to process
 final String FOLDER = "/foo/";
-// false => process only locale as set on FOLDER, true => process all available locales
+// true => process all files under FOLDERS and any sub-folders, false => only process files located directly under FOLDER (not sub-folders)
+final boolean READ_FOLDER_TREE = true;
+// true => process all available locales, false => process only locale as set on FOLDER
 final boolean PROCESS_ALL_LOCALES = false;
 // The resource type name
 final String RESOURCE_TYPE_NAME = "resource_type_name"; // E.g. "containerpage" or "newsbulletin"
@@ -103,21 +105,21 @@ locales.add(OpenCms.getLocaleManager().getDefaultLocale(cmso, FOLDER));
 CmsResourceFilter rf = CmsResourceFilter.ALL.addRequireType(OpenCms.getResourceManager().getResourceType(RESOURCE_TYPE_NAME).getTypeId());
 
 // Get all files
-List filesInFolder = cmso.getFilesInFolder(FOLDER, rf);
+List filesInFolder = cmso.readResources(FOLDER, rf, READ_FOLDER_TREE); // cmso.getFilesInFolder(FOLDER, rf);
 Iterator iFilesInFolder = filesInFolder.iterator();
 while (iFilesInFolder.hasNext()) {
     // Get the file resource
     CmsResource fileResource = (CmsResource)iFilesInFolder.next();
-    // Get the file name
-    String fileName = fileResource.getName();
     // Get the file path
     String filePath = cmso.getSitePath(fileResource);
     // Get a list of all siblings (includes the resource itself)
     //List siblings = cmso.readSiblings(filePath, rf);
     
-    out.println("<h3>Collected file <code>" + filePath + " (" + fileName + ")</code>"
+    out.println("<div style=\"padding:0.5em; margin:0.5em 0; background-color:#f7f7f7;\">");
+    out.println("<h2><code>" + filePath + "</code>"
                 //+ " plus " + (siblings.size() - 1) + " siblings"
-                + "</h3>");
+                + "</h2>");
+    out.println("<div style=\"margin:0 0 0 2em;\">");
     
     // Flag modifications
     boolean fileModified = false;
@@ -132,7 +134,7 @@ while (iFilesInFolder.hasNext()) {
         CmsXmlContent xmlContent = CmsXmlContentFactory.unmarshal(cmso, xmlContentFile);
         
         if (DISPLAY_XML_CHANGES) {
-            out.println("<h4>Before modification</h4>");
+            out.println("<h3>Before modification</h3>");
             out.println("<pre style=\"line-height:0.6em; font-size:0.85em; padding:1em; background-color:#eee;\">" 
                             + CmsStringUtil.escapeHtml((new String(xmlContentFile.getContents()))) 
                         + "</pre>");
@@ -147,7 +149,7 @@ while (iFilesInFolder.hasNext()) {
         for (Locale locale : locales) {
             
             if (DISPLAY_POSSIBLE_PATHS) {
-                out.println("<h4>Available paths (in locale <code>" + locale.getLanguage() + "</code>)</h4><ul>");
+                out.println("<h3>Available paths (in locale <code>" + locale.getLanguage() + "</code>)</h3><ul>");
                 List<String> pathsInXml = xmlContent.getNames(locale);
                 Iterator<String> iPathsInXml = pathsInXml.iterator();
                 while (iPathsInXml.hasNext()) {
@@ -156,7 +158,9 @@ while (iFilesInFolder.hasNext()) {
             }
 
             List<String> paths = getPaths(XML_ELEMENT_PATH, locale, xmlContent);
-            out.println("<p>" + paths.size() + " element(s) matched the path '" + XML_ELEMENT_PATH + "'. <em>Checking&hellip;</em></p>");
+            out.println("<p>" + paths.size() + " element(s) matched the path <code>" + XML_ELEMENT_PATH + "</code>."
+                            + (paths.isEmpty() ? " <em>Continuing&hellip;</em>" : " <em>Processing&hellip;</em>")
+                        + "</p>");
             for (String path : paths) {
                 I_CmsXmlContentValue elementValue = xmlContent.getValue(path, locale);
                 String elementValueString = null;
@@ -174,7 +178,7 @@ while (iFilesInFolder.hasNext()) {
                     fileModified = true;
                     out.println("OK!<br />");
                 } else {
-                    out.println("<em> -- Skipping (nothing to change here)</em><br />");
+                    out.println("<em> -- Skipping</em><br />"); // nothing to change here
                 }
             }
         } // for (each locale)
@@ -183,7 +187,7 @@ while (iFilesInFolder.hasNext()) {
             xmlContentFile.setContents(xmlContent.marshal());
             
             if (DISPLAY_XML_CHANGES) {
-                out.println("<h4>After modification</h4>");
+                out.println("<h3>After modification</h3>");
                 out.println("<pre style=\"line-height:0.6em; font-size:0.85em; padding:1em; background-color:#eee;\">" 
                                 + CmsStringUtil.escapeHtml((new String(xmlContent.marshal()))) 
                             + "</pre>");
@@ -208,6 +212,8 @@ while (iFilesInFolder.hasNext()) {
     } catch (Exception e) {
         out.println(getStackTrace(e));
     }
+    out.println("</div>");
+    out.println("</div>");
     out.println("<hr />");
 }
 %>
