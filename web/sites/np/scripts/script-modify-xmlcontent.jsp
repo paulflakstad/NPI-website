@@ -2,20 +2,25 @@
     Document   : script-modify-xmlcontent
     Created on : Jan 21, 2016
     Author     : Paul-Inge Flakstad, Norwegian Polar Institute <flakstad at npolar.no>
---%><%@ page import="java.util.*,
-                 java.util.regex.*,
-                 java.text.SimpleDateFormat,
-                 org.opencms.jsp.CmsJspActionElement,
-                 org.opencms.jsp.I_CmsXmlContentContainer,
-                 org.opencms.file.*,
-                 org.opencms.file.types.*,
-                 org.opencms.main.*,
-                 org.opencms.util.CmsUUID,
-                 org.opencms.xml.*,
-                 org.opencms.xml.types.*,
-                 org.opencms.xml.content.*,
-                 org.opencms.util.*" session="true" %><%!
-                 
+--%><%@page import="java.util.ArrayList,
+                    java.util.Iterator,
+                    java.util.List,
+                    java.util.Locale,
+                    java.util.regex.Pattern,
+                    java.text.SimpleDateFormat,
+                    org.opencms.jsp.CmsJspActionElement,
+                    org.opencms.file.CmsFile,
+                    org.opencms.file.CmsObject,
+                    org.opencms.file.CmsResource,
+                    org.opencms.file.CmsResourceFilter,
+                    org.opencms.main.OpenCms,
+                    org.opencms.xml.CmsXmlUtils,
+                    org.opencms.xml.types.I_CmsXmlContentValue,
+                    org.opencms.xml.content.CmsXmlContent,
+                    org.opencms.xml.content.CmsXmlContentFactory,
+                    org.opencms.util.CmsStringUtil" 
+            session="true"
+%><%!                 
 /**
  * Gets an exception's stack strace as a string.
  */
