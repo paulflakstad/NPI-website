@@ -62,6 +62,10 @@ public List<String> getPaths(String path, Locale locale, CmsXmlContent content) 
     return paths;
 }
 %><%
+////////////////////////////////////////////////////////////////////////////////
+//
+// Settings: Adjust to your specific use case
+//
 // Path to the folder that contains the files to process
 final String FOLDER = "/foo/";
 // true => process all files under FOLDERS and any sub-folders, false => only process files located directly under FOLDER (not sub-folders)
@@ -89,8 +93,10 @@ final boolean REQUIRE_LOCKED_RESOURCES = true;
 final boolean DISPLAY_POSSIBLE_PATHS = true;
 // Display the actual XML content before / after modification?
 final boolean DISPLAY_XML_CHANGES = false;
-
-//----------------------------------------------------------------------------//
+//
+// Done with settings
+//
+////////////////////////////////////////////////////////////////////////////////
 
 CmsJspActionElement cms = new CmsJspActionElement(pageContext, request, response);
 CmsObject cmso = cms.getCmsObject();
