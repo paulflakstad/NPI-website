@@ -3,6 +3,7 @@
     Created on : Jan 21, 2016
     Author     : Paul-Inge Flakstad, Norwegian Polar Institute <flakstad at npolar.no>
 --%><%@ page import="java.util.*,
+                 java.util.regex.*,
                  java.text.SimpleDateFormat,
                  org.opencms.jsp.CmsJspActionElement,
                  org.opencms.jsp.I_CmsXmlContentContainer,
@@ -44,7 +45,7 @@ public String getStackTrace(Exception e) {
 public List<String> getPaths(String path, Locale locale, CmsXmlContent content) {
     List<String> paths = new ArrayList<String>();
     
-    if (path.matches("\\[\\d\\]")) {
+    if (Pattern.compile("\\[\\d\\]").matcher(path).find()) { // if ( path.has("\\[\\d\\]") )
         path = CmsXmlUtils.createXpath(path, 1); // Ensure that e.g. "Paragraph[2]/Image[1]/URI" becomes "Paragraph[2]/Image[1]/URI[1]"
     }
     
