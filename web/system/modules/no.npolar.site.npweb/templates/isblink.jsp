@@ -709,6 +709,7 @@ if (!pinnedNav) {
     </header> <!-- #header -->
     
     <div id="docwrap" class="clearfix">
+        <a id="feedback-for-url" href="/no/feedback.html">Finner du ikke det du leter etter?</a>
         <%
         //if (portal) {
             //out.println("<a id=\"nav_toggler\"><span></span></a>");
