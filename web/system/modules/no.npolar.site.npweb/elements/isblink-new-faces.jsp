@@ -128,6 +128,8 @@ try {
     if (!resources.isEmpty()) {
         iResources = resources.iterator();
         %>
+        <div style="text-align:center;">
+        <h2>Nye fjes :)</h2>
         <ul style="display: block; padding:0; margin:0; list-style: none; width:100%;">
         <%
         while (iResources.hasNext()) {
@@ -145,7 +147,7 @@ try {
                 //noImgAnchorStyle = " display: inline-block; font-size: 50px; margin: 0; padding: 0; text-align: center; vertical-align: bottom; width: 100%;";
             }
             %>
-            <li style="display:inline-block; width:24.25%; border:none; padding:0; margin:0;">
+            <li style="display:inline-block; width:12%; border:none; padding:0; margin:0;">
                 <a href="<%= cms.link(collectedResourceUri) %>" data-tooltip="<%= tooltipText %>" style="display:block; position:relative;<%= noImgAnchorStyle %>">
                     <% if (imgSrc != null) { %>
                     <img src="<%= cms.link(imgSrc) %>" alt="<%= altText %>" style="display:block;" />
@@ -158,6 +160,7 @@ try {
         } // while
         %>
         </ul>
+        </div>
         <%
     } // if    
 }
