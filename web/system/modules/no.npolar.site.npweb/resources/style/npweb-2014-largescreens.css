@@ -172,8 +172,9 @@ body {
 	width:55%;
 }
 #service-list li {
-	width:16.6667%;
-	float:left;
+    float:left;
+    width:20%;
+    text-align:center;
 }
 #service-list li a {
 	display:block;
@@ -186,9 +187,8 @@ body {
 	float:none;
 	clear:both;
 }
-#service-list li {
-	width:20%;
-	text-align:center;
+#service-list.six li {
+    width:16.6667%;
 }
 /*#sm-links-top,*/
 #sm-links-bottom {
