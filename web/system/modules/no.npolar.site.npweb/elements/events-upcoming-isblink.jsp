@@ -115,8 +115,7 @@ List events = calendar.getEvents(EventCalendar.RANGE_UPCOMING_AND_IN_PROGRESS, c
 Iterator iEvents = events.iterator();
 if (iEvents.hasNext()) {
     %>
-    <!--<ul style="display:block; margin:0; padding:0; list-style:none;">-->
-    <div class="boxes clearfix">
+    <ul><!--<ul style="display:block; margin:0; padding:0; list-style:none;">-->
     <%
     while (iEvents.hasNext()) {
         EventEntry event = (EventEntry)iEvents.next();
@@ -129,24 +128,21 @@ if (iEvents.hasNext()) {
             
         }
         %>
-        <div class="span1 featured-box" itemscope="" itemtype="http://schema.org/Event">
-            <a class="featured-link" href="<%= cms.link(event.getUri(cmso)) %>">
-                <div class="card">
-                    <!--<div class="autonomous">-->
-                        <h3 class="card-heading" itemprop="name"><%= event.getTitle() %></h3>
+	<li itemscope="" itemtype="http://schema.org/Event">
+            <a style="display:block;" href="<%= cms.link(event.getUri(cmso)) %>">
+                <div>
+                        <strong itemprop="name"><%= event.getTitle() %></strong>
                         <div class="timestamp"><i class="icon-calendar"></i><%= getTimespanHtml(cms, event) %></div>
-                        <p itemprop="description"><%= event.getDescription() %></p>
-                    <!--</div>-->
+                        <!--<p itemprop="description"><%= event.getDescription() %></p>-->
                 </div>
             </a>
-        </div>
+        </li>
         <%
     }
     %>
-    <!--</ul>-->
+    </ul>
     
-    </div>
-    <a class="cta more" href="<%= EVENTS_FOLDER %>">Hele kalenderen</a>
+    <!--<a class="cta more" href="<%= EVENTS_FOLDER %>">Hele kalenderen</a>-->
     <%
 
 } else {
