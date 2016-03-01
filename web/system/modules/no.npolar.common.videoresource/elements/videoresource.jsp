@@ -362,7 +362,7 @@ if (!includeTemplate && CmsAgent.elementExists(caption)) {
 }
 
 if (CmsAgent.elementExists(credit)) {
-    out.println("<span class=\"credit\">Video: " + credit + ("yt".equals(type) || "vimeo".equals(type) ? (" / ".concat("yt".equals(type) ? "YouTube" : "Vimeo")) : "" ) + "</span>");
+    out.println("<span class=\"credit\">Video: " + credit + /*("yt".equals(type) || "vimeo".equals(type) ? (" / ".concat("yt".equals(type) ? "YouTube" : "Vimeo")) : "" ) +*/ "</span>");
 }
 
 if (!(type.equalsIgnoreCase(VIDEO_TYPE_LOCAL) || type.equalsIgnoreCase(VIDEO_TYPE_GENERIC))) {
