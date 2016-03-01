@@ -65,37 +65,30 @@ public void printVideoContainer(CmsAgent cms, String videoUri,
                                 String caption, String credit, String videoFloatChoice,
                                 JspWriter outWriter) 
                 throws CmsException, JspException, IOException {
-    final String VIDEO_CONTAINER = "span";
-    final String TEXT_CONTAINER = "span";
-    String videoFrameHTML =
-             "<span class=\"media" 
-             + ("left".equalsIgnoreCase(videoFloatChoice) || "right".equalsIgnoreCase(videoFloatChoice) ? " pull-".concat(videoFloatChoice.toLowerCase()) : "")
-             + "\">";
+    
     // Print the first part
-    outWriter.print(videoFrameHTML);
+    /*outWriter.print("<span class=\"media" 
+                    + ("left".equalsIgnoreCase(videoFloatChoice) || "right".equalsIgnoreCase(videoFloatChoice) ? " pull-".concat(videoFloatChoice.toLowerCase()) : "")
+                    + "\">");*/
+    
+    String wrapperClass = "media"
+                    + ("left".equalsIgnoreCase(videoFloatChoice) || "right".equalsIgnoreCase(videoFloatChoice) ? " pull-".concat(videoFloatChoice.toLowerCase()) : "");
+    
     // Then let the video handler print the video
     Map params = new HashMap();
     params.put("resourceUri", videoUri);
+    params.put("wrapperClass", wrapperClass);
     params.put("width", videoWidth);
     // Allow overriding of caption and credit
     if (caption != null & !caption.isEmpty())
         params.put("caption", caption);
     if (credit != null & !credit.isEmpty())
         params.put("credit", credit);
+    
     String videoTemplate = cms.getCmsObject().readPropertyObject(videoUri, "template-elements", false).getValue("Undefined template-elements");
     cms.include(videoTemplate, null, params);
-
-    // Reset HTML
-    videoFrameHTML = ""; 
-    /*if (cms.elementExists(caption) || cms.elementExists(credit)) {
-        videoFrameHTML += 
-                "<" + TEXT_CONTAINER + " class=\"imagetext highslide-caption\">" +
-                    (cms.elementExists(caption) ? cms.stripParagraph(caption) : "") + 
-                    (cms.elementExists(credit) ? ("<span class=\"imagecredit\"> Video: " + credit + "</span>") : "") +
-                "</" + TEXT_CONTAINER + ">";
-    }*/
-    videoFrameHTML += "</span>";
-    outWriter.print(videoFrameHTML);
+    
+    //outWriter.print("</span><!-- .media -->");
 }
 
 /**

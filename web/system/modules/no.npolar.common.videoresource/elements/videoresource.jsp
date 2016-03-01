@@ -141,6 +141,7 @@ final String VIDEO_TYPE_GENERIC = "generic";
 // The video file variables
 String title = null;
 String description = null;
+String transcript = null;
 String credit = null;
 String source = null;
 String type = null;
@@ -149,6 +150,7 @@ boolean autostart = false;
 
 // Read video file (XMLContent file)
 String resourceUri = request.getParameter("resourceUri") != null ? request.getParameter("resourceUri") : requestFileUri;
+String wrapperClass = request.getParameter("wrapperClass") != null ? request.getParameter("wrapperClass") : "media";
 String overrideCaption = request.getParameter("caption") != null ? request.getParameter("caption") : "";
 String overrideCredit = request.getParameter("credit") != null ? request.getParameter("credit") : "";
 
@@ -157,6 +159,7 @@ I_CmsXmlContentContainer videoFile = cms.contentload("singleFile", resourceUri, 
 while (videoFile.hasMoreContent()) {
     title = cms.contentshow(videoFile, "Title");
     description = cms.contentshow(videoFile, "Description");
+    transcript = cms.contentshow(videoFile, "Transcript");
     credit = cms.contentshow(videoFile, "Credit");
     source = cms.contentshow(videoFile, "VideoSource");
     type = cms.contentshow(videoFile, "VideoType");
@@ -173,6 +176,10 @@ if (includeTemplate) {
     out.println("<h1>" + title + "</h1>");
     if (cms.elementExists(description))
         out.println("<div class=\"ingress\">" + description + "</div>");
+}
+
+if (!(type.equalsIgnoreCase(VIDEO_TYPE_LOCAL) || type.equalsIgnoreCase(VIDEO_TYPE_GENERIC))) {
+    out.println("<span class=\"" + wrapperClass + "\"><span class=\"video-wrapper\">");
 }
 
 //
@@ -212,11 +219,20 @@ if (type.equalsIgnoreCase(VIDEO_TYPE_YOUTUBE)) {
         }
         // Construct embed code
         String embedCode = 
-                "\n<iframe width=\"100%\" height=\"auto\" style=\"width:100%; height:100%;\"" 
-                               + " src=\"http://www.youtube.com/embed/" + videoId + "?theme=dark&amp;wmode=transparent&amp;html5=1" + (autostart ? "&amp;autoplay=1" : "") + "\""
-                               + " frameborder=\"0\"" 
-                               + " allowfullscreen></iframe>";
-        out.println("<span class=\"media\"><span class=\"video-wrapper\">" + embedCode + "</span></span>");
+                "\n<iframe"
+                        + " width=\"560\" height=\"315\""
+                        //+ " width=\"100%\" height=\"auto\""
+                        //+ " style=\"width:100%; height:100%;\"" 
+                        // https is vital here, in order to avoid missing controls bug in Firefox
+                        + " src=\"https://www.youtube.com/embed/" + videoId 
+                            // We should never auto-start, and the remaining params are now the defaults
+                            //+ "?theme=dark&amp;wmode=transparent&amp;html5=1" + (autostart ? "&amp;autoplay=1" : "") 
+                            + "\""
+                        + " frameborder=\"0\"" 
+                        + " allowfullscreen=\"\">"
+                + "</iframe>";
+        
+        out.println(embedCode);
     } catch (Exception e) {
         out.println("<p>Error displaying video: " + e.getMessage() + "</p>");
     }
@@ -247,7 +263,7 @@ else if (type.equalsIgnoreCase(VIDEO_TYPE_VIMEO)) {
                         + " src=\"http://player.vimeo.com/video/" + videoId + (autostart ? "?autoplay=1" : "") + "\""
                         //+ " width=\"WIDTH\" height=\"HEIGHT\""
                         + " frameborder=\"0\" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>";
-        out.println("<span class=\"media\"><span class=\"video-wrapper\">" + embedCode + "</span></span>");
+        out.println(embedCode);
     } catch (Exception e) {
         out.println("<p>Error displaying video: " + e.getMessage() + "</p>");
     }
@@ -305,7 +321,7 @@ else if (type.equalsIgnoreCase(VIDEO_TYPE_HTML5)) {
         }
         videoCode += "\nSorry, it seems your browser can't play this video. You may still <a href=\"" + cms.link(source) + "\">download it</a>.";
         videoCode += "\n</video>";
-        out.println("<span class=\"media\"><span class=\"video-wrapper\">" + videoCode + "</span></span>");
+        out.println(videoCode);
     } catch (Exception e) {
         out.println("<p>Error displaying video: " + e.getMessage() + "</p>");
     }
@@ -333,6 +349,10 @@ else if (type.equalsIgnoreCase(VIDEO_TYPE_GENERIC)) {
     out.println(alterDimensions(source, width));
 }
 
+if (!(type.equalsIgnoreCase(VIDEO_TYPE_LOCAL) || type.equalsIgnoreCase(VIDEO_TYPE_GENERIC))) {
+    out.println("</span><!-- .video-wrapper -->");
+}
+
 String caption = overrideCaption.isEmpty() ? description : overrideCaption;
 credit = overrideCredit.isEmpty() ? credit : overrideCredit;
 
@@ -345,9 +365,17 @@ if (CmsAgent.elementExists(credit)) {
     out.println("<span class=\"credit\">Video: " + credit + ("yt".equals(type) || "vimeo".equals(type) ? (" / ".concat("yt".equals(type) ? "YouTube" : "Vimeo")) : "" ) + "</span>");
 }
 
+if (!(type.equalsIgnoreCase(VIDEO_TYPE_LOCAL) || type.equalsIgnoreCase(VIDEO_TYPE_GENERIC))) {
+    out.println("</span><!-- media wrapper (typically .media) -->");
+}
+
 //
 // Include lower part of main template
 //
-if (includeTemplate)
+if (includeTemplate) {
+    if (CmsAgent.elementExists(transcript)) {
+        out.println(transcript);
+    }
     cms.include(template, elements[1], EDITABLE_TEMPLATE);
+}
 %>
