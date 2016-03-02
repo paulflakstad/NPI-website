@@ -308,6 +308,10 @@ while (container.hasMoreContent()) {
             } else {
                 redListStatus = null;
             }
+        } else {
+            try {
+                redListSvalbardSpecific = redListLink.contains("Svalbard");
+            } catch (Exception e) {}
         }
     }
     
