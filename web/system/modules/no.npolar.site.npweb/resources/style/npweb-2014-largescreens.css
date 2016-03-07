@@ -734,6 +734,14 @@ orange  |  red  |  lightblue  |  green
 	padding-top:3%;
 	width:30%;
 }
+
+.filters--active li {
+    display:inline-block;
+    margin-right:1em;
+}
+.filters--active a::after {
+    float:none;
+}
 }
 
 /* HUGE */

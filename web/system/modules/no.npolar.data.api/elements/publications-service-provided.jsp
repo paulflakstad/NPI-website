@@ -470,39 +470,46 @@ try {
 
         // Query 
         %>
-        <div class="searchbox-big">
+        <div class="searchbox-big search-widget search-widget--filterable">
             <h2><%= LABEL_SEARCHBOX_HEADING %></h2>
+            <p class="smalltext"><%= disclaimer %></p>
             
             <form action="<%= cms.link(requestFileUri) %>" method="get">
                 <input name="q" type="search" value="<%= lastSearchPhrase == null ? "" : CmsStringUtil.escapeHtml(lastSearchPhrase) %>" />
                 <input name="start" type="hidden" value="0" />
-                <input type="submit" value="<%= LABEL_SEARCH %>" />
-                <div class="clearfix">
-                <label for="pubyear"><%= LABEL_YEAR_SELECT %>: </label>
-                <!--<select name="filter-published-year" onchange="submit()" id="pubyear">-->
-                <select name="<%= SearchFilter.PARAM_NAME_PREFIX + Publication.JSON_KEY_PUB_TIME %>" onchange="submit()" id="pubyear">
-                    <option value=""><%= LABEL_YEAR_SELECT_OPT_ALL %></option>
-                    <%
-                    //*
-                    for (int yOpt = new GregorianCalendar().get(Calendar.YEAR); yOpt >= 1970; yOpt--) {
-                        String paramYearValue = "" + yOpt + "-01-01T00:00:00Z.." + yOpt + "-12-31T23:59:59Z";
-                        out.println("<option value=\"" + paramYearValue + "\"" 
-                                    + (paramYearValue.equals(yearFilterVal) ? " selected=\"selected\"" : "") + ">" 
-                                        + yOpt
-                                    //+ (String.valueOf(yOpt).equals(yearFilterVal) ? " selected=\"selected\"" : "") + ">" 
-                                    //    + yOpt 
-                                    
-                                + "</option>");
-                    }
-                    //*/
-                    %>
-                </select>
-                <p class="smalltext"><%= disclaimer %></p>
-                </div>
+                <input class="cta cta--search-submit" type="submit" value="<%= LABEL_SEARCH %>" />
             
-            <div id="filters-wrap"> 
-                <a id="filters-toggler" onclick="$('#filters').slideToggle();" href="javascript:void(0);"><%= LABEL_FILTERS %></a>
-                <div id="filters">
+            <!--<div id="filters-wrap">-->
+            <div class="filters-wrapper">
+                <a class="cta cta--filters-toggle" id="filters-toggler" onclick="$('#filters').slideToggle();" tabindex="0"><%= LABEL_FILTERS %></a>
+                
+                <div id="filters" class=".filters-container">
+                    
+                    <div class="layout-row single clearfix" style="text-align:center;">
+                        <div class="boxes">
+                            <div class="span1">
+                                <label for="pubyear"><%= LABEL_YEAR_SELECT %>: </label>
+                                <!--<select name="filter-published-year" onchange="submit()" id="pubyear">-->
+                                <select name="<%= SearchFilter.PARAM_NAME_PREFIX + Publication.JSON_KEY_PUB_TIME %>" onchange="submit()" id="pubyear">
+                                    <option value=""><%= LABEL_YEAR_SELECT_OPT_ALL %></option>
+                                    <%
+                                    //*
+                                    for (int yOpt = new GregorianCalendar().get(Calendar.YEAR); yOpt >= 1970; yOpt--) {
+                                        String paramYearValue = "" + yOpt + "-01-01T00:00:00Z.." + yOpt + "-12-31T23:59:59Z";
+                                        out.println("<option value=\"" + paramYearValue + "\"" 
+                                                    + (paramYearValue.equals(yearFilterVal) ? " selected=\"selected\"" : "") + ">" 
+                                                        + yOpt
+                                                    //+ (String.valueOf(yOpt).equals(yearFilterVal) ? " selected=\"selected\"" : "") + ">" 
+                                                    //    + yOpt 
+                                                + "</option>");
+                                    }
+                                    //*/
+                                    %>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <%
                     if (!filterSets.isEmpty()) {
                         Iterator<SearchFilterSet> iFilterSets = filterSets.iterator();
@@ -517,14 +524,14 @@ try {
                             if (filters != null) {
                                 // Filter set has filters
                                 out.println("<div class=\"span1\">");
-                                out.print("<h3 class=\"filters-heading\" style=\"font-size:1.5em;\">");
+                                out.print("<h3 class=\"filters-heading\">");
                                 out.print(filterSet.getTitle(locale));
                                 /*try {
                                     out.print(labels.getString(normalize(filterSet.getName())));
                                 } catch (Exception transE) {
                                     out.print(normalize(filterSet.getName()));
                                 }*/
-                                out.print(" (" + filterSet.size() + ")");
+                                out.print("<span class=\"filter__num-matches\"> (" + filterSet.size() + ")</span>");
                                 //out.print(" R=" + filterSet.getRelevancy());
                                 //out.print(" N=" + filterSet.getName());
                                 out.println("</h3>");
@@ -542,7 +549,7 @@ try {
                                         out.println("<li><a href=\"" + cms.link(requestFileUri + "?" + CmsStringUtil.escapeHtml(filter.getUrlPartParameters())) + "\">" 
                                                             + (filter.isActive() ? "<span style=\"background:red; border-radius:3px; color:white; padding:0 0.3em;\" class=\"remove-filter\">X</span> " : "")
                                                             + filterText
-                                                            + " (" + filter.getCount() + ")"
+                                                            + "<span class=\"filter__num-matches\"> (" + filter.getCount() + ")</span>"
                                                         + "</a></li>");
                                     }
                                 } catch (Exception filterE) {
@@ -584,6 +591,7 @@ try {
         <h2 style="color:#999; border-bottom:1px solid #eee;">
             <span id="totalResultsCount"><%= totalResults %></span> <%= LABEL_MATCHES.toLowerCase() %>
         </h2>
+        <div id="filters-details"></div>
 
         <% if (!ONLINE) { %>
         <div id="admin-msg" style="margin:1em 0; background: #eee; color: #444; padding:1em; font-family: monospace; font-size:1.2em;"></div>
@@ -706,7 +714,7 @@ try {
 %>
 
 <%
-if (!pubService.isUserFiltered()) {
+if (true) {//(!pubService.isUserFiltered()) {
 %>
 <script type="text/javascript">
     $("#filters").hide();

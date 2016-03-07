@@ -515,6 +515,55 @@ $(document).ready( function() {
 	
 	// Initialize toggleable content
         initToggleables();
+        
+        // BEGIN search filters
+        var filtersToggler = $("#filters-toggler");
+        var filters = $("#filters");
+        var filterHeadings = $("#filters h3");
+        filterHeadings.addClass("filters-heading");
+        
+        if (filterHeadings.length > 0) {
+            filtersToggler.append("<div class=\"filter-hints\"></div>");
+            
+            filterHeadings.each(function(i) {
+                var filterHeading = $(this).clone();
+                filterHeading.find(".filter__num-matches").remove();
+                
+                var filterHints = (i > 0 ? ( ", " + (i === 2 ? "..." : filterHeading.text().toLowerCase()) ) : filterHeading.text() );
+                
+                $("#filters-toggler .filter-hints").append(filterHints);
+                
+                if (i === 2) {
+                    return false;
+                }
+            });
+        }
+        
+        
+        filtersToggler.addClass("cta cta--filters-toggle").removeAttr("onclick");
+        filtersToggler.click(function(e) {
+            e.preventDefault();
+            filters.slideToggle();
+        }); 
+        $("#filters li a .remove-filter").closest("a").addClass("filter--active");
+        
+        // Create a separate overview of the active filters
+        var activeFilters = filters.find(".filter--active");
+        if (activeFilters.length > 0) {
+            
+        
+            if ( $("#filters-details").length === 0 ) {
+                filters.closest(".searchbox-big").next("h2").after("<div id=\"filters-details\"></div>");
+            }
+            $("#filters-details").append("<ul class=\"filters--active blocklist\">");
+            activeFilters.each(function() {
+                $(this).closest("li").prependTo( $(this).closest("ul") );
+                $(".filters--active").append( $("<li>").append( $(this).clone() ) );
+            });
+        }
+        // END search filters
+        
+        $(".searchbox-big form").find("input[type=submit]").addClass("cta cta--search-submit");
 	
 	// Social sharers
 	$("#share_button_top").attr('displayText','<%= loc.equalsIgnoreCase("no") ? "Del denne siden" : "Share this" %>');
