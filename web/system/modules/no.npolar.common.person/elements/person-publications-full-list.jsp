@@ -78,11 +78,22 @@ final boolean DEBUG = false;
 // Parameters to use in the request to the service:
 //
 Map<String, String[]> params = new HashMap<String, String[]>();
-params.put("q"                  , new String[]{ "" }); // Catch-all query
-params.put("filter-people.email", new String[]{ email }); // Filter by this person's identifier
-params.put("limit"              , new String[]{ "all" }); // Fetch everything
-if (pubTypes != null && !pubTypes.isEmpty())
-    params.put("filter-publication_type", new String[]{ pubTypes });
+// Catch-all query
+params.put(APIService.PARAM_QUERY, new String[]{ "" });
+// Limitless number of results
+params.put(APIService.PARAM_RESULTS_COUNT, new String[]{ "all" });
+// Filter by this person's identifier
+params.put(
+        SearchFilter.PARAM_NAME_PREFIX.concat("people.email"), 
+        new String[]{ email }
+); 
+// Filter by the publication type (if specified)
+if (pubTypes != null && !pubTypes.isEmpty()) {
+    params.put(
+            SearchFilter.PARAM_NAME_PREFIX.concat(Publication.JSON_KEY_TYPE), 
+            new String[]{ pubTypes }
+    );
+}
 //params.put("sort"               , new String[]{ "-published-year" }); // Sort by publish year, descending
 //params.put("sort"               , new String[]{ "-published-year,-published-date" }); // Sort by publish date, descending (and this is the sort parameter for that)
 //params.put("facets"             , new String[]{ "false" }); // No facets 
@@ -96,11 +107,45 @@ if (pubTypes != null && !pubTypes.isEmpty())
 //          - "hidden" parameters (not visible to the user in the URL) - is this the same as "default parameters"?
 //          - unmodifiable parameters (should be unmodifiable) - e.g. format=json
 Map<String, String[]> defaultParams = new HashMap<String, String[]>();
-defaultParams.put("not-draft",              new String[]{ "yes" }); // Don't include drafts ("draft=no" will not work, as entries with a missing "draft" flag will also be included)
-defaultParams.put("filter-state",           new String[]{ "published|accepted" }); // Must be published or accepted
-defaultParams.put("facets",                 new String[]{ "false" }); // No facets
-defaultParams.put("sort",                   new String[]{ "-published_sort" }); // Sort by publish time, descending
-defaultParams.put("fields",                 new String[]{ "id,_id,title,publication_type,state,published_helper,published_sort,volume,issue,suppl,art_no,page_count,journal,conference,pages,people,organisations,isbn,issn,links,comment" }); // Don't include unnecessary fields (currently no syntax to exlude fields, so we need an exhaustive list of the ones we want)
+// Don't include drafts ("draft=no" will not work - entries *missing* "draft" field will also be included)
+defaultParams.put("not-draft", new String[]{ "yes" });
+// Fetch only published or accepted publications
+defaultParams.put( 
+        SearchFilter.PARAM_NAME_PREFIX.concat(Publication.JSON_KEY_STATE), 
+        new String[]{ Publication.JSON_VAL_STATE_PUBLISHED + "|" + Publication.JSON_VAL_STATE_ACCEPTED }
+); 
+// No facets
+defaultParams.put(APIService.PARAM_FACETS, new String[]{ "false" }); 
+// Sort by publish time, descending
+defaultParams.put("sort", new String[]{ "-" + Publication.JSON_KEY_PUB_TIME });
+// Only fetch necessary fields (currently no way to exclude fields, so we must define the ones we want instead)
+defaultParams.put(
+        APIService.PARAM_FIELDS, //"fields",   
+        new String[]{
+            Publication.JSON_KEY_ID 
+            + ",_" + Publication.JSON_KEY_ID 
+            + "," + Publication.JSON_KEY_TITLE
+            + "," + Publication.JSON_KEY_TYPE  
+            + "," + Publication.JSON_KEY_STATE
+            + "," + Publication.JSON_KEY_PUB_ACCURACY 
+            + "," + Publication.JSON_KEY_PUB_TIME 
+            + "," + Publication.JSON_KEY_VOLUME
+            + "," + Publication.JSON_KEY_ISSUE
+            //+ ",suppl" // is this needed?
+            //+ ",art_no" // is this needed?
+            + "," + Publication.JSON_KEY_PAGE_COUNT 
+            + "," + Publication.JSON_KEY_JOURNAL
+            + "," + Publication.JSON_KEY_CONF
+            + "," + Publication.JSON_KEY_PAGES
+            + "," + Publication.JSON_KEY_PEOPLE
+            + "," + Publication.JSON_KEY_ORGS
+            //+ ",isbn" // is this needed?
+            //+ ",issn" // is this needed?
+            + "," + Publication.JSON_KEY_LINKS
+            + ","  + Publication.JSON_KEY_COMMENT
+        });
+
+
 //defaultParams.put("sort",                   new String[]{ "-published-year,-published-date" }); // Sort by publish date, descending (and this is the sort parameter for that)
 //defaultParams.put("q",                      new String[]{ "" }); // Catch-all query (this is set in regular params)
 //defaultParams.put("limit",                  new String[]{ "all" }); // Fetch everything (this is set in regular params)
@@ -141,7 +186,7 @@ if (publications != null && !publications.isEmpty()) {
     ResourceBundle labels = ResourceBundle.getBundle(Labels.getBundleName(), locale);
     //out.println("<h2 class=\"toggletrigger\">" + cms.labelUnicode("label.np.publist.heading") + "</h2>");
     %>
-    <a class="toggletrigger" href="javascript:void(0);"><%= cms.labelUnicode("label.np.publist.heading") %></a>
+    <a class="toggletrigger" tabindex="0"><%= cms.labelUnicode("label.np.publist.heading") %></a>
     <div class="toggletarget" style="display:none;">
     <%
     // Get types of publications
@@ -187,7 +232,7 @@ if (publications != null && !publications.isEmpty()) {
         if (iPubs.hasNext()) {
             int listSize = publications.getListGroup(listType).size();
             %>
-            <h3><%= labels.getString("publication.type." + listType + (listSize > 1 ? ".plural" : "")) + " (" + listSize + ")" %></h3>
+            <h3><%= labels.getString(Labels.PUB_TYPE_PREFIX_0 + listType + (listSize > 1 ? ".plural" : "")) + " (" + listSize + ")" %></h3>
             <!--<h3><%= cms.labelUnicode("label.np.pubtype." + listType) + " (" + publications.getListGroup(listType).size() + ")" %></h3>-->
             <ul class="fullwidth indent line-items">
             <%
