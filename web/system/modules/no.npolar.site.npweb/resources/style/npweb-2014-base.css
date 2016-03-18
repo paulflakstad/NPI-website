@@ -2159,6 +2159,9 @@ a#nav_toggle:hover {
     width:100%;
 }
 */
+.portal-box .event--promoted {
+    background-color:#ff7;
+}
 
 
 /* 3-column page layout */
