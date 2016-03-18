@@ -1,0 +1,366 @@
+
+body {  
+}
+
+/* Reset common elements */
+body, 
+html,
+figure, 
+div,
+section,
+article, 
+aside, 
+header,
+footer,
+img,
+h1,h2,h3,h4,h5,h6,
+.cta-huge {
+    display:block;
+    padding:0;
+    margin:0;
+    -moz-box-sizing:border-box;
+    -webkit-box-sizing:border-box;
+    box-sizing:border-box;
+    max-width:100%;
+}
+/* clearfixer */
+.clearfix:after,
+.card:after,
+.boxes:after,
+.layout-group:after {
+    content:" ";
+    clear:both;
+    display:block;
+    height:0;
+    visibility:hidden;
+    zoom:1;
+}
+
+
+
+
+
+
+/**
+ * BEGIN
+ */
+
+.layout-group,
+.layout-group *,
+.layout-group .cta {
+    -moz-box-sizing:border-box;
+    -webkit-box-sizing:border-box;
+    box-sizing:border-box;
+}
+.layout-row-start { /* Used on children of .layout-combo, to manually indicate "start of new layout row" (where necessary) */
+	clear:left !important;
+}
+.layout-box-text,
+.card-text,
+.card__content {
+	padding:0.5rem;
+	overflow:auto;
+}
+.card-link,
+.card-heading {
+	display:block;
+	margin:0;
+}
+.card-image-wrapper img {
+	width:100%;
+}
+.layout-group .cta {
+    clear:both;
+    float:none;
+    width:100%;
+    margin:1em 0;
+}
+
+.image--square {
+	width:100%;
+	padding-bottom:100%;
+	overflow:hidden;
+	position:relative;
+}
+.image--square img {
+	position:absolute;
+	width:auto;
+	min-width:100%;
+	min-height:100%;
+	max-width:none;
+}
+.round {
+	border-radius:50%;
+}
+.card-image-wrapper .image--square.round {
+	width:75%;
+	padding-bottom:75%;
+	margin:5% auto;*/
+}
+
+/* TEST START */
+.list--ctas {
+	text-align:center;
+	padding:2em 0;
+}
+.card {
+	/*background-color:#DEEBFA;*/
+	margin:1px;
+}
+.layout-box.card {
+	margin:0;
+	border:1px solid transparent;
+}
+.card__media img,
+.card__media .media {
+	width:100%;
+}
+.card--alt {
+	padding:1rem;
+}
+.card--alt .card__media,
+.card--symbolic .card__media {
+	width:120px;
+	padding-bottom:120px;
+	overflow:hidden;
+	position:relative;
+	border-radius:50%;
+	margin:0 auto;
+	float:none;
+}
+.card--symbolic .card__media {
+	/*width:4em;
+	padding-bottom:4em;*/
+	width:40%;
+	padding-bottom:40%;
+	margin-bottom:0.4em;
+}
+.card--alt .card__media img,
+.card--symbolic .card__media img {
+	position:absolute;
+	/*width:auto;*/
+	min-width:100%;
+	min-height:100%;
+	max-width:none;
+}
+.card--alt .card__media img.image--landscape,
+.card--symbolic .card__media img.image--landscape {
+    height:100%;
+    width:auto;
+    margin-left:-15%;
+}
+.card--symbolic {
+	padding:1em 0;
+}
+.card--symbolic .card__content {
+	padding-top:0;
+}
+.card--symbolic .card__content > p {
+	color:#555;
+    color: rgba(0, 0, 0, 0.7);
+    font-size: small;
+}
+._bg-dark .card--symbolic .card__content > p {
+	color:#ddd;
+    color: rgba(255, 255, 255, 0.7);
+}
+.card__icon {
+	font-size:2.4em;
+}
+.card--h {
+	text-align:left;
+}
+.card--h .card__icon:before {
+	vertical-align:top;
+}
+.card--symbolic,
+.card--alt .card__title,
+.card--alt .card__details {
+	text-align:center;
+}
+.card--alt .card__details {
+	font-size:0.7em;
+}
+.card--alt .card__content {
+	float:none;
+}
+.card__content p {
+	margin:0.3em 0;
+}
+
+/* TEST END */
+
+
+@media (min-width: 400px) {
+.layout-group.double .layout-box,
+.layout-group.quadruple .layout-box,
+.layout-group.quadruple .layout-box {
+	width:50%;
+	float:left;
+}
+.layout-group.triple .layout-box {
+	width:33.333%;
+	float:left;
+}
+.layout-group.triple .span2 {
+	width:66.666%;
+	float:left;
+}
+
+.layout-group.triple > .layout-box:nth-of-type(3n+4), /* 4, 7, 10, ...*/
+.layout-group.double > .layout-box:nth-of-type(2n+3), /* 3, 5, 7, 9, ... */
+.layout-group.quadruple > .layout-box:nth-of-type(2n+3) { /* 3, 5, 7, 9, ... */
+	clear:left;
+}
+.layout-group.layout-combo > .layout-box,
+.layout-group.double.layout-combo > .layout-box, 
+.layout-group.triple.layout-combo > .layout-box, 
+.layout-group.quadruple.layout-combo > .layout-box {
+	clear:none;
+}
+
+/* Combos and nesting */
+.layout-group.single .layout-box,
+.layout-group.double .span2,
+.layout-group.double .layout-box.span2,
+.layout-group.triple .span3,
+.layout-group.triple .layout-box.span3,
+.layout-group.quadruple .span3,
+.layout-group.quadruple .span4,
+.layout-group.quadruple .layout-box.span4,
+.layout-group.double .double .layout-box,
+.layout-group.double .triple .layout-box,
+.layout-group.double .single .layout-box,
+.layout-group.triple .double .layout-box,
+.layout-group.triple .triple .layout-box,
+.layout-group.triple .triple .layout-box.span2,
+.layout-group.triple .single .layout-box {
+	width:100%;
+}
+.layout-group.triple .span2 .double .layout-box,
+.layout-group.quadruple .layout-box,
+.layout-group.quadruple .span2,
+.layout-group.quadruple .span3 {
+	width:50%;
+}
+.layout-group.quadruple .span1.force-width {
+	width:25%;
+}
+.layout-group.triple .layout-box .single .triple .layout-box,
+.layout-group.triple .span2 .triple .layout-box,
+.layout-group.triple .span1.force-width {
+	width:33.3333%;
+}
+.layout-group.triple .layout-box .single .triple .layout-box.span2,
+.layout-group.triple .span2 .triple .layout-box.span2 {
+	width:66.6666%;
+}
+.layout-group.quadruple .span3.force-width {
+	width:75%;
+}
+/*
+.layout-group.quadruple .span3,
+.layout-group.quadruple .layout-box.span3 {
+	width:75%;
+}*/
+}
+
+
+
+
+
+@media (min-width: 800px) {
+.layout-group.double .layout-box {
+	width:50%;
+	/*float:left;*/
+}
+.card-h .card-image-wrapper,
+.card--h .card__media,
+.layout-group.triple .layout-box {
+	width:33.333%;
+	float:left;
+}
+.card--h.card--symbolic .card__media {
+	/*width:auto;*/
+}
+.card--h .card__icon,
+.card--h .card__media {
+	float:left;
+}
+.card--h.card--alt .card__media { /* alternative (round image with fixed size) */
+	width:120px;
+	margin:0;
+}
+.layout-group.triple .layout-box.span2 {
+	width:66.666%;
+	float:left;
+}
+
+.card-h .card-text,
+.card--h .card__content {
+	overflow:auto; /* positions this as a (non-floated) column that spans the space that's left after floats have been positioned. (no floats = use the entire width) */
+}
+.card-h .card-text p,
+.card--h .card__content p,
+.card__details-link {
+	margin:0.3em 0;
+}
+.card--symbolic.card--h,
+.card--alt .card__title,
+.card--alt .card__details {
+	text-align:left;
+}
+/*.card--alt .card__details-links {
+	position:absolute;
+	left:1rem;
+	top: 190px;
+	width:120px;
+	text-align:center;
+}*/
+.card--h.card--alt .card__content {
+	float:none;
+	width:auto;
+	overflow:auto;
+}
+.card-h .card-text,
+.card--h .card__content {
+	padding-top:0;
+	padding-bottom:0;
+}
+.layout-group.quadruple .layout-box {
+	width:25%;
+	/*float:left;*/
+}
+
+/* Nesting */
+.layout-group.quadruple .span2,
+.layout-group.double .double .layout-box {
+	width:50%;
+}
+
+.layout-group.double .triple .layout-box {
+	width:33.3333%;
+}
+.layout-group.double .triple .layout-box.span2 {
+	width:66.6666%;
+}
+.layout-group.triple .layout-box .single .triple .layout-box,
+.layout-group.triple .layout-box .single .triple .layout-box.span2 {
+	/*width:100%;*/
+}
+
+
+.layout-group.quadruple > .layout-box:nth-of-type(2n+3) { /* 3, 5, 7, 9, ... */
+	clear:none;
+}
+.layout-group.quadruple > .layout-box:nth-of-type(5n) { /* 5, 10, 15, ... */
+	clear:left;
+}
+
+.layout-group.layout-combo > .layout-box,
+.layout-group.double.layout-combo > .layout-box, 
+.layout-group.triple.layout-combo > .layout-box, 
+.layout-group.quadruple.layout-combo > .layout-box {
+	clear:none;
+}
+}
