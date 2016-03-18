@@ -2317,6 +2317,7 @@ ul.layout-group {
 .filters-container .span1,
 #filters .span1 {
     padding: 0.5em;
+    box-sizing: border-box;
 }
 .filters-container .filters-heading,
 #filters .filters-heading {
@@ -2331,6 +2332,7 @@ ul.layout-group {
     color: #fff;
     font-size: larger;
     font-weight: bold;
+    margin-bottom:0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.3);
 }
 .filters-container .filter-widget-heading,
@@ -2420,15 +2422,15 @@ ul.layout-group {
     content: "×";
     display: inline-block;
     float: right;
-    width: 1em;
-    height: 1em;
+    width: 1.4rem;
+    height: 1.4rem;
     color: #fff;
-    /*background-color: rgba(0, 0, 0, 0.2);*/
+    /* background-color: rgba(0, 0, 0, 0.2); */
     font-weight: bold;
     line-height: 1em;
     text-align: center;
     border-radius: 50%;
-    font-size: 1.6em;
+    font-size: 1.1rem;
 }
 .filters-container li a .remove-filter,
 #filters li a .remove-filter ,
