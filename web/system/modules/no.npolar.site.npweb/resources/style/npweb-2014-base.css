@@ -2330,6 +2330,12 @@ ul.layout-group {
     font-weight: bold;
     border-bottom: 1px solid rgba(255, 255, 255, 0.3);
 }
+.filters-container .filter-widget-heading,
+#filters .filter-widget-heading {
+    color: rgba(132, 28, 5, 1);
+    background: transparent;
+    border: none;
+}
 .filters-container .filters-heading .filter__num-matches,
 #filters .filters-heading .filter__num-matches,
 .filter--active .filter__num-matches,
@@ -2551,6 +2557,9 @@ ul.layout-group {
 .filters-container label,
 #filters label {
     text-shadow:none;
+}
+.noUi-horizontal .noUi-handle {
+    max-width:none;
 }
 .facets-set {
     text-align:left;
