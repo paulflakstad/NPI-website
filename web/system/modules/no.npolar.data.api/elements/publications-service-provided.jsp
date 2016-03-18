@@ -3,13 +3,10 @@
     Description: Lists publications using the data.npolar.no API.
     Created on : Nov 1, 2013, 1:11:42 PM
     Author     : flakstad
---%><%@page import="org.opencms.file.CmsResource"%>
-<%@page import="org.opencms.file.CmsProject"%>
-<%@page import="org.opencms.mail.CmsSimpleMail"%>
-<%@page import="org.apache.commons.httpclient.params.HttpParams"%>
-<%@page import="no.npolar.data.api.*,
+--%><%@page import="no.npolar.data.api.*,
             no.npolar.data.api.util.APIUtil,
             no.npolar.util.CmsAgent,
+            org.apache.commons.httpclient.params.HttpParams,
             org.apache.commons.lang.StringUtils,
             org.apache.commons.lang.StringEscapeUtils,
             org.markdown4j.Markdown4jProcessor,
@@ -39,10 +36,13 @@
             java.util.Iterator,
             java.util.ResourceBundle,
             java.text.SimpleDateFormat,
+            org.opencms.file.CmsObject,
+            org.opencms.file.CmsProject,
+            org.opencms.file.CmsResource,
             org.opencms.json.JSONArray,
             org.opencms.json.JSONObject,
             org.opencms.json.JSONException,
-            org.opencms.file.CmsObject"
+            org.opencms.mail.CmsSimpleMail"
             contentType="text/html" 
             pageEncoding="UTF-8" 
             session="true" 
@@ -65,10 +65,10 @@ static List<String> sw = new ArrayList<String>();
  */
 public static Map<String, String> getDefaultParamMap() {
     if (dp.isEmpty()) {
-        dp.put("sort", "-published_sort");
+        dp.put(APIService.PARAM_SORT_BY, APIService.PARAM_VAL_PREFIX_REVERSE+Publication.JSON_KEY_PUB_TIME);
         //dp.put("sort", "-publication_year");
-        dp.put("format", "json");
-        dp.put("filter-draft", "no");
+        dp.put(APIService.PARAM_FORMAT, APIService.PARAM_VAL_FORMAT_JSON);
+        dp.put(SearchFilter.PARAM_NAME_PREFIX+Publication.JSON_KEY_DRAFT, Publication.JSON_VAL_DRAFT_FALSE);
     }
     return dp;
 }
@@ -100,7 +100,7 @@ public static String getDynamicParams(CmsAgent cms, boolean includeStart) {
         Iterator<String> pNames = pm.keySet().iterator();
         while (pNames.hasNext()) {
             String pName = pNames.next();
-            if ("start".equals(pName) && !includeStart
+            if (APIService.PARAM_START_AT.equals(pName) && !includeStart
                     || getDefaultParamMap().containsKey(pName))
                 continue;
             String pValue = "";
@@ -109,21 +109,21 @@ public static String getDynamicParams(CmsAgent cms, boolean includeStart) {
         }
     }
     else {
-        String start = cms.getRequest().getParameter("start");
+        String start = cms.getRequest().getParameter(APIService.PARAM_START_AT);
 
         // Query
         try {
-            s += "q=" + URLEncoder.encode(getParameter(cms, "q"), "utf-8");
+            s += APIService.PARAM_QUERY + "=" + URLEncoder.encode(getParameter(cms, APIService.PARAM_QUERY), "utf-8");
         } catch (Exception e) {
-            s += "q=" + getParameter(cms, "q");
+            s += APIService.PARAM_QUERY + "=" + getParameter(cms, APIService.PARAM_QUERY);
         }
 
         // Items per page
-        s += "&limit=" + getLimit(cms);
+        s += "&" + APIService.PARAM_RESULTS_COUNT + "=" + getLimit(cms);
 
         // Start index
         if (includeStart && (start != null && !start.isEmpty()))
-            s += "&start=" + start;
+            s += "&" + APIService.PARAM_START_AT + "=" + start;
     }
     return s;
 }
@@ -141,7 +141,7 @@ public static String getParameter(CmsAgent cms, String paramName) {
  * Gets the current limit value, with fallback to default value.
  */
 public static String getLimit(CmsAgent cms) {
-    return getParameter(cms, "limit").isEmpty() ? "25" : getParameter(cms, "limit");
+    return getParameter(cms, APIService.PARAM_RESULTS_COUNT).isEmpty() ? "25" : getParameter(cms, APIService.PARAM_RESULTS_COUNT);
 }
 
 /** 
@@ -157,6 +157,40 @@ public static String getLimit(CmsAgent cms) {
 
 public static String markdownToHtml(String s) {
     try { return new Markdown4jProcessor().process(s); } catch (Exception e) { return s + "\n<!-- Could not process this as markdown -->"; }
+}
+
+public static boolean isInteger(String s) {
+    if (s == null || s.isEmpty())
+        return false;
+    try { Integer.parseInt(s); } catch(NumberFormatException e) { return false; }
+    return true;
+}
+
+public static String normalizeTimestampFilterValue(int yearLo, int yearHi) {
+    String yearRangeFilterVal = "";
+    try {
+        if (yearLo > -1) {
+            yearRangeFilterVal += yearLo + "-01-01T00:00:00Z" + (yearHi > -1 ? ".." : ""); 
+        }
+        if (yearHi > -1) {
+            yearRangeFilterVal += (yearLo < 0 ? yearHi + "-01-01T00:00:00Z.." : "") + yearHi + "-12-31T23:59:59Z";
+        }
+    } catch (Exception e) {}
+    return yearRangeFilterVal;
+}
+
+public static Map<String, String[]> getFilterParams(Map<String, String[]> parameters) {
+    Map<String, String[]> params = new HashMap<String, String[]>(parameters);
+    List<String> keysToRemove = new ArrayList<String>();
+    for (String key : params.keySet()) {
+        if (!key.startsWith(SearchFilter.PARAM_NAME_PREFIX)) {
+            keysToRemove.add(key);
+        }
+    }
+    for (String key : keysToRemove) {
+        params.remove(key);
+    }
+    return params;
 }
 %><%
 
@@ -181,6 +215,43 @@ final String LABEL_MATCHES = cms.label("label.np.matches");
 final String LABEL_FILTERS = cms.label("label.np.filters");
 
 final boolean EDITABLE_TEMPLATE = false;
+
+
+final String YLOW = "ylow";
+final String YHIGH = "yhigh";
+
+// Year parameters 
+int ylow = -1;
+int yhigh = -1;
+// Update range years from params, if needed
+if (isInteger(request.getParameter(YLOW))) {
+    ylow = Integer.valueOf(request.getParameter(YLOW)).intValue();
+}
+if (isInteger(request.getParameter(YHIGH))) {
+    yhigh = Integer.valueOf(request.getParameter(YHIGH)).intValue();
+}
+
+// 3 calendar instances: 
+// - today
+// - range start
+// - range end
+Calendar todayCal = new GregorianCalendar();
+/*
+Calendar ylowCal = new GregorianCalendar();
+ylowCal.clear();
+if (ylow > -1) {
+    ylowCal.set(ylow, Calendar.JANUARY, 1, 0, 0, 0);
+} else {
+    ylowCal.set(1, Calendar.JANUARY, 1, 0, 0, 0);
+}
+
+Calendar yhighCal = new GregorianCalendar();
+yhighCal.clear();
+if (yhigh > -1) {
+    yhighCal.set(yhigh, Calendar.DECEMBER, 31, 23, 59, 59);
+} else {
+    yhighCal.set(2999, Calendar.DECEMBER, 31, 23, 59, 59);
+}*/
 /*
 final String LABEL_ORG_COMM                 = loc.equalsIgnoreCase("no") ? "Kommunikasjon" : "Communications";
 final String LABEL_ORG_COMM_INFO            = loc.equalsIgnoreCase("no") ? "Informasjon" : "Information";
@@ -341,7 +412,7 @@ final String ERROR_MSG_NO_SERVICE = loc.equalsIgnoreCase("no") ?
             + "<p>Please try reloading this page in a little while.</p>"
             + "<p style=\"font-style:italic;\">If the error persist, we would appreciate it if you could take the time to <a href=\"mailto:web@npolar.no\">send us a short note about this</a>.</p>");
 try {
-    URL url = new URL(pubService.getServiceBaseURL().concat("?q="));
+    URL url = new URL(pubService.getServiceBaseURL().concat("?" + APIService.PARAM_QUERY + "="));
     // set the connection timeout value to 30 seconds (30000 milliseconds)
     //final HttpParams httpParams = new BasicHttpParams();
     //HttpConnectionParams.setConnectionTimeout(httpParams, 30000);
@@ -385,30 +456,56 @@ try {
 
 // Set new defaults (hidden / not overrideable parameters), overriding the standard defaults
 Map<String, String[]> defaultParams = new HashMap<String, String[]>();
-defaultParams.put("not-draft", new String[]{ "yes" }); // Don't include drafts
-//defaultParams.put("filter-draft", new String[]{ "no" }); // Don't include drafts
-defaultParams.put("filter-state", new String[]{ Publication.JSON_VAL_STATE_PUBLISHED + "|" + Publication.JSON_VAL_STATE_ACCEPTED }); // Require state: published or accepted
+// Don't include drafts
+defaultParams.put(
+        APIService.PARAM_MODIFIER_NOT+Publication.JSON_KEY_DRAFT, 
+        new String[]{ Publication.JSON_VAL_DRAFT_TRUE }
+); 
+// Require state: published or accepted
+defaultParams.put(
+        SearchFilter.PARAM_NAME_PREFIX+Publication.JSON_KEY_STATE, 
+        new String[]{ Publication.JSON_VAL_STATE_PUBLISHED + "|" + Publication.JSON_VAL_STATE_ACCEPTED }
+); 
 //defaultParams.put("filter-state", new String[]{ "published" }); // Require state: published
 //defaultParams.put("facets", new String[]{ "topics,category,publication_type,research_stations,locations" }); // This is why we're overriding the regular defaults; we want full filter control
 //defaultParams.put("facets", new String[]{ "topics,category,publication_type,research_stations,area" });
-defaultParams.put("facets", new String[]{ "topics,category,publication_type,research_stations,programme" });
-//defaultParams.put("sort", new String[]{ "-published-year,-published-date" });
+defaultParams.put(APIService.PARAM_FACETS, 
+        new String[]{ 
+            Publication.JSON_KEY_TOPICS // "topics"
+            //+ ",category"
+            + "," + Publication.JSON_KEY_TYPE // "publication_type"
+            + "," + Publication.JSON_KEY_STATIONS // "research_stations"
+            + "," + Publication.JSON_KEY_PROGRAMMES // "programme"
+        }
+);
 defaultParams.put("size-facet", new String[]{ "9999" }); // Get all possible filters
-defaultParams.put("filter-organisations.id", new String[] { Publication.JSON_VAL_ORG_NPI }); // Filter on checked "Yes, publication is affiliated to NP activity" (require this box was checked)
+// Filter on "Yes, publication is affiliated to NPI activity" (require this box was checked)
+defaultParams.put(
+        SearchFilter.PARAM_NAME_PREFIX+Publication.JSON_KEY_ORGS_ID,
+        new String[] { Publication.JSON_VAL_ORG_NPI }
+); 
 pubService.setDefaultParameters(defaultParams);
 
 try {
     // Overrideable parameters
     Map<String, String[]> params = new HashMap<String, String[]>();
-    String paramQuery = cms.getRequest().getParameter("q");
+    String paramQuery = cms.getRequest().getParameter(APIService.PARAM_QUERY);
+    // Make sorting overrideable?
     if (paramQuery == null || paramQuery.isEmpty()) {
-        params.put("sort", new String[]{ "-published_sort" }); // Make this overrideable
-        //params.put("sort", new String[]{ "-published-year,-published-date" }); // Make this overrideable
+        params.put(
+                APIService.PARAM_SORT_BY, 
+                new String[]{ APIService.PARAM_VAL_PREFIX_REVERSE+Publication.JSON_KEY_PUB_TIME }
+        );
     } else {
-        // Use default sorting (score)
+        // Use default sorting
     }
     
-    String yearFilterVal = "";
+    if (ylow > -1 || yhigh > -1) {
+        params.put(
+                SearchFilter.PARAM_NAME_PREFIX+Publication.JSON_KEY_PUB_TIME, 
+                new String[] { normalizeTimestampFilterValue(ylow, yhigh) }
+        );
+    }
             
     params.putAll(request.getParameterMap());
     
@@ -419,28 +516,28 @@ try {
         //*
         String[] val = params.get(key);
         
-        // Get the year filter value
-        if (key.equals(SearchFilter.PARAM_NAME_PREFIX + Publication.JSON_KEY_PUB_TIME)) {
+        // Is it a filter?
+        if (key.startsWith(SearchFilter.PARAM_NAME_PREFIX)) {
             try {
-                yearFilterVal = val[0];
+                
             } catch (Exception e) {
-                // ???
             }
         }
-        // Encode values
+        // Encode is necessary to get predictable results
         for (int iVal = 0; iVal < val.length; iVal++) {
             val[iVal] = URLEncoder.encode(val[iVal], "utf-8");
         }
         params.put(key, val);
         //*/
-    }       
+    }
     
     
     
-    if (!params.containsKey("q"))
-        params.put("q", new String[]{ "" });
-    //else
-    //    params.put("q", new String[] { URLEncoder.encode(params.get("q")[0], "utf-8") });
+    if (!params.containsKey(APIService.PARAM_QUERY)) {
+        params.put(APIService.PARAM_QUERY, new String[]{ "" });
+    } //else {
+        //params.put("q", new String[] { URLEncoder.encode(params.get("q")[0], "utf-8") });
+    //}
     
     List<Publication> pubList = pubService.getPublicationList(params);
     //out.println("<h1>Matched " + pubService.getTotalResults() + " publications (" + pubList.size() + " per page), " 
@@ -453,12 +550,18 @@ try {
     // Get the collection of filter sets
     SearchFilterSets filterSets = pubService.getFilterSets();
     
-    // Remove the "year-published_sort" filter set (the API service will always 
+    // Remove the "year-published" filter set (the API service will always 
     // return this filter set, but we don't want users to see it)
-    filterSets.removeByName("year-published_sort");
+    filterSets.removeByName("year-published"); // ToDo: Use this to determine the min/max values in the publish year selector
+    //filterSets.removeByName("category");
     
     // Adjust the order of the  filter sets
-    filterSets.order( new String[] { "topics","publication_type","research_stations","programme" } );
+    filterSets.order(new String[] { 
+        Publication.JSON_KEY_TOPICS // topics
+        ,Publication.JSON_KEY_TYPE //"publication_type"
+        ,Publication.JSON_KEY_STATIONS //"research_stations"
+        ,Publication.JSON_KEY_PROGRAMMES //"programme" 
+    });
     
     String lastSearchPhrase = pubService.getLastSearchPhrase();
     int totalResults = pubService.getTotalResults();
@@ -470,44 +573,65 @@ try {
 
         // Query 
         %>
-        <div class="searchbox-big">
+        <div class="searchbox-big search-widget search-widget--filterable">
             <h2><%= LABEL_SEARCHBOX_HEADING %></h2>
+            <p class="smalltext"><%= disclaimer %></p>
             
             <form action="<%= cms.link(requestFileUri) %>" method="get">
-                <input name="q" type="search" value="<%= lastSearchPhrase == null ? "" : CmsStringUtil.escapeHtml(lastSearchPhrase) %>" />
-                <input name="start" type="hidden" value="0" />
-                <input type="submit" value="<%= LABEL_SEARCH %>" />
-                <div class="clearfix">
-                <label for="pubyear"><%= LABEL_YEAR_SELECT %>: </label>
-                <!--<select name="filter-published-year" onchange="submit()" id="pubyear">-->
-                <select name="<%= SearchFilter.PARAM_NAME_PREFIX + Publication.JSON_KEY_PUB_TIME %>" onchange="submit()" id="pubyear">
-                    <option value=""><%= LABEL_YEAR_SELECT_OPT_ALL %></option>
-                    <%
-                    //*
-                    for (int yOpt = new GregorianCalendar().get(Calendar.YEAR); yOpt >= 1970; yOpt--) {
-                        String paramYearValue = "" + yOpt + "-01-01T00:00:00Z.." + yOpt + "-12-31T23:59:59Z";
-                        out.println("<option value=\"" + paramYearValue + "\"" 
-                                    + (paramYearValue.equals(yearFilterVal) ? " selected=\"selected\"" : "") + ">" 
-                                        + yOpt
-                                    //+ (String.valueOf(yOpt).equals(yearFilterVal) ? " selected=\"selected\"" : "") + ">" 
-                                    //    + yOpt 
-                                    
-                                + "</option>");
+                <input name="<%= APIService.PARAM_QUERY %>" type="search" value="<%= lastSearchPhrase == null ? "" : CmsStringUtil.escapeHtml(lastSearchPhrase) %>" />
+                <input name="<%= APIService.PARAM_START_AT %>" type="hidden" value="0" />
+                <%
+                // If we don't want any existing "regular" filters to reset upon 
+                // submitting the form (i.e. when selecting a year range), they 
+                // must be added as hidden inputs
+                Map<String, String[]> activeFilters = getFilterParams(params);
+                if (!activeFilters.isEmpty()) {
+                    for (String key : activeFilters.keySet()) {
+                        if (key.equals(SearchFilter.PARAM_NAME_PREFIX+Publication.JSON_KEY_PUB_TIME)) {
+                            continue;
+                        } 
+                        
+                        String[] val = activeFilters.get(key);
+                        for (int iVal = 0; iVal < val.length; iVal++) {
+                            %>
+                            <input name="<%= key %>" type="hidden" value="<%= URLDecoder.decode(val[iVal], "utf-8") %>" />
+                            <%
+                        }
                     }
-                    //*/
-                    %>
-                </select>
-                <p class="smalltext"><%= disclaimer %></p>
-                </div>
+                } else {
+                    %><!-- No regular filters active --><%
+                }
+                %>
+                <input class="cta cta--search-submit" type="submit" value="<%= LABEL_SEARCH %>" />
             
-            <div id="filters-wrap"> 
-                <a id="filters-toggler" onclick="$('#filters').slideToggle();" href="javascript:void(0);"><%= LABEL_FILTERS %></a>
-                <div id="filters">
+            <!--<div id="filters-wrap">-->
+            <div class="filters-wrapper">
+                <a class="cta cta--filters-toggle" id="filters-toggler" onclick="$('#filters').slideToggle();" tabindex="0"><%= LABEL_FILTERS %></a>
+                
+                <div id="filters" class="filters-container">
+                    
+                    <div class="layout-row single clearfix" style="text-align:center;">
+                        <div class="boxes">
+                            <div class="span1">
+                                <div class="filter-widget">
+                                    <h3 class="filters-heading filter-widget-heading"><%= LABEL_YEAR_SELECT %></h3>
+                                    <input type="number" value="<%= ylow > -1 ? ylow : "" %>" name="<%= YLOW %>" id="range-year-low" style="padding:0.5em; border:1px solid #ddd; width:4em; font-size:1.25em;" /> 
+                                    – <input type="number" value="<%= yhigh > -1 ? yhigh : "" %>" name="<%= YHIGH %>" id="range-year-high" style="padding:0.5em; border:1px solid #ddd; width:4em; font-size:1.25em;" />
+                                    <div id="range-slider" style="margin: 2em 40px 0;"></div> 
+                                    <br />
+                                    <input type="button" class="cta cta--filters-toggle" value="Oppdater årstall" style="margin-top:1em;" onclick="submit()" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <%
                     if (!filterSets.isEmpty()) {
                         Iterator<SearchFilterSet> iFilterSets = filterSets.iterator();
-                        out.println("<section class=\"layout-row quadruple clearfix\">");
-                        out.println("<div class=\"boxes\">");
+                        %>
+                        <section class="layout-row quadruple clearfix">
+                        <div class="boxes">
+                        <%
                         while (iFilterSets.hasNext()) {
                             // Get the filter set ...
                             SearchFilterSet filterSet = iFilterSets.next();
@@ -516,49 +640,76 @@ try {
                             
                             if (filters != null) {
                                 // Filter set has filters
-                                out.println("<div class=\"span1\">");
-                                out.print("<h3 class=\"filters-heading\" style=\"font-size:1.5em;\">");
-                                out.print(filterSet.getTitle(locale));
-                                /*try {
-                                    out.print(labels.getString(normalize(filterSet.getName())));
-                                } catch (Exception transE) {
-                                    out.print(normalize(filterSet.getName()));
-                                }*/
-                                out.print(" (" + filterSet.size() + ")");
-                                //out.print(" R=" + filterSet.getRelevancy());
-                                //out.print(" N=" + filterSet.getName());
-                                out.println("</h3>");
-                                out.println("<ul>");
-                                try {
-                                    Iterator<SearchFilter> iFilters = filters.iterator();
-                                    while (iFilters.hasNext()) {
-                                        SearchFilter filter = iFilters.next();
-                                        String filterText = filter.getTerm();
+                                %>
+                                <div class="span1">
+                                    <h3 class="filters-heading">
+                                        <%= filterSet.getTitle(locale) %>
+                                        <span class="filter__num-matches"> (<%= filterSet.size() %>)</span>
+                                    </h3>
+                                    <ul>
+                                        <%
+                                        /*try {
+                                            out.print(labels.getString(normalize(filterSet.getName())));
+                                        } catch (Exception transE) {
+                                            out.print(normalize(filterSet.getName()));
+                                        }*/
+                                        //out.print(" R=" + filterSet.getRelevancy());
+                                        //out.print(" N=" + filterSet.getName());
                                         try {
-                                            filterText = labels.getString(filterSet.labelKeyFor(filter)); //labels.getString(normalize(filterSet.getName()) + "." + filter.getTerm());
-                                        } catch (Exception skip) {
-                                            //normalize(filterSet.getName() + "." + filter.getTerm()); // HACK :-O
+                                            Iterator<SearchFilter> iFilters = filters.iterator();
+                                            while (iFilters.hasNext()) {
+                                                SearchFilter filter = iFilters.next();
+                                                String filterText = filter.getTerm();
+                                                try {
+                                                    filterText = labels.getString(filterSet.labelKeyFor(filter)); //labels.getString(normalize(filterSet.getName()) + "." + filter.getTerm());
+                                                } catch (Exception skip) {
+                                                    //normalize(filterSet.getName() + "." + filter.getTerm()); // HACK :-O
+                                                }
+                                                %>
+                                                <li>
+                                                <%
+                                                out.println("<a href=\"" + cms.link(requestFileUri + "?" + CmsStringUtil.escapeHtml(filter.getUrlPartParameters())) + "\">" 
+                                                                    + (filter.isActive() ? "<span style=\"background:red; border-radius:3px; color:white; padding:0 0.3em;\" class=\"remove-filter\">X</span> " : "")
+                                                                    + filterText
+                                                                    + "<span class=\"filter__num-matches\"> (" + filter.getCount() + ")</span>"
+                                                                + "</a>");
+                                                %>
+                                                </li>
+                                                <%
+                                            }
+                                        } catch (Exception filterE) {
+                                            out.println("<!-- " + filterE.getMessage() + " -->");
                                         }
-                                        out.println("<li><a href=\"" + cms.link(requestFileUri + "?" + CmsStringUtil.escapeHtml(filter.getUrlPartParameters())) + "\">" 
-                                                            + (filter.isActive() ? "<span style=\"background:red; border-radius:3px; color:white; padding:0 0.3em;\" class=\"remove-filter\">X</span> " : "")
-                                                            + filterText
-                                                            + " (" + filter.getCount() + ")"
-                                                        + "</a></li>");
-                                    }
-                                } catch (Exception filterE) {
-                                    out.println("<!-- " + filterE.getMessage() + " -->");
-                                }
-                                out.println("</ul>");
-                                out.println("</div>");
+                                        %>
+                                    </ul>
+                                </div>
+                                <%
                             }
                         }
-                        out.println("<div class=\"span1\">");
+                        // If year filtering is active, we need to make sure it's picked up by the javascript
+                        if (ylow > -1 || yhigh > -1) {
+                            Map<String, String[]> paramsTemp = new HashMap<String, String[]>(params);
+                            paramsTemp.remove(YLOW);
+                            paramsTemp.remove(YHIGH);
+                            paramsTemp.remove(SearchFilter.PARAM_NAME_PREFIX+Publication.JSON_KEY_PUB_TIME);
+                            String yearRemoveLinkUrl = CmsRequestUtil.appendParameters(cms.link(requestFileUri), paramsTemp, false);
+                            String yearRemoveLinkText = (ylow > -1 ? String.valueOf(ylow).concat("&ndash;").concat(yhigh > -1 ? "" : String.valueOf(ylow)) : "") 
+                                                        + (yhigh > -1 ? String.valueOf(yhigh).concat( ylow > -1 ? "" : "&ndash".concat(String.valueOf(yhigh)) ) : "");
+                            %>
+                            <div class="span1" style="display:none;">
+                                <h3 class="filters-heading">
+                                    <%= LABEL_YEAR_SELECT %>
+                                </h3>
+                                <ul>
+                                    <li><a class="filter--active" href="<%= yearRemoveLinkUrl %>"><%= yearRemoveLinkText %></a></li>
+                                </ul>
+                            </div>
+                            <%
+                        }
                         %>
-                        
+                        </div>
+                        </section>
                         <%
-                        out.println("</div>");
-                        out.println("</div>");
-                        out.println("</section>");
                     }
                     //out.println(getFacets(cms, json.getJSONArray("facets")));
                     %>
@@ -584,6 +735,7 @@ try {
         <h2 style="color:#999; border-bottom:1px solid #eee;">
             <span id="totalResultsCount"><%= totalResults %></span> <%= LABEL_MATCHES.toLowerCase() %>
         </h2>
+        <div id="filters-details"></div>
 
         <% if (!ONLINE) { %>
         <div id="admin-msg" style="margin:1em 0; background: #eee; color: #444; padding:1em; font-family: monospace; font-size:1.2em;"></div>
@@ -706,12 +858,64 @@ try {
 %>
 
 <%
-if (!pubService.isUserFiltered()) {
+if (true) {//(!pubService.isUserFiltered()) {
 %>
 <script type="text/javascript">
-    $("#filters").hide();
+    //$("#filters").hide();
+    $('input[type=number].input-year').attr({ max:'<%= todayCal.get(Calendar.YEAR) %>', min:'1970'});
+    if ($('#range-slider').length > 0) {
+        var rangeSlider = document.getElementById("range-slider");
+        $('head').append('<link rel="stylesheet" type="text/css" href="<%= cms.link("/system/modules/no.npolar.common.jquery/resources/nouislider.css") %>" />');
+        $.getScript('<%= cms.link("/system/modules/no.npolar.common.jquery/resources/nouislider.min.js") %>', function() {
+            noUiSlider.create(rangeSlider, {
+                range: {
+                    'min': 1970,
+                    'max': <%= todayCal.get(Calendar.YEAR) %>
+                }
+                ,start: [<%= ylow > -1 ? ylow : "1970" %>,<%= yhigh > -1 ? yhigh : todayCal.get(Calendar.YEAR) %>]
+                ,connect: true
+                //,step: 1
+                ,format: {
+                    to: function ( value ) {
+                        console.log("to: " + value.toString());
+                        return Math.floor( value );;
+                    },
+                    from: function ( value ) {
+                        //console.log("from: " + value.toString());
+                        return value.replace(',-', '');
+                    }
+                }
+                /*,to: function ( value ) {
+                          return value + ',-';
+                    },
+                    from: function ( value ) {
+                          return value.replace(',-', '');
+                    }
+                  }serialization: {
+                    lower: [
+                        $.Link({
+                            target: $('#range-year-low'),
+                            format: { decimals: 0 }
+                        })
+                    ],
+                    upper: [
+                        $.Link({
+                            target: $('#range-year-high'),
+                            format: { decimals: 0 }
+                        })
+                    ]
+                }*/
+            });
+            rangeSlider.noUiSlider.on('update', function (values, handle) {
+                if (handle === 1) {
+                    document.getElementById("range-year-high").value = values[handle];
+                } else {
+                    document.getElementById("range-year-low").value = values[handle];
+                }
+            });
+        });
+    }
 </script>
-
 <%
 }
 
