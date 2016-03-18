@@ -37,25 +37,50 @@
     }
     
     /**
+     * Determines if the given event begins (and ends) in the current year.
+     */
+    public boolean isCurrentYearEvent(EventEntry event) {
+        Calendar cStart = new GregorianCalendar();
+        cStart.setTime(new Date(event.getStartTime()));
+        Calendar cEnd = new GregorianCalendar();
+        Calendar now = new GregorianCalendar();
+        
+        if (cStart.get(Calendar.YEAR) == now.get(Calendar.YEAR)) {
+            if (event.hasEndTime()) {
+                cEnd.setTime(new Date(event.getEndTime()));
+                return cEnd.get(Calendar.YEAR) == now.get(Calendar.YEAR);
+            }
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /**
      * Gets the event's time span, as ready-to-use HTML.
+     * !!! NOTE !!!
      * This is, as of 2016-03-18, an improved version of the EventEntry class' 
      * native method.
      */
     public String getTimespanHtml(CmsJspActionElement cms, EventEntry event) throws CmsException {
         Locale locale = cms.getRequestContext().getLocale();
-		String loc = locale.toString();
+	String loc = locale.toString();
         /*SimpleDateFormat datetime = new SimpleDateFormat(cms.label("label.event.dateformat.datetime"), locale);
         SimpleDateFormat dateonly = new SimpleDateFormat(cms.label("label.event.dateformat.dateonly"), locale);
         SimpleDateFormat timeonly = new SimpleDateFormat(cms.label("label.event.dateformat.timeonly"), locale);
         SimpleDateFormat month = new SimpleDateFormat(cms.label("label.event.dateformat.month"), locale);*/
-        SimpleDateFormat full = new SimpleDateFormat(loc.equalsIgnoreCase("no") ? "d. MMM yyyy H:mm" : "d MMM yyyy H:mm", locale);
-        SimpleDateFormat datenotime = new SimpleDateFormat(loc.equalsIgnoreCase("no") ? "d. MMM yyyy" : "d MMM yyyy", locale);
-        SimpleDateFormat dateonly = new SimpleDateFormat(loc.equalsIgnoreCase("no") ? "d." : "d", locale);
-        SimpleDateFormat timeonly = new SimpleDateFormat("H:mm", locale);
-        SimpleDateFormat dfIso = event.getDatetimeAttributeFormat(locale);
+        SimpleDateFormat dmyt = new SimpleDateFormat(loc.equalsIgnoreCase("no") ? "d. MMMM yyyy H:mm" : "d MMMM yyyy H:mm", locale);
+        SimpleDateFormat dmy = new SimpleDateFormat(loc.equalsIgnoreCase("no") ? "d. MMMM yyyy" : "d MMMM yyyy", locale);
+        SimpleDateFormat dm = new SimpleDateFormat(loc.equalsIgnoreCase("no") ? "d. MMMM" : "d MMMM", locale);
+        SimpleDateFormat dmt = new SimpleDateFormat(loc.equalsIgnoreCase("no") ? "d. MMMM H:mm" : "d MMMM H:m", locale);
+        SimpleDateFormat d = new SimpleDateFormat(loc.equalsIgnoreCase("no") ? "d." : "d", locale);
+        SimpleDateFormat t = new SimpleDateFormat("H:mm", locale);
+        SimpleDateFormat iso = event.getDatetimeAttributeFormat(locale);
+        
+        boolean currentYearEvent = isCurrentYearEvent(event);
         
         // Select initial date format
-        SimpleDateFormat df = event.isDisplayDateOnly() ? datenotime : full;
+        SimpleDateFormat df = event.isDisplayDateOnly() ? (currentYearEvent ? dm : dmy) : (currentYearEvent ? dmt : dmyt);
         
         String begins = null;
         String ends = null;
@@ -63,14 +88,14 @@
         String endsIso = null;
         try {
             SimpleDateFormat beginFormat = df;
-            beginsIso = dfIso.format(new Date(event.getStartTime()));
+            beginsIso = iso.format(new Date(event.getStartTime()));
             // If there is an end-time
             if (event.hasEndTime()) {
                 SimpleDateFormat endFormat = df;
                 if (event.isOneDayEvent()) {
                     if (!event.isDisplayDateOnly()) {
                         // End time is on the same day as begin time, format only the hour/minute
-                        endFormat = timeonly;
+                        endFormat = t;
                     } 
                     else {
                         // Shouldn't happen
@@ -80,12 +105,12 @@
                 else {
                     // Not one-day event, but maybe same month?
                     if (isOneMonthEvent(event) && event.isDisplayDateOnly()) {
-                        endFormat = datenotime;
-                        beginFormat = dateonly;
+                        endFormat = dmy;
+                        beginFormat = d;
                     }
                 }
                 ends = endFormat.format(new Date(event.getEndTime())).replaceAll("\\s", "&nbsp;");
-                endsIso = dfIso.format(new Date(event.getEndTime()));
+                endsIso = iso.format(new Date(event.getEndTime()));
             }
             begins = beginFormat.format(new Date(event.getStartTime())).replaceAll("\\s", "&nbsp;");
         } catch (NumberFormatException nfe) {
@@ -95,8 +120,13 @@
         String s = "";
         
         s += "<time itemprop=\"startDate\" datetime=\"" + beginsIso + "\">" + begins + "</time>";
-        if (ends != null)
-            s += " &ndash; <time itemprop=\"endDate\" datetime=\"" + endsIso + "\">" + ends + "</time>";
+        
+        if (ends != null) {
+            // Sometimes we want to use a space, sometimes not...
+            String spaceOrNot = begins.contains("nbsp") && ends.contains("nbsp") ? " " : "";
+            s += spaceOrNot + "&ndash;" + spaceOrNot 
+                    + "<time itemprop=\"endDate\" datetime=\"" + endsIso + "\">" + ends + "</time>";
+        }
         
         return s;
     }
