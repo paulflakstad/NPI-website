@@ -520,6 +520,8 @@ $(document).ready( function() {
         var filtersToggler = $("#filters-toggler");
         var filters = $("#filters");
         var filterHeadings = $("#filters h3");
+        
+        filters.hide();
         filterHeadings.addClass("filters-heading");
         
         if (filterHeadings.length > 0) {
