@@ -1,0 +1,97 @@
+@keyframes peek {
+    0%, 
+    100% {
+        -webkit-transform: translate3d(-940px, 180px, 0);
+        -moz-transform: translate3d(-940px, 180px, 0);
+        -o-transform: translate3d(-940px, 180px, 0);
+        transform: translate3d(-940px, 180px, 0);
+    }
+    50% {
+        -webkit-transform: translate3d(-760px, 180px, 0);
+        -moz-transform: translate3d(-760px, 180px, 0);
+        -o-transform: translate3d(-760px, 180px, 0);
+        transform: translate3d(-760px, 180px, 0);
+    }
+}
+@-webkit-keyframes peek {
+    0%, 
+    100% {
+        -webkit-transform: translate3d(-940px, 180px, 0);
+    }
+    50% {
+        -webkit-transform: translate3d(-760px, 180px, 0);
+    }
+}
+@-moz-keyframes peek {
+    0%, 
+    100% {
+        -moz-transform: translate3d(-940px, 180px, 0);
+    }
+    50% {
+        -moz-transform: translate3d(-760px, 180px, 0);
+    }
+}
+
+@-ms-keyframes peek {
+    0%, 
+    100% {
+        -o-transform: translate3d(-940px, 180px, 0);
+    }
+    50% {
+        -o-transform: translate3d(-760px, 180px, 0);
+    }
+}
+@-o-keyframes peek {
+    0%, 
+    100% {
+        -o-transform: translate3d(-940px, 180px, 0);
+    }
+    50% {
+        -o-transform: translate3d(-760px, 180px, 0);
+    }
+}
+
+#party {
+    display:none;
+}
+
+#party {
+    left:-940px;
+    top:180px;
+}
+#party:hover {
+    left:0;
+}
+
+.cssanimations.csstransforms3d #party {
+    display: block;
+    position: fixed;
+    left:0;
+    top:0;
+    transform: translate3d(-940px,180px,0);
+    backface-visibility: hidden;
+    -webkit-animation: peek 2s cubic-bezier(0,1,0,1) 1;
+    -moz-animation: peek 2s cubic-bezier(0,1,0,1) 1;
+    -ms-animation: peek 2s cubic-bezier(0,1,0,1) 1;
+    -o-animation: peek 2s cubic-bezier(0,1,0,1) 1;
+    animation: peek 2s cubic-bezier(0,1,0,1) 1;
+    -webkit-transition: -webkit-transform 0.5s cubic-bezier(0,1,0,1);
+    -moz-transition: -moz-transform 0.5s cubic-bezier(0,1,0,1);
+    -ms-transition: -ms-transform 0.5s cubic-bezier(0,1,0,1);
+    -o-transition: -o-transform 0.5s cubic-bezier(0,1,0,1);
+    transition: transform 0.5s cubic-bezier(0,1,0,1);
+    box-shadow:1em 0 1.5em rgba(0,0,0,0.7);	
+}
+.cssanimations.csstransforms3d #party:hover {
+    -webkit-transform: translate3d(0, 180px, 0);
+    -moz-transform: translate3d(0, 180px, 0);
+    -ms-transform: translate3d(0, 180px, 0);
+    -o-transform: translate3d(0, 180px, 0);
+    transform: translate3d(0, 180px, 0);
+    -webkit-transition: -webkit-transform 0.5s cubic-bezier(0,1,0,1), box-shadow 0.5s ease-in-out;
+    -moz-transition: -moz-transform 0.5s cubic-bezier(0,1,0,1), box-shadow 0.5s ease-in-out;
+    -ms-transition: -ms-transform 0.5s cubic-bezier(0,1,0,1), box-shadow 0.5s ease-in-out;
+    -o-transition: -o-transform 0.5s cubic-bezier(0,1,0,1), box-shadow 0.5s ease-in-out;
+    transition: transform 0.5s cubic-bezier(0,1,0,1), box-shadow 0.5s ease-in-out;
+    box-shadow:1em 0 3em rgba(0,0,0,1);
+}
