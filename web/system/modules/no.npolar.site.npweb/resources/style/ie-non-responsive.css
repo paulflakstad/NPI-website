@@ -1,4 +1,14 @@
 @charset "utf-8";
+@import url('http://fonts.googleapis.com/css?family=Open+Sans:400,700,300,300italic,400italic,700italic');
+@import url('../fonts/fontello/css/fontello.css');
+/**@import url('/system/modules/no.npolar.site.npweb/resources/fonts/fontello/css/fontello.css');*/
+@font-face {font-family: 'ClassicoURW-RegIta';src: url('webfonts/206335_0_0.eot');src: url('webfonts/206335_0_0.eot?#iefix') format('embedded-opentype'),url('webfonts/206335_0_0.woff') format('woff'),url('webfonts/206335_0_0.ttf') format('truetype');}
+@font-face {font-family: 'ClassicoURW-Reg';src: url('webfonts/206335_1_0.eot');src: url('webfonts/206335_1_0.eot?#iefix') format('embedded-opentype'),url('webfonts/206335_1_0.woff') format('woff'),url('webfonts/206335_1_0.ttf') format('truetype');}
+
+
+@-webkit-keyframes shake{0%{-webkit-transform:rotate(4deg);-ms-transform:rotate(4deg);transform:rotate(4deg)}5%{-webkit-transform:rotate(-4deg);-ms-transform:rotate(-4deg);transform:rotate(-4deg)}10%{-webkit-transform:rotate(4deg);-ms-transform:rotate(4deg);transform:rotate(4deg)}15%{-webkit-transform:rotate(-4deg);-ms-transform:rotate(-4deg);transform:rotate(-4deg)}20%{-webkit-transform:rotate(4deg);-ms-transform:rotate(4deg);transform:rotate(4deg)}25%{-webkit-transform:rotate(-4deg);-ms-transform:rotate(-4deg);transform:rotate(-4deg)}30%{-webkit-transform:rotate(0);-ms-transform:rotate(0);transform:rotate(0)}}
+@keyframes shake{0%{-webkit-transform:rotate(4deg);-ms-transform:rotate(4deg);transform:rotate(4deg)}5%{-webkit-transform:rotate(-4deg);-ms-transform:rotate(-4deg);transform:rotate(-4deg)}10%{-webkit-transform:rotate(4deg);-ms-transform:rotate(4deg);transform:rotate(4deg)}15%{-webkit-transform:rotate(-4deg);-ms-transform:rotate(-4deg);transform:rotate(-4deg)}20%{-webkit-transform:rotate(4deg);-ms-transform:rotate(4deg);transform:rotate(4deg)}25%{-webkit-transform:rotate(-4deg);-ms-transform:rotate(-4deg);transform:rotate(-4deg)}30%{-webkit-transform:rotate(0);-ms-transform:rotate(0);transform:rotate(0)}}
+
 /* START LEAVE THIS */
 /* Note that #leftside { display:none !important; } must also be removed from this stylesheet. */
 #nav_toggler_wrapper {
@@ -10,17 +20,6 @@
 	/*display:none !important;*/
 }
 /* END LEAVE THIS */
-
-
-@import url('http://fonts.googleapis.com/css?family=Open+Sans:400,700,300,300italic,400italic,700italic');
-@import url('../fonts/fontello/css/fontello.css');
-/**@import url('/system/modules/no.npolar.site.npweb/resources/fonts/fontello/css/fontello.css');*/
-@font-face {font-family: 'ClassicoURW-RegIta';src: url('webfonts/206335_0_0.eot');src: url('webfonts/206335_0_0.eot?#iefix') format('embedded-opentype'),url('webfonts/206335_0_0.woff') format('woff'),url('webfonts/206335_0_0.ttf') format('truetype');}
-@font-face {font-family: 'ClassicoURW-Reg';src: url('webfonts/206335_1_0.eot');src: url('webfonts/206335_1_0.eot?#iefix') format('embedded-opentype'),url('webfonts/206335_1_0.woff') format('woff'),url('webfonts/206335_1_0.ttf') format('truetype');}
-
-
-@-webkit-keyframes shake{0%{-webkit-transform:rotate(4deg);-ms-transform:rotate(4deg);transform:rotate(4deg)}5%{-webkit-transform:rotate(-4deg);-ms-transform:rotate(-4deg);transform:rotate(-4deg)}10%{-webkit-transform:rotate(4deg);-ms-transform:rotate(4deg);transform:rotate(4deg)}15%{-webkit-transform:rotate(-4deg);-ms-transform:rotate(-4deg);transform:rotate(-4deg)}20%{-webkit-transform:rotate(4deg);-ms-transform:rotate(4deg);transform:rotate(4deg)}25%{-webkit-transform:rotate(-4deg);-ms-transform:rotate(-4deg);transform:rotate(-4deg)}30%{-webkit-transform:rotate(0);-ms-transform:rotate(0);transform:rotate(0)}}
-@keyframes shake{0%{-webkit-transform:rotate(4deg);-ms-transform:rotate(4deg);transform:rotate(4deg)}5%{-webkit-transform:rotate(-4deg);-ms-transform:rotate(-4deg);transform:rotate(-4deg)}10%{-webkit-transform:rotate(4deg);-ms-transform:rotate(4deg);transform:rotate(4deg)}15%{-webkit-transform:rotate(-4deg);-ms-transform:rotate(-4deg);transform:rotate(-4deg)}20%{-webkit-transform:rotate(4deg);-ms-transform:rotate(4deg);transform:rotate(4deg)}25%{-webkit-transform:rotate(-4deg);-ms-transform:rotate(-4deg);transform:rotate(-4deg)}30%{-webkit-transform:rotate(0);-ms-transform:rotate(0);transform:rotate(0)}}
  
  /**
  * Styles for the responive NPI website
