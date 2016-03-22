@@ -877,7 +877,7 @@ if (true) {//(!pubService.isUserFiltered()) {
                 //,step: 1
                 ,format: {
                     to: function ( value ) {
-                        console.log("to: " + value.toString());
+                        //console.log("to: " + value.toString());
                         return Math.floor( value );;
                     },
                     from: function ( value ) {
