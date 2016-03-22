@@ -112,26 +112,23 @@ String requestFolderUri = cms.getRequestContext().getFolderUri();
 Locale locale = cms.getRequestContext().getLocale();
 String loc = locale.toString();
 
+final int TYPE_ID_VIDEO = OpenCms.getResourceManager().getResourceType("videoresource").getTypeId();
+
 // Direct edit switches
-final boolean EDITABLE              = true;
-final boolean EDITABLE_TEMPLATE     = false;
-boolean includeTemplate             = OpenCms.getResourceManager().getResourceType(cmso.readResource(requestFileUri)).getTypeId() == 
-                                            OpenCms.getResourceManager().getResourceType("videoresource").getTypeId();
+final boolean EDITABLE = true;
+final boolean EDITABLE_TEMPLATE = false;
+boolean includeTemplate = OpenCms.getResourceManager().getResourceType(cmso.readResource(requestFileUri)).getTypeId() == TYPE_ID_VIDEO;
 // Template ("outer" or "master" template)
-String template                     = cms.getTemplate();
-String[] elements                   = cms.getTemplateIncludeElements();
+String template = cms.getTemplate();
+String[] elements = cms.getTemplateIncludeElements();
 
 //
 // Include upper part of main template
 //
-if (includeTemplate)
+if (includeTemplate) {
     cms.include(template, elements[0], EDITABLE_TEMPLATE);
-        
-// The client ID used when setting up the YouTubeService object
-final String YT_CLIENT_ID = "flakstad@npolar.no";
+}
 
-// The service used to retrieve specific videos
-final String YT_VIDEO_FEED_SERVICE = "http://gdata.youtube.com/feeds/api/videos/";
 // The standard YouTube height-to-width ratio
 final double YT_HEIGH_WIDTH_RATIO = 360.0 / 640.0;
 
@@ -149,7 +146,8 @@ String transcript = null;
 String credit = null;
 String source = null;
 String type = null;
-String image = null;
+//String image = null;
+// We should NEVER auto-start videos ...
 boolean autostart = false;
 
 // Read video file (XMLContent file)
@@ -167,8 +165,8 @@ while (videoFile.hasMoreContent()) {
     credit = cms.contentshow(videoFile, "Credit");
     source = cms.contentshow(videoFile, "VideoSource");
     type = cms.contentshow(videoFile, "VideoType");
-    image = cms.contentshow(videoFile, "Image");
-    autostart = Boolean.valueOf(cms.contentshow(videoFile, "AutoStart")).booleanValue();
+    //image = cms.contentshow(videoFile, "Image");
+    //autostart = Boolean.valueOf(cms.contentshow(videoFile, "AutoStart")).booleanValue();
 }
 // Done reading video file
 
@@ -205,14 +203,10 @@ int height = Double.valueOf(Double.parseDouble(Integer.toString(width)) * YT_HEI
 
 // Handle different video types
 if (type.equalsIgnoreCase(VIDEO_TYPE_YOUTUBE)) {
-    //String videoKey = "video:";
-
     // Get the video ID
-    //out.println("<br />Query part of URL: " + source.substring(source.indexOf("?")+1));
     Map ytUrlParts = CmsRequestUtil.createParameterMap(source.substring(source.indexOf("?")+1));
-    String videoId = ((String[])(ytUrlParts.get("v")))[0]; //  = "u_7fbIP_QPY"
+    String videoId = ((String[])(ytUrlParts.get("v")))[0]; //  e.g. "u_7fbIP_QPY"
 
-    String videoUrl = YT_VIDEO_FEED_SERVICE + videoId;
     try {
         // The video is included in another page.
         // Assume the dimensions is set on the wrapper - set the width/height to 
@@ -225,8 +219,6 @@ if (type.equalsIgnoreCase(VIDEO_TYPE_YOUTUBE)) {
         String embedCode = 
                 "\n<iframe"
                         + " width=\"560\" height=\"315\""
-                        //+ " width=\"100%\" height=\"auto\""
-                        //+ " style=\"width:100%; height:100%;\"" 
                         // https is vital here, in order to avoid missing controls bug in Firefox
                         + " src=\"https://www.youtube.com/embed/" + videoId 
                             // We should never auto-start, and the remaining params are now the defaults
@@ -250,8 +242,7 @@ else if (type.equalsIgnoreCase(VIDEO_TYPE_VIMEO)) {
     if (videoId.contains("?")) {
         videoId = videoId.substring(0, videoId.indexOf("?"));
     }
-
-    String videoUrl = YT_VIDEO_FEED_SERVICE + videoId;
+    
     try {
         // The video is included in another page.
         // Assume the dimensions is set on the wrapper - set the width/height to 
@@ -265,7 +256,6 @@ else if (type.equalsIgnoreCase(VIDEO_TYPE_VIMEO)) {
                 "\n<iframe"
                         + " width=\"100%\" height=\"auto\" style=\"width:100%; height:100%;\"" 
                         + " src=\"http://player.vimeo.com/video/" + videoId + (autostart ? "?autoplay=1" : "") + "\""
-                        //+ " width=\"WIDTH\" height=\"HEIGHT\""
                         + " frameborder=\"0\" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>";
         out.println(embedCode);
     } catch (Exception e) {
