@@ -35,7 +35,7 @@ public String translate(String s) {
 }
 
 /** Facet (filter) parameter name prefix. */
-public final static  String FACET_PREFIX = "filter-";
+//public final static  String FACET_PREFIX = "filter-";
 /** A string which, when appended at the end of a 4-character year string (e.g. "2014"), will create a normalized timestamp string representing the beginning of that year. */
 public static final String PARAM_VAL_PART_YEAR_BEGIN = "-01-01T00:00:00Z";
 /** A string which, when appended at the end of a 4-character year string (e.g. "2014"), will create a normalized timestamp string representing the end of that year. */
@@ -117,7 +117,7 @@ else {
 %>
 <form action="<%= cms.link(requestFileUri) %>" method="get">
     <label for="pubyear"><%= LABEL_YEAR_SELECT %>: </label>
-    <!--<select name="<%= FACET_PREFIX + Publication.JSON_KEY_PUB_TIME %>" onchange="submit()" id="pubyear">-->
+    <!--<select name="<%= SearchFilter.PARAM_NAME_PREFIX + Publication.JSON_KEY_PUB_TIME %>" onchange="submit()" id="pubyear">-->
     <select name="year" onchange="submit()" id="pubyear">
         <option value=""><%= LABEL_YEAR_SELECT_OPT_ALL %></option>
         <%
@@ -159,14 +159,14 @@ for (int j = 0; j < iceProgs.length; j++) {
     
     // Parameters used to specify a particular results list
     Map<String, String[]> params = new HashMap<String, String[]>();
-    params.put("q", new String[]{ "" }); // Catch-all search term
-    params.put("sort", new String[]{ "-published_sort" }); // Sort by publish time
-    params.put("limit", new String[]{ Integer.toString(LIMIT) }); // Limit results
-    params.put("not-draft", new String[]{ "yes" }); // Don't include drafts
-    params.put("filter-state", new String[]{ Publication.JSON_VAL_STATE_PUBLISHED + "|" + Publication.JSON_VAL_STATE_ACCEPTED }); // Require state: published or accepted
-    params.put("filter-programme", new String[] { URLEncoder.encode(iceProgs[j], "utf-8") }); // Require the particular ICE programme currently in the loop
+    params.put(APIService.PARAM_QUERY, new String[]{ "" }); // Catch-all search term
+    params.put(APIService.PARAM_SORT_BY, new String[]{ APIService.PARAM_VAL_PREFIX_REVERSE.concat(Publication.JSON_KEY_PUB_TIME) }); // Sort by publish time
+    params.put(APIService.PARAM_RESULTS_COUNT, new String[]{ Integer.toString(LIMIT) }); // Limit results
+    params.put(APIService.PARAM_MODIFIER_NOT.concat(Publication.JSON_KEY_DRAFT), new String[]{ Publication.JSON_VAL_DRAFT_TRUE }); // Don't include drafts
+    params.put(SearchFilter.PARAM_NAME_PREFIX.concat(Publication.JSON_KEY_STATE), new String[]{ Publication.JSON_VAL_STATE_PUBLISHED + "|" + Publication.JSON_VAL_STATE_ACCEPTED }); // Require state: published or accepted
+    params.put(SearchFilter.PARAM_NAME_PREFIX.concat(Publication.JSON_KEY_PROGRAMMES), new String[] { URLEncoder.encode(iceProgs[j], "utf-8") }); // Require the particular ICE programme currently in the loop
     
-    if (year != null) { params.put("filter-published_sort", new String[] { year }); } // If a year was selected by the user, limit results to that year
+    if (year != null) { params.put(SearchFilter.PARAM_NAME_PREFIX.concat(Publication.JSON_KEY_PUB_TIME), new String[] { year }); } // If a year was selected by the user, limit results to that year
     
     // Collection to hold matching publications
     GroupedCollection<Publication> publications = null;
@@ -191,31 +191,45 @@ for (int j = 0; j < iceProgs.length; j++) {
     // -------------------------------------------------------------------------
     // HTML output
     //--------------------------------------------------------------------------
+    
     out.println("<!--\nAPI URL:\n" + pubService.getLastServiceURL() + "\n-->");
     if (COMMENTS) out.println("<!-- Ready to output HTML, " + publications.size() + " publication(s) in this set. -->");
+    
     if (!publications.isEmpty()) {
-        out.println("<div class=\"toggleable collapsed\">");
-        out.println("<h2 class=\"toggletrigger\">" + cms.labelUnicode("label.np.publist.heading") + " for " + translate(iceProgs[j]) + " (" + publications.size() + ")</h2>");
-        out.println("<div class=\"toggletarget\">");
-        // Get types of publications
-        Iterator<String> iTypes = publications.getTypesContained().iterator();
-        while (iTypes.hasNext()) {
-            String listType = iTypes.next();
-            Iterator<Publication> iPubs = publications.getListGroup(listType).iterator();
-            if (iPubs.hasNext()) {
-                out.println("<h3>" + cms.labelUnicode("label.np.pubtype." + listType) + " (" + publications.getListGroup(listType).size() + ")</h3>");
-                out.println("<ul class=\"fullwidth indent line-items\">");
-                while (iPubs.hasNext()) {
-                    out.println("<li>" + iPubs.next().toString() + "</li>");
+        %>
+        <div class="toggleable collapsed">
+            <h2 class="toggletrigger"><%= cms.labelUnicode("label.np.publist.heading") %> for <%= translate(iceProgs[j]) %> (<%= publications.size() %>)</h2>
+            <div class="toggletarget">
+            <%
+            // Get types of publications
+            Iterator<String> iTypes = publications.getTypesContained().iterator();
+            while (iTypes.hasNext()) {
+                String listType = iTypes.next();
+                Iterator<Publication> iPubs = publications.getListGroup(listType).iterator();
+                if (iPubs.hasNext()) {
+                    %>
+                    <h3><%= cms.labelUnicode("label.np.pubtype." + listType) %> (<%= publications.getListGroup(listType).size() %>)</h3>
+                    <ul class="fullwidth indent line-items">
+                    <%
+                    while (iPubs.hasNext()) {
+                        %>
+                        <li><%= iPubs.next().toString() %></li>
+                        <%
+                    }
+                    %>
+                    </ul>
+                    <%
                 }
-                out.println("</ul>");
             }
-        }
-        out.println("</div>");
-        out.println("</div>");
+            %>
+            </div>
+        </div>
+        <%
     }
     else {
-        out.println("<h4><em>0 " + cms.labelUnicode("label.np.publist.heading").toLowerCase() + " for " + translate(iceProgs[j]) + "</em></h4>");
+        %>
+        <h4><em>0 <%= cms.labelUnicode("label.np.publist.heading").toLowerCase() %> for <%= translate(iceProgs[j]) %></em></h4>
+        <%
     }
 }
 /*<script type="text/javascript">

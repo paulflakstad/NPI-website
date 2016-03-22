@@ -35,7 +35,7 @@ public String translate(String s) {
 }
 
 /** Facet (filter) parameter name prefix. */
-public final static  String FACET_PREFIX = "filter-";
+public final static  String FACET_PREFIX = SearchFilter.PARAM_NAME_PREFIX;
 /** A string which, when appended at the end of a 4-character year string (e.g. "2014"), will create a normalized timestamp string representing the beginning of that year. */
 public static final String PARAM_VAL_PART_YEAR_BEGIN = "-01-01T00:00:00Z";
 /** A string which, when appended at the end of a 4-character year string (e.g. "2014"), will create a normalized timestamp string representing the end of that year. */
@@ -161,6 +161,7 @@ final int LIMIT_YHIGH = todayCal.get(Calendar.YEAR);
 // Year parameters 
 int ylow = -1;
 int yhigh = -1;
+
 // Update range years from params, if needed
 if (isInteger(request.getParameter(PARAM_NAME_YLOW)))
     ylow = Integer.valueOf(request.getParameter(PARAM_NAME_YLOW)).intValue();
@@ -200,15 +201,18 @@ if (ylow > -1) {
 -->
             
 <div class="searchbox-big" id="range-tools" style="">
-    <h2><%= LABEL_YEAR_SELECT_HEADING %></h2>
-    <!--<p class="smalltext" style="background:#06d; color:#fff; padding:0.2em 1em;"><%= LABEL_RANGE_INFO_START %><%= ylow > -1 ? (" "+LABEL_RANGE_FROM.toLowerCase()+" "+ylow) : "" %><%= yhigh > ylow ? (LABEL_RANGE_TO+yhigh) : "" %>.</p>-->
-    <form action="<%= cms.link(requestFileUri) %>" method="get">   
-        <%= LABEL_RANGE_FROM %><input type="number" value="<%= ylow > -1 ? ylow : "" %>" maxlength="4" pattern="[0-9]*" name="<%= PARAM_NAME_YLOW %>" id="range-year-low" style="padding:0.5em; border:1px solid #ddd; width:4em; font-size:1.25em;" /> 
-	<%= LABEL_RANGE_TO %><input type="number" value="<%= yhigh > -1 ? yhigh : "" %>" maxlength="4" pattern="[0-9]*" name="<%= PARAM_NAME_YHIGH %>" id="range-year-high" style="padding:0.5em; border:1px solid #ddd; width:4em; font-size:1.25em;" />
-        <div id="range-slider" style="margin: 2em 40px 0;"></div> 
-        <br />
-        <input type="submit" value="<%= LABEL_RANGE_UPDATE %>" style="margin-top:1em;" />
-    </form>
+    <div class="filter-widget">
+        <h2 class="filters-heading filter-widget-heading"><%= LABEL_YEAR_SELECT_HEADING %></h2>
+        <!--<p class="smalltext" style="background:#06d; color:#fff; padding:0.2em 1em;"><%= LABEL_RANGE_INFO_START %><%= ylow > -1 ? (" "+LABEL_RANGE_FROM.toLowerCase()+" "+ylow) : "" %><%= yhigh > ylow ? (LABEL_RANGE_TO+yhigh) : "" %>.</p>-->
+        <form action="<%= cms.link(requestFileUri) %>" method="get">   
+            <%= LABEL_RANGE_FROM %><input type="number" value="<%= ylow > -1 ? ylow : "" %>" name="<%= PARAM_NAME_YLOW %>" id="range-year-low" style="padding:0.5em; border:1px solid #ddd; width:4em; font-size:1.25em;" /> 
+            <%= LABEL_RANGE_TO %><input type="number" value="<%= yhigh > -1 ? yhigh : "" %>" name="<%= PARAM_NAME_YHIGH %>" id="range-year-high" style="padding:0.5em; border:1px solid #ddd; width:4em; font-size:1.25em;" />
+            <div id="range-slider" style="margin: 2em 40px 0;"></div> 
+            <br />
+            <!--<input type="submit" value="<%= LABEL_RANGE_UPDATE %>" style="margin-top:1em;" />-->
+            <input type="button" class="cta cta--filters-toggle" value="<%= LABEL_RANGE_UPDATE %>" style="margin-top:1em;" onclick="submit()" />
+        </form>
+    </div>
 </div>
 <p style="font-weight:bold; text-align:center;"><%= LABEL_RANGE_INFO_START %><%= ylow > -1 ? (" "+LABEL_RANGE_FROM.toLowerCase()+" "+ylow) : "" %><%= yhigh > ylow ? (LABEL_RANGE_TO+yhigh) : "" %>:</p>
 <%
@@ -232,14 +236,14 @@ for (int j = 0; j < programmes.length; j++) {
     
     // Parameters used to specify a particular results list
     Map<String, String[]> params = new HashMap<String, String[]>();
-    params.put("q", new String[]{ "" }); // Catch-all search term
-    params.put("sort", new String[]{ "-published_sort" }); // Sort by publish time
-    params.put("limit", new String[]{ Integer.toString(LIMIT) }); // Limit results
-    params.put("not-draft", new String[]{ "yes" }); // Don't include drafts
-    params.put("filter-state", new String[]{ Publication.JSON_VAL_STATE_PUBLISHED + "|" + Publication.JSON_VAL_STATE_ACCEPTED }); // Require state: published or accepted
-    params.put("filter-programme", new String[] { URLEncoder.encode(programmes[j], "utf-8") }); // Require the particular programme currently in the loop
+    params.put(APIService.PARAM_QUERY, new String[]{ "" }); // Catch-all search term
+    params.put(APIService.PARAM_SORT_BY, new String[]{ "-published_sort" }); // Sort by publish time
+    params.put(APIService.PARAM_RESULTS_COUNT, new String[]{ Integer.toString(LIMIT) }); // Limit results
+    params.put(APIService.PARAM_MODIFIER_NOT.concat(Publication.JSON_KEY_DRAFT), new String[]{ Publication.JSON_VAL_DRAFT_TRUE }); // Don't include drafts
+    params.put(SearchFilter.PARAM_NAME_PREFIX.concat(Publication.JSON_KEY_STATE), new String[]{ Publication.JSON_VAL_STATE_PUBLISHED + "|" + Publication.JSON_VAL_STATE_ACCEPTED }); // Require state: published or accepted
+    params.put(SearchFilter.PARAM_NAME_PREFIX.concat(Publication.JSON_KEY_PROGRAMMES), new String[] { URLEncoder.encode(programmes[j], "utf-8") }); // Require the particular programme currently in the loop
     
-    if (year != null) { params.put("filter-published_sort", new String[] { year }); } // If a year was selected by the user, limit results to that year
+    if (year != null) { params.put(SearchFilter.PARAM_NAME_PREFIX.concat(Publication.JSON_KEY_PUB_TIME), new String[] { year }); } // If a year was selected by the user, limit results to that year
     
     // Collection to hold matching publications
     GroupedCollection<Publication> publications = null;
@@ -267,32 +271,44 @@ for (int j = 0; j < programmes.length; j++) {
     out.println("<!--\nAPI URL:\n" + pubService.getLastServiceURL() + "\n-->");
     if (COMMENTS) out.println("<!-- Ready to output HTML, " + publications.size() + " publication(s) in this set. -->");
     if (!publications.isEmpty()) {
-        out.println("<div class=\"toggleable collapsed\">");
-        out.println("<h2 class=\"toggletrigger\" style=\"margin-top:2px;\">" + translate(programmes[j]) + " (" + publications.size() + ")</h2>");
-        out.println("<div class=\"toggletarget\">");
+        %>
+        <div class="toggleable collapsed">
+        <h2 class="toggletrigger" style="margin-top:2px;"><%= translate(programmes[j]) %> (<%= publications.size() %>)</h2>
+        <div class="toggletarget">
+        <%
         // Get types of publications
         Iterator<String> iTypes = publications.getTypesContained().iterator();
         while (iTypes.hasNext()) {
             String listType = iTypes.next();
             Iterator<Publication> iPubs = publications.getListGroup(listType).iterator();
             if (iPubs.hasNext()) {
-                out.println("<div class=\"toggleable collapsed\">");
-                out.println("<h3 class=\"toggletrigger\" style=\"margin:0 0 2px 1em; font-size:1.25em;\">" + cms.labelUnicode("label.np.pubtype." + listType) + " (" + publications.getListGroup(listType).size() + ")</h3>");
-                out.println("<div class=\"toggletarget\" style=\"margin:-2px 0 2px 1.25em;\">");
-                out.println("<ul class=\"fullwidth indent line-items\">");
+                %>
+                <div class="toggleable collapsed">
+                <h3 class="toggletrigger" style="margin:0 0 2px 1em; font-size:1.25em;"><%= cms.labelUnicode("label.np.pubtype." + listType) %> (<%= publications.getListGroup(listType).size() %>)</h3>
+                <div class="toggletarget" style="margin:-2px 0 2px 1.25em;">
+                <ul class="fullwidth indent line-items">
+                <%
                 while (iPubs.hasNext()) {
-                    out.println("<li>" + iPubs.next().toString() + "</li>");
+                    %>
+                    <li><%= iPubs.next().toString() %></li>
+                    <%
                 }
-                out.println("</ul>");
-                out.println("</div>");
-                out.println("</div>");
+                %>
+                </ul>
+                </div>
+                </div>
+                <%
             }
         }
-        out.println("</div>");
-        out.println("</div>");
+        %>
+        </div>
+        </div>
+        <%
     }
     else {
-        out.println("<h2 class=\"toggletrigger\" style=\"color:#bbb; margin-top:2px;\">" + translate(programmes[j]) + " (0)</h2>");
+        %>
+        <h2 class="toggletrigger" style="color:#bbb; margin-top:2px;"><%= translate(programmes[j]) %> (0)</h2>
+        <%
     }
 }
 
@@ -312,7 +328,7 @@ $('#range-slider').noUiSlider({
     ,start: [<%= ylow > -1 ? ylow : String.valueOf(LIMIT_YLOW) %>,<%= yhigh > -1 ? yhigh : String.valueOf(LIMIT_YHIGH) %>]
     ,connect: true
     ,step:1
-    ,serialization: {
+    ,serialization: { // requires the jQuery version
         lower: [
             $.Link({
                 target: $('#range-year-low'),

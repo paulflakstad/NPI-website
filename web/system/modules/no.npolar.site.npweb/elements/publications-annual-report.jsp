@@ -31,7 +31,7 @@ public String getStackTrace(Exception e) {
 }
 
 /** Facet (filter) parameter name prefix. */
-public final static  String FACET_PREFIX = "filter-";
+public final static  String FACET_PREFIX = SearchFilter.PARAM_NAME_PREFIX;
 /** A string which, when appended at the end of a 4-character year string (e.g. "2014"), will create a normalized timestamp string representing the beginning of that year. */
 public static final String PARAM_VAL_PART_YEAR_BEGIN = "-01-01T00:00:00Z";
 /** A string which, when appended at the end of a 4-character year string (e.g. "2014"), will create a normalized timestamp string representing the end of that year. */
@@ -121,24 +121,24 @@ final boolean LOGGED_IN_USER = OpenCms.getRoleManager().hasRole(cms.getCmsObject
 // Parameters: Used when querying the service.
 //
 Map<String, String[]> params = new HashMap<String, String[]>();
-params.put("q", new String[]{ "" }); // Use a catch-all search phrase
-params.put("filter-published_sort", new String[] { year }); // Filter on the given year (or the current year, if no year was given)
+params.put(APIService.PARAM_QUERY, new String[]{ "" }); // Use a catch-all search phrase
+params.put(SearchFilter.PARAM_NAME_PREFIX.concat(Publication.JSON_KEY_PUB_TIME), new String[] { year }); // Filter on the given year (or the current year, if no year was given)
 //params.put("filter-published-year", new String[] { year }); // Filter on the given year (or the current year, if no year was given)
 //params.put("sort", new String[]{ "-publication_year" }); // Sort by publish year, descending
 //params.put("sort", new String[]{ "-published-year,-published-date" }); // Sort by publish year, descending
 //params.put("sort", new String[]{ "people.last_name,people.first_name" }); // Sort by name
-params.put("filter-organisations.id", new String[] { "npolar.no" }); // Filter on checked "Yes, publication is affiliated to NP activity" (require this box was checked)
-params.put("limit", new String[]{ "all" }); // Set an entry limit
+params.put(SearchFilter.PARAM_NAME_PREFIX.concat(Publication.JSON_KEY_ORGS_ID), new String[] { Publication.JSON_VAL_ORG_NPI }); // Filter on checked "Yes, publication is affiliated to NP activity" (require this box was checked)
+params.put(APIService.PARAM_RESULTS_COUNT, new String[]{ APIService.PARAM_VAL_RESULTS_COUNT_LIMITLESS }); // Set an entry limit
 //params.put("filter-draft", new String[]{ "no" }); // Don't allow drafts
 //params.put("filter-state", new String[]{ "published" }); // Allow only published publications
 
 Map<String, String[]> defaultParams = new HashMap<String, String[]>();
-defaultParams.put("not-draft",              new String[]{ "yes" }); // Don't include drafts
-defaultParams.put("filter-state",           new String[]{ Publication.JSON_VAL_STATE_PUBLISHED }); // Require state: published
-//defaultParams.put("filter-state",           new String[]{ Publication.JSON_VAL_STATE_PUBLISHED + "|" + Publication.JSON_VAL_STATE_ACCEPTED }); // Require state: published or accepted
-defaultParams.put("facets",                 new String[]{ "false" }); // No facets
-defaultParams.put("sort",                   new String[]{ "people.last_name,people.first_name" }); // Sort by name
-//defaultParams.put("sort",                   new String[]{ "-published-year,-published-date" }); // Sort by publish date, descending (and this is the sort parameter for that)
+defaultParams.put(APIService.PARAM_MODIFIER_NOT.concat(Publication.JSON_KEY_DRAFT), new String[]{ Publication.JSON_VAL_DRAFT_TRUE }); // Don't include drafts
+defaultParams.put(SearchFilter.PARAM_NAME_PREFIX.concat(Publication.JSON_KEY_STATE), new String[]{ Publication.JSON_VAL_STATE_PUBLISHED }); // Require state: published
+//defaultParams.put("filter-state", new String[]{ Publication.JSON_VAL_STATE_PUBLISHED + "|" + Publication.JSON_VAL_STATE_ACCEPTED }); // Require state: published or accepted
+defaultParams.put(APIService.PARAM_FACETS, new String[]{ APIService.PARAM_VAL_FACETS_NONE }); // No facets
+defaultParams.put(APIService.PARAM_SORT_BY, new String[]{ Publication.JSON_KEY_PEOPLE.concat(Publication.JSON_KEY_LNAME).concat(",").concat(Publication.JSON_KEY_PEOPLE.concat(Publication.JSON_KEY_LNAME)) }); // Sort by last name,first name
+//defaultParams.put("sort", new String[]{ "-published-year,-published-date" }); // Sort by publish date, descending (and this is the sort parameter for that)
 
 //
 // Access the service
