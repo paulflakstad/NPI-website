@@ -50,7 +50,8 @@ public static String alterDimensions(String code, int newWidth) {
         }
     } 
     else {
-        throw new IllegalArgumentException("Unable to alter code: No width was specified.");
+        // No width specified, assume <div ...> or similar
+        //throw new IllegalArgumentException("Unable to alter code: No width was specified.");
     }
 
     // Done altering the width attributes, continue with heights
@@ -64,6 +65,9 @@ public static String alterDimensions(String code, int newWidth) {
     if (!heightMatches.isEmpty()) {
         if (heightMatches.size() > 1) {
             throw new IllegalArgumentException("Unable to alter code: More than one height was specified.");
+        }
+        if (widthMatches.isEmpty()) {
+            throw new IllegalArgumentException("Unable to alter code: No width was specified, unable to calculate height.");
         }
         Iterator i = heightMatches.iterator();
         while (i.hasNext()) {
@@ -178,7 +182,7 @@ if (includeTemplate) {
         out.println("<div class=\"ingress\">" + description + "</div>");
 }
 
-if (!(type.equalsIgnoreCase(VIDEO_TYPE_LOCAL) || type.equalsIgnoreCase(VIDEO_TYPE_GENERIC))) {
+if (!(type.equalsIgnoreCase(VIDEO_TYPE_LOCAL))) {
     out.println("<span class=\"" + wrapperClass + "\"><span class=\"video-wrapper\">");
 }
 
@@ -349,7 +353,7 @@ else if (type.equalsIgnoreCase(VIDEO_TYPE_GENERIC)) {
     out.println(alterDimensions(source, width));
 }
 
-if (!(type.equalsIgnoreCase(VIDEO_TYPE_LOCAL) || type.equalsIgnoreCase(VIDEO_TYPE_GENERIC))) {
+if (!(type.equalsIgnoreCase(VIDEO_TYPE_LOCAL))) {
     out.println("</span><!-- .video-wrapper -->");
 }
 
@@ -365,7 +369,7 @@ if (CmsAgent.elementExists(credit)) {
     out.println("<span class=\"credit\">Video: " + credit + /*("yt".equals(type) || "vimeo".equals(type) ? (" / ".concat("yt".equals(type) ? "YouTube" : "Vimeo")) : "" ) +*/ "</span>");
 }
 
-if (!(type.equalsIgnoreCase(VIDEO_TYPE_LOCAL) || type.equalsIgnoreCase(VIDEO_TYPE_GENERIC))) {
+if (!(type.equalsIgnoreCase(VIDEO_TYPE_LOCAL))) {
     out.println("</span><!-- media wrapper (typically .media) -->");
 }
 
