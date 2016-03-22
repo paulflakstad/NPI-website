@@ -3555,9 +3555,9 @@ table.calendar td.nodate {
 .person .pub-contributor-npi {
 	font-weight:normal;
 }
-.noUi-connect {
+/*.noUi-connect {
     background:#08f;
-}
+}*/
 .qtip {
     box-shadow: 1px 1px 6px #222 !important;
 }
