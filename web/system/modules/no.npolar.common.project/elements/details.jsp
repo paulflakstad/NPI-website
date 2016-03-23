@@ -633,6 +633,8 @@ try {
 
 // Don't print text (summary, abstract) fetched from the project entry? (Typically used only when overriding with content from OpenCms)
 boolean suppressApiText = false;
+String ocmsTitle = null;
+String ocmsTitleAbbrev = null;
 String ocmsDescr = null;
 String ocmsLogo = null;
 String autoPubsStr = null;
@@ -647,8 +649,11 @@ if (cmso.existsResource(moreUri)) {
         ocmsLogo = cms.contentshow(container, "Logo");
         if (!CmsAgent.elementExists(ocmsLogo))
             ocmsLogo = null;
-        if (suppressApiText)
+        if (suppressApiText) {
+            ocmsTitle = cms.contentshow(container, "Title");
+            ocmsTitleAbbrev = cms.contentshow(container, "AbbrevTitle");
             ocmsDescr = cms.contentshow(container, "Description");
+        }
         
         //
         // Auto-publications
@@ -1047,8 +1052,14 @@ if (!symbolMappings.isEmpty()) {
 // Process markdown
 //------------------------------------------------------------------------------
 if (suppressApiText) {
-    description = ocmsDescr;
+    if (CmsAgent.elementExists(ocmsTitle))
+        title = ocmsTitle;
+    if (CmsAgent.elementExists(ocmsTitleAbbrev))
+        titleAbbrev = ocmsTitleAbbrev;
+    if (CmsAgent.elementExists(ocmsDescr))
+        description = ocmsDescr;
 } else {
+    title = markdownToHtml(title);
     description = markdownToHtml(description);
     abstr = markdownToHtml(abstr);
 }
@@ -1069,6 +1080,8 @@ if (suppressApiText) {
 request.setAttribute("title", title);
 // Include upper part of main template
 cms.include(T, T_ELEM[0], T_EDIT);
+
+out.println("<!-- API URL: " + serviceUrl + " -->");
 
 out.println("<article class=\"main-content\">");
 out.println("<h1>" + title + (!titleAbbrev.isEmpty() ? " (" + titleAbbrev + ")" : "") + "</h1>");
