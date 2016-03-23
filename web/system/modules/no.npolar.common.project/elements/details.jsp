@@ -645,13 +645,13 @@ if (cmso.existsResource(moreUri)) {
     // An OpenCms file exists for this project: check for special settings
     I_CmsXmlContentContainer container = cms.contentload("singleFile", moreUri, EDITABLE);
     while (container.hasMoreContent()) {
+        ocmsTitle = cms.contentshow(container, "Title");
+        ocmsTitleAbbrev = cms.contentshow(container, "AbbrevTitle");
         suppressApiText = Boolean.valueOf(cms.contentshow(container, "SuppressAPIText")).booleanValue();
         ocmsLogo = cms.contentshow(container, "Logo");
         if (!CmsAgent.elementExists(ocmsLogo))
             ocmsLogo = null;
         if (suppressApiText) {
-            ocmsTitle = cms.contentshow(container, "Title");
-            ocmsTitleAbbrev = cms.contentshow(container, "AbbrevTitle");
             ocmsDescr = cms.contentshow(container, "Description");
         }
         
@@ -1047,19 +1047,26 @@ if (!symbolMappings.isEmpty()) {
     }
 }
 
+// -----------------------------------------------------------------------------
+// Check for title overrides
+//------------------------------------------------------------------------------
+if (CmsAgent.elementExists(ocmsTitle)) {
+    title = ocmsTitle;
+}
+if (CmsAgent.elementExists(ocmsTitleAbbrev)) {
+    titleAbbrev = ocmsTitleAbbrev;
+}
+
 
 // -----------------------------------------------------------------------------
 // Process markdown
 //------------------------------------------------------------------------------
 if (suppressApiText) {
-    if (CmsAgent.elementExists(ocmsTitle))
-        title = ocmsTitle;
-    if (CmsAgent.elementExists(ocmsTitleAbbrev))
-        titleAbbrev = ocmsTitleAbbrev;
-    if (CmsAgent.elementExists(ocmsDescr))
+    if (CmsAgent.elementExists(ocmsDescr)) {
         description = ocmsDescr;
+    }
 } else {
-    title = markdownToHtml(title);
+    //title = markdownToHtml(title);
     description = markdownToHtml(description);
     abstr = markdownToHtml(abstr);
 }
