@@ -1070,6 +1070,7 @@ request.setAttribute("title", title);
 // Include upper part of main template
 cms.include(T, T_ELEM[0], T_EDIT);
 
+out.println("<article class=\"main-content\">");
 out.println("<h1>" + title + (!titleAbbrev.isEmpty() ? " (" + titleAbbrev + ")" : "") + "</h1>");
 if (description == null || description.isEmpty())
     description = "<em>" + LABEL_NO_DESCR + "</em>";
@@ -1077,7 +1078,7 @@ if (description == null || description.isEmpty())
 out.println("<div class=\"ingress\">" + description + "</div>");
 //out.println("<div class=\"ingress\" style=\"margin-bottom:1em;\">" + description + "</div>");
 
-out.println("<div class=\"event-links nofloat\" style=\"font-size:0.7em; padding-bottom:0.6em; margin:0 0 1rem 0; box-shadow:none; border:none;\">");
+out.println("<div class=\"event-links nofloat\" style=\"padding-bottom:0.6em; margin:0 0 1rem 0; box-shadow:none; border:none;\">");
 
 if (ocmsLogo != null) {
     out.println("<span class=\"media pull-right thumb\">"
@@ -1363,6 +1364,7 @@ if (autoPubs) {
     }
 }
 
+out.println("</article>");
 
 
 // Include lower part of main template
