@@ -13,4 +13,5 @@ $(document).ready( function() {
     $(window).resize( function() {
         toggleVisibility(link);
     });
+    $('#party').hover(function() { $(this).addClass('revealed') });
 });

@@ -51,6 +51,68 @@
     }
 }
 
+/* 
+ * Peek animation with a "pause" at the end, intended for infinite animations.
+ * Use with a long animation time, e.g. 10s
+ */
+@keyframes peek-and-wait {
+    0%, 
+    20%,
+    100% {
+        -webkit-transform: translate3d(-940px, 180px, 0);
+        -moz-transform: translate3d(-940px, 180px, 0);
+        -o-transform: translate3d(-940px, 180px, 0);
+        transform: translate3d(-940px, 180px, 0);
+    }
+    10% {
+        -webkit-transform: translate3d(-760px, 180px, 0);
+        -moz-transform: translate3d(-760px, 180px, 0);
+        -o-transform: translate3d(-760px, 180px, 0);
+        transform: translate3d(-760px, 180px, 0);
+    }
+}
+@-webkit-keyframes peek-and-wait {
+    0%, 
+    20%,
+    100% {
+        -webkit-transform: translate3d(-940px, 180px, 0);
+    }
+    10% {
+        -webkit-transform: translate3d(-760px, 180px, 0);
+    }
+}
+@-moz-keyframes peek-and-wait {
+    0%, 
+    20%,
+    100% {
+        -moz-transform: translate3d(-940px, 180px, 0);
+    }
+    10% {
+        -moz-transform: translate3d(-760px, 180px, 0);
+    }
+}
+
+@-ms-keyframes peek-and-wait {
+    0%, 
+    20%,
+    100% {
+        -o-transform: translate3d(-940px, 180px, 0);
+    }
+    10% {
+        -o-transform: translate3d(-760px, 180px, 0);
+    }
+}
+@-o-keyframes peek-and-wait {
+    0%, 
+    20%,
+    100% {
+        -o-transform: translate3d(-940px, 180px, 0);
+    }
+    10% {
+        -o-transform: translate3d(-760px, 180px, 0);
+    }
+}
+
 #party {
     display:none;
 }
@@ -70,11 +132,11 @@
     top:0;
     transform: translate3d(-940px,180px,0);
     backface-visibility: hidden;
-    -webkit-animation: peek 2s cubic-bezier(0,1,0,1) 1;
-    -moz-animation: peek 2s cubic-bezier(0,1,0,1) 1;
-    -ms-animation: peek 2s cubic-bezier(0,1,0,1) 1;
-    -o-animation: peek 2s cubic-bezier(0,1,0,1) 1;
-    animation: peek 2s cubic-bezier(0,1,0,1) 1;
+    -webkit-animation: peek-and-wait 10s cubic-bezier(0,1,0,1) infinite;
+    -moz-animation: peek-and-wait 10s cubic-bezier(0,1,0,1) infinite;
+    -ms-animation: peek-and-wait 10s cubic-bezier(0,1,0,1) infinite;
+    -o-animation: peek-and-wait 10s cubic-bezier(0,1,0,1) infinite;
+    animation: peek-and-wait 10s cubic-bezier(0,1,0,1) infinite;
     -webkit-transition: -webkit-transform 0.5s cubic-bezier(0,1,0,1);
     -moz-transition: -moz-transform 0.5s cubic-bezier(0,1,0,1);
     -ms-transition: -ms-transform 0.5s cubic-bezier(0,1,0,1);
@@ -94,4 +156,8 @@
     -o-transition: -o-transform 0.5s cubic-bezier(0,1,0,1), box-shadow 0.5s ease-in-out;
     transition: transform 0.5s cubic-bezier(0,1,0,1), box-shadow 0.5s ease-in-out;
     box-shadow:1em 0 3em rgba(0,0,0,1);
+}
+.cssanimations.csstransforms3d #party.revealed,
+.cssanimations.csstransforms3d #party:hover {
+    animation:none;
 }
