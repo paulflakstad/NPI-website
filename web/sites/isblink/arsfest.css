@@ -15,7 +15,7 @@
 }
 @-webkit-keyframes peek {
     0%, 
-	100% {
+    100% {
         -webkit-transform: translate3d(0, 0, 0);
     }
     50% {
@@ -52,23 +52,23 @@
 }
 
 #party {
-    display:none;
 }
 
 #party {
-    left:-940px;
-    top:180px;
+    left: -940px;
+    top: 180px;
+    position: fixed;
+    -webkit-transition: left 0.5s;
+    -moz-transition: left 0.5s;
+    -ms-transition: left 0.5s;
+    -o-transition: left 0.5s;
+    transition: left 0.5s;
 }
 #party:hover {
-    left:0;
+    left: 0;
 }
 
 .cssanimations.csstransforms3d #party {
-    display: block;
-    position: fixed;
-    /*left:0;
-    top:0;*/
-    /*transform: translate3d(-940px,180px,0);*/
     transform: translate3d(0, 0, 0);
     backface-visibility: hidden;
     -webkit-animation: peek 2s cubic-bezier(0,1,0,1) 1, shake 1.5s 2;
