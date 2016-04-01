@@ -128,9 +128,9 @@ try {
     if (!resources.isEmpty()) {
         iResources = resources.iterator();
         %>
-        <div style="text-align:center;">
-        <h2>Nye fjes :)</h2>
-        <ul style="display: block; padding:0; margin:0; list-style: none; width:100%;">
+        <div class="faces">
+        <h2 class="faces__heading">Nye fjes :)</h2>
+        <ul class="list--h avatar-list">
         <%
         while (iResources.hasNext()) {
             CmsResource r = iResources.next();
@@ -138,21 +138,18 @@ try {
             String imgSrc = null;
             String altText = cms.property("Title", collectedResourceUri, "");
             String tooltipText = cms.property("Description", collectedResourceUri, altText);
-            String noImgAnchorStyle = "";
             try {
                 imgSrc = getFeaturedImageSrc(cms, collectedResourceUri, 250);
             } catch (Exception e) {
-                //
                 imgSrc = "/no/images/ansatte/person.png";
-                //noImgAnchorStyle = " display: inline-block; font-size: 50px; margin: 0; padding: 0; text-align: center; vertical-align: bottom; width: 100%;";
             }
             %>
-            <li style="display:inline-block; width:12%; border:none; padding:0; margin:0;">
-                <a href="<%= cms.link(collectedResourceUri) %>" data-tooltip="<%= tooltipText %>" style="display:block; position:relative;<%= noImgAnchorStyle %>">
+            <li class="avatar avatar--round">
+                <a href="<%= cms.link(collectedResourceUri) %>" data-tooltip="<%= tooltipText %>">
                     <% if (imgSrc != null) { %>
-                    <img src="<%= cms.link(imgSrc) %>" alt="<%= altText %>" style="display:block;" />
+                    <img src="<%= cms.link(imgSrc) %>" alt="<%= altText %>" />
                     <% } else { %>
-                    <i class="icon-user" style="position:absolute; top:0; right:0; bottom:0; left:0; margin: 0 -0.2em;"></i>
+                    <i class="icon-user"></i>
                     <% }%>
                 </a>
             </li>
