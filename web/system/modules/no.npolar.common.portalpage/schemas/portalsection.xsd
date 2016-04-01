@@ -20,7 +20,7 @@
             <xsd:element name="Boxed" type="OpenCmsBoolean" default="false" />
             <xsd:element name="TextAsHoverBox" type="OpenCmsBoolean" default="true" />
             <xsd:element name="DynamicContent" type="OpenCmsVfsFile" minOccurs="0" maxOccurs="1" />
-            <xsd:element name="MoreLink" type="OpenCmsVfsFile" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="MoreLink" type="OpenCmsVarLink" minOccurs="0" maxOccurs="1" />
             <xsd:element name="MoreLinkText" type="OpenCmsString" minOccurs="0" maxOccurs="1" />
             <xsd:element name="Content" type="OpenCmsPortalSectionContent" minOccurs="1" maxOccurs="20" />
         </xsd:sequence>
