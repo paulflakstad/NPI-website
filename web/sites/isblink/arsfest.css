@@ -51,7 +51,8 @@
     }
 }
 
-#party {
+#party img {
+    display: block;
 }
 
 #party {
