@@ -1,31 +1,47 @@
 <aside class="layout-group single article-related article-meta max-width" style="box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.5); margin: 2em auto 3em; max-width: 600px;">
-  <!--<h2 class="article-meta__heading">PolarGAP – pågår nå i Antarktis</h2>-->
-  <div class="article-meta__content">
-    <div class="card card--h card--alt clearfix" id="instafeed"></div>
-  </div>
+    <!--<h2 class="article-meta__heading">PolarGAP – pågår nå i Antarktis</h2>-->
+    <div class="article-meta__content">
+        <div class="card card--h card--alt clearfix" id="instafeed"><em>Loading latest post...</em></div>
+    </div>
 </aside>
 <script type="text/javascript">
+    var settings = {
+        userId : '1981919959', // norskpolarinstitutt
+        tag : 'polargapantarctica',
+        followUri : 'https://www.instagram.com/explore/tags/polargapantarctica/',
+        followText : 'Follow the project on Instagram'
+    };
+    var foundTagMatch = false;
+    
     var feed = new Instafeed({
         get: 'user',
-        userId: '1981919959', // = norskpolarinstitutt
+        userId: settings.userId,
         clientId: '6cce3634bf8f49e9a13750418caa3eb8',
         filter: function(image) {
-            return image.tags.indexOf('polargapantarctica') >= 0;
-        },
-        after: function () {
-            // Limit to max 1 pic
-            var images = $("#instafeed").find('.card__media');
-            if (images.length > 1) {
-                $(images.slice(1, images.length)).remove();
+            if (foundTagMatch) {
+                return false; // Limit to 1 result
             }
-            var descriptions = $("#instafeed").find('.card__content');
-            if (descriptions.length > 1) {
-                $(descriptions.slice(1, descriptions.length)).remove();
-            }
+            foundTagMatch = image.tags.indexOf(settings.tag) >= 0;
+            return foundTagMatch;
         },
-        limit: 100,
+        limit: 1000,
         sortBy: 'most-recent',
-        template: '<a class="card__media" href="{{link}}"><img src="{{image}}" alt="View this photo on Instagram" /></a><div class="card__content"><p lang="en" style="font-family:Georgia, Serif; font-style:italic; padding-top:0;">{{caption}}</p><a href="https://www.instagram.com/norskpolarinstitutt/" style="width:auto; font-size:1em;" class="cta"><i class="icon-instagram"></i> Follow the project on Instagram</a></div>'
+        success: function(/*json*/response) {
+            document.getElementById('instafeed').innerHTML = '';
+        },
+        error: function(/*string*/errorMessage) {
+            document.getElementById('instafeed').innerHTML = 'Error: ' + errorMessage;
+        },
+        after: function() {
+            if (!foundTagMatch) {
+                document.getElementById('instafeed').innerHTML = '<em>No posts tagged #' + settings.tag + ' :(</em>';
+            }
+        },
+        template: '<a class="card__media" href="{{link}}"><img src="{{image}}" alt="View this photo/video on Instagram" /></a>'
+                + '<div class="card__content">'
+                    + '<p lang="en" style="font-family:Georgia, Serif; font-style:italic; padding-top:0;">{{caption}}</p>'
+                    + '<a href="' + settings.followUri + '" style="width:auto; font-size:1em;" class="cta"><i class="icon-instagram"></i> ' + settings.followText + '</a>'
+                + '</div>'
     });
     feed.run();
 </script>
