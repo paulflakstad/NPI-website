@@ -867,7 +867,8 @@ if (!loggedInUser) {
     <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#async=1"></script>
     <script type="text/javascript">
         var addthis_config = {
-            ui_language: '<%= locale %>'
+            ui_language: '<%= locale %>',
+            pubid: 'ra-526fc8381a670e18'
         };
         addthis.layers({
             'theme': 'transparent',
