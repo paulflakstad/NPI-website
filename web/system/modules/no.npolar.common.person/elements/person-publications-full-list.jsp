@@ -110,7 +110,7 @@ Map<String, String[]> defaultParams = new HashMap<String, String[]>();
 // Don't include drafts ("draft=no" will not work - entries *missing* "draft" field will also be included)
 defaultParams.put("not-draft", new String[]{ "yes" });
 // Fetch only published or accepted publications
-defaultParams.put( 
+defaultParams.put(
         SearchFilter.PARAM_NAME_PREFIX.concat(Publication.JSON_KEY_STATE), 
         new String[]{ Publication.JSON_VAL_STATE_PUBLISHED + "|" + Publication.JSON_VAL_STATE_ACCEPTED }
 ); 
@@ -124,6 +124,7 @@ defaultParams.put(
         new String[]{
             Publication.JSON_KEY_ID 
             + ",_" + Publication.JSON_KEY_ID 
+            + "," + Publication.JSON_KEY_DOI 
             + "," + Publication.JSON_KEY_TITLE
             + "," + Publication.JSON_KEY_TYPE  
             + "," + Publication.JSON_KEY_STATE
