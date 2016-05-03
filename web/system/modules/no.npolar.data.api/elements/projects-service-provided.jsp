@@ -361,20 +361,38 @@ try {
 }
 
 // Set defaults (override regular defaults)
-Map<String, String[]> defaultParams = new HashMap<String, String[]>();
-defaultParams.put("filter-draft", new String[]{ "no" });
+service.addDefaultParameter(
+        // Exclude drafts
+        ProjectService.modNot("draft"), 
+        "yes"
+).addDefaultParameter(
+        // Define what fields we want filters for
+        ProjectService.Param.FACETS, 
+        ProjectService.Delimiter.AND, 
+        "area", 
+        "state", 
+        "topics", 
+        "type"
+).addDefaultParameter(
+        // Get all possible filters (not just "greatest hits")
+        "size-facet", 
+        "9999"
+);
+//Map<String, String[]> defaultParams = new HashMap<String, String[]>();
+//defaultParams.put("filter-draft", new String[]{ "no" });
 //defaultParams.put("filter-state", new String[]{ "published" });
-defaultParams.put("facets", new String[]{ "area,state,topics,type" });  // This is why we're overriding the regular defaults; we want full filter control
-defaultParams.put("size-facet", new String[]{ "9999" }); // Get all possible filters
-service.setDefaultParameters(defaultParams);
+//defaultParams.put("facets", new String[]{ "area,state,topics,type" });  // This is why we're overriding the regular defaults; we want full filter control
+//defaultParams.put("size-facet", new String[]{ "9999" }); // Get all possible filters
+//service.setDefaultParameters(defaultParams);
 
 try {
     // START NEW
-    Map<String, String[]> params = new HashMap<String, String[]>();
+    Map<String, String[]> params = new HashMap<String, String[]>(request.getParameterMap());
     //params.put("sort", new String[]{ "-published-year,-published-date" }); // By not having this in default parameters, we make it URL visible (and user overrideable)
             
-    params.putAll(request.getParameterMap());
+    //params.putAll(request.getParameterMap());
     
+    // ToDo: Is encoding absolutely necessary here???
     Iterator<String> iParam = params.keySet().iterator();
     while (iParam.hasNext()) {
         String key = iParam.next();
@@ -386,12 +404,12 @@ try {
         }
         params.put(key, val);
         //*/
-    }       
+    }
     
-    
-    
-    if (!params.containsKey("q"))
-        params.put("q", new String[]{ "" });
+    if (!params.containsKey("q")) {
+        //params.put("q", new String[]{ "" });
+        service.setFreetextQuery("");
+    }
     //else
     //    params.put("q", new String[] { URLEncoder.encode(params.get("q")[0], "utf-8") });
     

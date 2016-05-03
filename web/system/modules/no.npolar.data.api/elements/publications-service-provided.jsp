@@ -65,10 +65,10 @@ static List<String> sw = new ArrayList<String>();
  */
 public static Map<String, String> getDefaultParamMap() {
     if (dp.isEmpty()) {
-        dp.put(APIService.PARAM_SORT_BY, APIService.PARAM_VAL_PREFIX_REVERSE+Publication.JSON_KEY_PUB_TIME);
+        dp.put(PublicationService.Param.SORT_BY, PublicationService.modReverse(Publication.Key.PUB_TIME));
         //dp.put("sort", "-publication_year");
-        dp.put(APIService.PARAM_FORMAT, APIService.PARAM_VAL_FORMAT_JSON);
-        dp.put(SearchFilter.PARAM_NAME_PREFIX+Publication.JSON_KEY_DRAFT, Publication.JSON_VAL_DRAFT_FALSE);
+        dp.put(PublicationService.Param.FORMAT, APIService.ParamVal.FORMAT_JSON);
+        dp.put(PublicationService.modFilter(Publication.Key.DRAFT), Publication.Val.DRAFT_FALSE);
     }
     return dp;
 }
@@ -100,7 +100,7 @@ public static String getDynamicParams(CmsAgent cms, boolean includeStart) {
         Iterator<String> pNames = pm.keySet().iterator();
         while (pNames.hasNext()) {
             String pName = pNames.next();
-            if (APIService.PARAM_START_AT.equals(pName) && !includeStart
+            if (PublicationService.Param.START_AT.equals(pName) && !includeStart
                     || getDefaultParamMap().containsKey(pName))
                 continue;
             String pValue = "";
@@ -109,21 +109,21 @@ public static String getDynamicParams(CmsAgent cms, boolean includeStart) {
         }
     }
     else {
-        String start = cms.getRequest().getParameter(APIService.PARAM_START_AT);
+        String start = cms.getRequest().getParameter(APIService.Param.START_AT);
 
         // Query
         try {
-            s += APIService.PARAM_QUERY + "=" + URLEncoder.encode(getParameter(cms, APIService.PARAM_QUERY), "utf-8");
+            s += PublicationService.Param.QUERY + "=" + URLEncoder.encode(getParameter(cms, PublicationService.Param.QUERY), "utf-8");
         } catch (Exception e) {
-            s += APIService.PARAM_QUERY + "=" + getParameter(cms, APIService.PARAM_QUERY);
+            s += PublicationService.Param.QUERY + "=" + getParameter(cms, PublicationService.Param.QUERY);
         }
 
         // Items per page
-        s += "&" + APIService.PARAM_RESULTS_COUNT + "=" + getLimit(cms);
+        s += "&" + PublicationService.Param.RESULTS_LIMIT + "=" + getLimit(cms);
 
         // Start index
         if (includeStart && (start != null && !start.isEmpty()))
-            s += "&" + APIService.PARAM_START_AT + "=" + start;
+            s += "&" + PublicationService.Param.START_AT + "=" + start;
     }
     return s;
 }
@@ -141,7 +141,7 @@ public static String getParameter(CmsAgent cms, String paramName) {
  * Gets the current limit value, with fallback to default value.
  */
 public static String getLimit(CmsAgent cms) {
-    return getParameter(cms, APIService.PARAM_RESULTS_COUNT).isEmpty() ? "25" : getParameter(cms, APIService.PARAM_RESULTS_COUNT);
+    return getParameter(cms, PublicationService.Param.RESULTS_LIMIT).isEmpty() ? "25" : getParameter(cms, PublicationService.Param.RESULTS_LIMIT);
 }
 
 /** 
@@ -183,7 +183,7 @@ public static Map<String, String[]> getFilterParams(Map<String, String[]> parame
     Map<String, String[]> params = new HashMap<String, String[]>(parameters);
     List<String> keysToRemove = new ArrayList<String>();
     for (String key : params.keySet()) {
-        if (!key.startsWith(SearchFilter.PARAM_NAME_PREFIX)) {
+        if (!key.startsWith(PublicationService.Param.MOD_FILTER)) {
             keysToRemove.add(key);
         }
     }
@@ -412,7 +412,7 @@ final String ERROR_MSG_NO_SERVICE = loc.equalsIgnoreCase("no") ?
             + "<p>Please try reloading this page in a little while.</p>"
             + "<p style=\"font-style:italic;\">If the error persist, we would appreciate it if you could take the time to <a href=\"mailto:web@npolar.no\">send us a short note about this</a>.</p>");
 try {
-    URL url = new URL(pubService.getServiceBaseURL().concat("?" + APIService.PARAM_QUERY + "="));
+    URL url = new URL(pubService.getServiceBaseURL().concat("?" + PublicationService.Param.QUERY + "="));
     // set the connection timeout value to 30 seconds (30000 milliseconds)
     //final HttpParams httpParams = new BasicHttpParams();
     //HttpConnectionParams.setConnectionTimeout(httpParams, 30000);
@@ -456,73 +456,97 @@ try {
 
 // Set new defaults (hidden / not overrideable parameters), overriding the standard defaults
 Map<String, String[]> defaultParams = new HashMap<String, String[]>();
-// Don't include drafts
-defaultParams.put(
-        APIService.PARAM_MODIFIER_NOT+Publication.JSON_KEY_DRAFT, 
-        new String[]{ Publication.JSON_VAL_DRAFT_TRUE }
+
+pubService.addDefaultParameter(
+        // Don't include drafts
+        PublicationService.modNot(Publication.Key.DRAFT),
+        Publication.Val.DRAFT_TRUE
+).addDefaultParameter(
+        // Require state: published or accepted
+        PublicationService.modFilter(Publication.Key.STATE), 
+        PublicationService.combine(PublicationService.Delimiter.OR, Publication.Val.STATE_PUBLISHED, Publication.Val.STATE_ACCEPTED)
+).addDefaultParameter(
+        // Define which fields we want filters for
+        PublicationService.Param.FACETS,
+        PublicationService.Delimiter.AND,
+        Publication.Key.TOPICS,
+        Publication.Key.TYPE,
+        Publication.Key.STATIONS,
+        Publication.Key.PROGRAMMES
+).addDefaultParameter(
+        "size-facet",// PublicationService.Param.FACETS_SIZE,
+        "9999"
+).addDefaultParameter(
+        // Filter on "Yes, publication is affiliated to NPI"
+        PublicationService.modFilter(Publication.Key.ORGS_ID),
+        Publication.Val.ORG_NPI
 ); 
-// Require state: published or accepted
-defaultParams.put(
-        SearchFilter.PARAM_NAME_PREFIX+Publication.JSON_KEY_STATE, 
-        new String[]{ Publication.JSON_VAL_STATE_PUBLISHED + "|" + Publication.JSON_VAL_STATE_ACCEPTED }
-); 
+/*
 //defaultParams.put("filter-state", new String[]{ "published" }); // Require state: published
 //defaultParams.put("facets", new String[]{ "topics,category,publication_type,research_stations,locations" }); // This is why we're overriding the regular defaults; we want full filter control
 //defaultParams.put("facets", new String[]{ "topics,category,publication_type,research_stations,area" });
-defaultParams.put(APIService.PARAM_FACETS, 
+defaultParams.put(APIService.Param.FACETS, 
         new String[]{ 
-            Publication.JSON_KEY_TOPICS // "topics"
+            Publication.Key.TOPICS // "topics"
             //+ ",category"
-            + "," + Publication.JSON_KEY_TYPE // "publication_type"
-            + "," + Publication.JSON_KEY_STATIONS // "research_stations"
-            + "," + Publication.JSON_KEY_PROGRAMMES // "programme"
+            + "," + Publication.Key.TYPE // "publication_type"
+            + "," + Publication.Key.STATIONS // "research_stations"
+            + "," + Publication.Key.PROGRAMMES // "programme"
         }
 );
 defaultParams.put("size-facet", new String[]{ "9999" }); // Get all possible filters
 // Filter on "Yes, publication is affiliated to NPI activity" (require this box was checked)
 defaultParams.put(
-        SearchFilter.PARAM_NAME_PREFIX+Publication.JSON_KEY_ORGS_ID,
-        new String[] { Publication.JSON_VAL_ORG_NPI }
+        PublicationService.Param.MOD_FILTER+Publication.Key.ORGS_ID,
+        new String[] { Publication.Val.ORG_NPI }
 ); 
 pubService.setDefaultParameters(defaultParams);
-
+//*/
 try {
     // Overrideable parameters
-    Map<String, String[]> params = new HashMap<String, String[]>();
-    String paramQuery = cms.getRequest().getParameter(APIService.PARAM_QUERY);
-    // Make sorting overrideable?
+    Map<String, String[]> params = new HashMap<String, String[]>(request.getParameterMap());
+    String paramQuery = cms.getRequest().getParameter(PublicationService.Param.QUERY);
+    
     if (paramQuery == null || paramQuery.isEmpty()) {
-        params.put(
-                APIService.PARAM_SORT_BY, 
-                new String[]{ APIService.PARAM_VAL_PREFIX_REVERSE+Publication.JSON_KEY_PUB_TIME }
+        // Set sort order to "newest first"
+        pubService.addParameter(
+                PublicationService.Param.SORT_BY, 
+                PublicationService.modReverse(Publication.Key.PUB_TIME)
         );
+        /*params.put(
+                PublicationService.Param.SORT_BY, 
+                new String[]{ PublicationService.ParamVal.PREFIX_REVERSE+Publication.Key.PUB_TIME }
+        );*/
     } else {
-        // Use default sorting
+        // Use default sort order (typically "by relevancy")
     }
     
     if (ylow > -1 || yhigh > -1) {
-        params.put(
-                SearchFilter.PARAM_NAME_PREFIX+Publication.JSON_KEY_PUB_TIME, 
-                new String[] { normalizeTimestampFilterValue(ylow, yhigh) }
+        pubService.addParameter(
+                PublicationService.modFilter(Publication.Key.PUB_TIME), 
+                normalizeTimestampFilterValue(ylow, yhigh)
         );
+        /*params.put(
+                SearchFilter.PARAM_NAME_PREFIX+Publication.Key.PUB_TIME, 
+                new String[] { normalizeTimestampFilterValue(ylow, yhigh) }
+        );*/
     }
             
-    params.putAll(request.getParameterMap());
+    //params.putAll(request.getParameterMap());
     
+    // ToDo: Do we really need to encode here..?
     Iterator<String> iParam = params.keySet().iterator();
     while (iParam.hasNext()) {
         String key = iParam.next();
         //params.put(key, new String[] { URLEncoder.encode(params.get(key)[0], "utf-8") });
         //*
         String[] val = params.get(key);
-        
+        /*
         // Is it a filter?
-        if (key.startsWith(SearchFilter.PARAM_NAME_PREFIX)) {
-            try {
-                
-            } catch (Exception e) {
-            }
+        if (key.startsWith(PublicationService.Param.MOD_FILTER)) {
+            try {} catch (Exception e) {}
         }
+        */
         // Encode is necessary to get predictable results
         for (int iVal = 0; iVal < val.length; iVal++) {
             val[iVal] = URLEncoder.encode(val[iVal], "utf-8");
@@ -532,13 +556,16 @@ try {
     }
     
     
+    //pubService.addParameters(params);
     
-    if (!params.containsKey(APIService.PARAM_QUERY)) {
-        params.put(APIService.PARAM_QUERY, new String[]{ "" });
+    if (!params.containsKey(PublicationService.Param.QUERY)) {
+        pubService.setFreetextQuery("");
+        //params.put(PublicationService.Param.QUERY, new String[]{ "" });
     } //else {
         //params.put("q", new String[] { URLEncoder.encode(params.get("q")[0], "utf-8") });
     //}
     
+    // Fetch the list, passing all dynamic parameters – including those from the request
     List<Publication> pubList = pubService.getPublicationList(params);
     //out.println("<h1>Matched " + pubService.getTotalResults() + " publications (" + pubList.size() + " per page), " 
     //        + (pubService.isUserFiltered() ? "" : " NOT") + " filtered by user.</h1>");
@@ -557,10 +584,10 @@ try {
     
     // Adjust the order of the  filter sets
     filterSets.order(new String[] { 
-        Publication.JSON_KEY_TOPICS // topics
-        ,Publication.JSON_KEY_TYPE //"publication_type"
-        ,Publication.JSON_KEY_STATIONS //"research_stations"
-        ,Publication.JSON_KEY_PROGRAMMES //"programme" 
+        Publication.Key.TOPICS // topics
+        ,Publication.Key.TYPE //"publication_type"
+        ,Publication.Key.STATIONS //"research_stations"
+        ,Publication.Key.PROGRAMMES //"programme" 
     });
     
     String lastSearchPhrase = pubService.getLastSearchPhrase();
@@ -578,8 +605,8 @@ try {
             <p class="smalltext"><%= disclaimer %></p>
             
             <form action="<%= cms.link(requestFileUri) %>" method="get">
-                <input name="<%= APIService.PARAM_QUERY %>" type="search" value="<%= lastSearchPhrase == null ? "" : CmsStringUtil.escapeHtml(lastSearchPhrase) %>" />
-                <input name="<%= APIService.PARAM_START_AT %>" type="hidden" value="0" />
+                <input name="<%= APIService.Param.QUERY %>" type="search" value="<%= lastSearchPhrase == null ? "" : CmsStringUtil.escapeHtml(lastSearchPhrase) %>" />
+                <input name="<%= APIService.Param.START_AT %>" type="hidden" value="0" />
                 <%
                 // If we don't want any existing "regular" filters to reset upon 
                 // submitting the form (i.e. when selecting a year range), they 
@@ -587,7 +614,7 @@ try {
                 Map<String, String[]> activeFilters = getFilterParams(params);
                 if (!activeFilters.isEmpty()) {
                     for (String key : activeFilters.keySet()) {
-                        if (key.equals(SearchFilter.PARAM_NAME_PREFIX+Publication.JSON_KEY_PUB_TIME)) {
+                        if (key.equals(SearchFilter.PARAM_NAME_PREFIX+Publication.Key.PUB_TIME)) {
                             continue;
                         } 
                         
@@ -668,7 +695,8 @@ try {
                                                 %>
                                                 <li>
                                                 <%
-                                                out.println("<a href=\"" + cms.link(requestFileUri + "?" + CmsStringUtil.escapeHtml(filter.getUrlPartParameters())) + "\">" 
+                                                out.println("<a" + (filter.isActive() ? (" class=\"filter--active\"") : "") 
+                                                                + " href=\"" + cms.link(requestFileUri + "?" + CmsStringUtil.escapeHtml(filter.getUrlPartParameters())) + "\">" 
                                                                     + (filter.isActive() ? "<span style=\"background:red; border-radius:3px; color:white; padding:0 0.3em;\" class=\"remove-filter\">X</span> " : "")
                                                                     + filterText
                                                                     + "<span class=\"filter__num-matches\"> (" + filter.getCount() + ")</span>"
@@ -691,7 +719,7 @@ try {
                             Map<String, String[]> paramsTemp = new HashMap<String, String[]>(params);
                             paramsTemp.remove(YLOW);
                             paramsTemp.remove(YHIGH);
-                            paramsTemp.remove(SearchFilter.PARAM_NAME_PREFIX+Publication.JSON_KEY_PUB_TIME);
+                            paramsTemp.remove(PublicationService.modFilter(Publication.Key.PUB_TIME));
                             String yearRemoveLinkUrl = CmsRequestUtil.appendParameters(cms.link(requestFileUri), paramsTemp, false);
                             String yearRemoveLinkText = (ylow > -1 ? String.valueOf(ylow).concat("&ndash;").concat(yhigh > -1 ? "" : String.valueOf(ylow)) : "") 
                                                         + (yhigh > -1 ? String.valueOf(yhigh).concat( ylow > -1 ? "" : "&ndash".concat(String.valueOf(yhigh)) ) : "");
@@ -787,7 +815,7 @@ try {
                                 || (splitNav && (pageCounter > (pageNumber-3) && pageCounter < (pageNumber+3)))) {
                         if (pageCounter != pageNumber) { // Not the current page: print a link
                         %>
-                            <a href="<%= cms.link(requestFileUri + "?" + StringEscapeUtils.escapeHtml(getDynamicParams(cms, false) + "&start=" + ((pageCounter-1) * itemsPerPage))) %>"><%= pageCounter %></a>
+                            <a href="<%= cms.link(requestFileUri + "?" + StringEscapeUtils.escapeHtml(getDynamicParams(cms, false) + "&" + APIService.Param.START_AT + "=" + ((pageCounter-1) * itemsPerPage))) %>"><%= pageCounter %></a>
                         <% 
                         }
                         else { // The current page: no link

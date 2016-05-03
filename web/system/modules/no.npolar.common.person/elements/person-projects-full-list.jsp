@@ -33,9 +33,9 @@ public String getStackTrace(Exception e) {
 %><%
 // JSP action element + some commonly used stuff
 CmsAgent cms            = new CmsAgent(pageContext, request, response);
-CmsObject cmso          = cms.getCmsObject();
-String requestFileUri   = cms.getRequestContext().getUri();
-String requestFolderUri = cms.getRequestContext().getFolderUri();
+//CmsObject cmso          = cms.getCmsObject();
+//String requestFileUri   = cms.getRequestContext().getUri();
+//String requestFolderUri = cms.getRequestContext().getFolderUri();
 Locale locale           = cms.getRequestContext().getLocale();
 String loc              = locale.toString();
 
@@ -67,6 +67,46 @@ final boolean LOGGED_IN_USER = OpenCms.getRoleManager().hasRole(cms.getCmsObject
 // Output "debug" info?
 final boolean DEBUG = false;
 
+ProjectService service = null;
+try {
+    service = new ProjectService(cms.getRequestContext().getLocale());
+    service.addFilter(
+            ProjectService.combine(ProjectService.Delimiter.CHILD, Project.Key.PEOPLE, Project.Key.PERSON_EMAIL),
+            email
+    ).addParameter(
+            ProjectService.modNot("draft"),
+            "yes"
+    ).addParameter(
+            ProjectService.Param.SORT_BY,
+            ProjectService.modReverse(Project.Key.BEGIN)
+    ).addParameter(
+            ProjectService.Param.RESULTS_LIMIT,
+            ProjectService.ParamVal.RESULTS_LIMIT_NO_LIMIT
+    );
+    // The personal pages in the CMS has an option to include only certain types 
+    // of projects (based on their state), so add a filter if this is used
+    if (projectTypes != null && !projectTypes.isEmpty()) {
+        service.addFilter(
+                "state", 
+                projectTypes 
+        );  
+    }
+    
+    // Set freetext query empty => catch all
+    service.setFreetextQuery("");
+} catch (Exception e) {
+    out.println("Unable to retrieve projects list. Please try again later.");
+    if (LOGGED_IN_USER) {
+    out.println("<h3>ERROR configuring project service instance!</h3>");
+        out.println("<p>Seeing as you're logged in, here's what happened:</p>"
+                    + "<div class=\"stacktrace\" style=\"overflow: auto; font-size: 0.9em; font-family: monospace; background: #fdd; padding: 1em; border: 1px solid #900;\">"
+                        + getStackTrace(e) 
+                    + "</div>");
+    }
+    return;
+}
+
+/*
 //
 // Parameters to use in the request to the service:
 //
@@ -77,8 +117,10 @@ params.put("sort"               , new String[]{ "-start_date" }); // Sort by sta
 //params.put("format"             , new String[]{ "json" }); // Explicitly request the a response in JSON format
 params.put("limit"              , new String[]{ "all" }); // Limit the results
 params.put("filter-draft"       , new String[]{ "no" }); // Don't include projects flagged as drafts
-if (projectTypes != null && !projectTypes.isEmpty())
+if (projectTypes != null && !projectTypes.isEmpty()) {
     params.put("filter-state", new String[]{ projectTypes });
+}
+//*/
 
 //
 // Fetch projects
@@ -86,8 +128,9 @@ if (projectTypes != null && !projectTypes.isEmpty())
  
 GroupedCollection<Project> projects = null;
 try {
-    ProjectService service = new ProjectService(cms.getRequestContext().getLocale());
-    projects = service.getProjects(params);
+    projects = service.getProjects();
+    //ProjectService service = new ProjectService(cms.getRequestContext().getLocale());
+    //projects = service.getProjects(params);
     if (DEBUG) { out.println("Read " + (projects == null ? "null" : projects.size()) + " projects from service URL <a href=\"" + service.getLastServiceURL() + "\" target=\"_blank\">" + service.getLastServiceURL() + "</a>."); }
 } catch (Exception e) {
     out.println("An unexpected error occured while constructing the projects list.");

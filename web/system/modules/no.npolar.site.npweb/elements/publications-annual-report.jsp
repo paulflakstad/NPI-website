@@ -1,18 +1,23 @@
 <%-- 
     Document   : publications-annual-report
     Created on : Dec 13, 2013, 1:12:32 PM
-    Author     : flakstad
---%><%@page import="java.util.Collections"%>
-<%@page import="java.util.List"%>
-<%@page import="java.util.ResourceBundle"%>
-<%@page import="no.npolar.data.api.*,
+    Author     : Paul-Inge Flakstad, Norwegian Polar Institute
+--%><%@page import="no.npolar.data.api.*,
                  no.npolar.util.CmsAgent,
+                 java.text.Collator,
                  java.util.Calendar,
+                 java.util.Comparator,
+                 java.util.Collections,
                  java.util.GregorianCalendar,
-                 java.util.Map,
                  java.util.HashMap,
-                 java.util.Locale,
                  java.util.Iterator,
+                 java.util.List,
+                 java.util.Locale,
+                 java.util.Map,
+                 java.util.ResourceBundle,
+                 org.apache.commons.lang.StringUtils,
+                 org.opencms.util.CmsHtmlExtractor,
+                 org.opencms.util.CmsStringUtil,
                  org.opencms.main.OpenCms,
                  org.opencms.security.CmsRole" session="true"
 %><%!
@@ -60,6 +65,53 @@ public static String createYearParameter(String year) {
 public static String createYearParameter(int year) {
     return createYearParameter(String.valueOf(year));
 }
+
+/**
+ * Returns the sort string for the given cite string. For example, "von Quillfeldt"
+ * will return "QUILLFELDT", "Nilsen" will return "NILSEN", and "Aars" will 
+ * return "ÅRS".
+ */
+public static String getSortReady(String citeString) {
+    if (citeString == null || CmsStringUtil.isEmptyOrWhitespaceOnly(citeString))
+        return ""; // Nothing to work with ...
+    
+    int i = 0;
+    while (true) {
+        try {
+            String letter = String.valueOf(citeString.charAt(i));
+            /* // Skip this routine, we want "Aars" sorted as "A", not "Å" here
+            if (i == 0 && letter.equalsIgnoreCase("A")) {
+                try {
+                    String secondLetter = String.valueOf(citeString.charAt(i+1));
+                    if (secondLetter.equalsIgnoreCase("a")) { // We have a case of "Aa" => make it an "Å"
+                        try {
+                            return "Å" + citeString.substring(i+2).toUpperCase();
+                        } catch (Exception ee) {
+                            return "Å";
+                        }
+                    }
+                } catch (Exception e) {
+                    // Well never mind that then
+                }
+            }*/
+            if (StringUtils.isAllUpperCase(letter)) {
+                try {
+                    return letter + citeString.substring(i+1).toUpperCase(); // Uppercase letter - return it
+                } catch (Exception ee) {
+                    return letter.toUpperCase();
+                }
+            }
+        } catch (Exception e) {
+            break; // Evaluated all letters - break the endless loop
+        }
+        i++; // "Continue to next letter"
+    }
+    try {
+        return String.valueOf(citeString).toUpperCase(); // Fallback to the cite string itself, but all uppercase
+    } catch (Exception e) {
+        return "A"; // Last resort (should never happen really)
+    }
+}
 %><%
 // JSP action element + some commonly used stuff
 CmsAgent cms            = new CmsAgent(pageContext, request, response);
@@ -81,8 +133,6 @@ if (request.getParameter("locale") != null)  {
 
 String year = cms.getRequest().getParameter("year");
 if (year == null || year.isEmpty()) {
-    //out.println("<!-- Required parameter 'year' was missing. Unable to continue. -->");
-    //return;
     year = createYearParameter(currentYear);
 } else {
     year = createYearParameter(year);
@@ -91,10 +141,21 @@ if (year == null || year.isEmpty()) {
 //String yearAPIParam = year + "-01-01T00:00:00Z.." + year + "-12-31T23:59:59Z";
 
 %>
+<style type="text/css">
+    .publications a {
+        text-decoration: none;
+        border-bottom: 1px solid rgba(21, 112, 177, 0.45);
+        transition: all 0.3s ease-in-out;
+    }
+    .publications a:hover,  
+    .publications a:focus {
+        border-color: transparent;
+    }
+</style>
 <form action="<%= cms.link(requestFileUri) %>" method="get">
     
     <label for="pubyear"><%= LABEL_YEAR_SELECT %>: </label>
-    <!--<select name="<%= FACET_PREFIX + Publication.JSON_KEY_PUB_TIME %>" onchange="submit()" id="pubyear">-->
+    <!--<select name="<%= PublicationService.modFilter(Publication.Key.PUB_TIME) %>" onchange="submit()" id="pubyear">-->
     <select name="year" onchange="submit()" id="pubyear">
         <!--<option value=""><%= LABEL_YEAR_SELECT_OPT_ALL %></option>-->
         <%
@@ -111,11 +172,12 @@ if (year == null || year.isEmpty()) {
         %>
     </select>
 </form>
-
 <%
 
 final boolean LOGGED_IN_USER = OpenCms.getRoleManager().hasRole(cms.getCmsObject(), CmsRole.WORKPLACE_USER);
 //final int LIMIT = 9999;
+
+/* // Parameter maps below are now replaced by addFilter(), addParameter(), addDefaultParameter() etc.
 
 //
 // Parameters: Used when querying the service.
@@ -123,34 +185,76 @@ final boolean LOGGED_IN_USER = OpenCms.getRoleManager().hasRole(cms.getCmsObject
 Map<String, String[]> params = new HashMap<String, String[]>();
 params.put(APIService.PARAM_QUERY, new String[]{ "" }); // Use a catch-all search phrase
 params.put(SearchFilter.PARAM_NAME_PREFIX.concat(Publication.JSON_KEY_PUB_TIME), new String[] { year }); // Filter on the given year (or the current year, if no year was given)
-//params.put("filter-published-year", new String[] { year }); // Filter on the given year (or the current year, if no year was given)
-//params.put("sort", new String[]{ "-publication_year" }); // Sort by publish year, descending
-//params.put("sort", new String[]{ "-published-year,-published-date" }); // Sort by publish year, descending
-//params.put("sort", new String[]{ "people.last_name,people.first_name" }); // Sort by name
+        //params.put("filter-published-year", new String[] { year }); // Filter on the given year (or the current year, if no year was given)
+        //params.put("sort", new String[]{ "-publication_year" }); // Sort by publish year, descending
+        //params.put("sort", new String[]{ "-published-year,-published-date" }); // Sort by publish year, descending
+        //params.put("sort", new String[]{ "people.last_name,people.first_name" }); // Sort by name
 params.put(SearchFilter.PARAM_NAME_PREFIX.concat(Publication.JSON_KEY_ORGS_ID), new String[] { Publication.JSON_VAL_ORG_NPI }); // Filter on checked "Yes, publication is affiliated to NP activity" (require this box was checked)
 params.put(APIService.PARAM_RESULTS_COUNT, new String[]{ APIService.PARAM_VAL_RESULTS_COUNT_LIMITLESS }); // Set an entry limit
-//params.put("filter-draft", new String[]{ "no" }); // Don't allow drafts
-//params.put("filter-state", new String[]{ "published" }); // Allow only published publications
+        //params.put("filter-draft", new String[]{ "no" }); // Don't allow drafts
+        //params.put("filter-state", new String[]{ "published" }); // Allow only published publications
 
 Map<String, String[]> defaultParams = new HashMap<String, String[]>();
 defaultParams.put(APIService.PARAM_MODIFIER_NOT.concat(Publication.JSON_KEY_DRAFT), new String[]{ Publication.JSON_VAL_DRAFT_TRUE }); // Don't include drafts
 defaultParams.put(SearchFilter.PARAM_NAME_PREFIX.concat(Publication.JSON_KEY_STATE), new String[]{ Publication.JSON_VAL_STATE_PUBLISHED }); // Require state: published
-//defaultParams.put("filter-state", new String[]{ Publication.JSON_VAL_STATE_PUBLISHED + "|" + Publication.JSON_VAL_STATE_ACCEPTED }); // Require state: published or accepted
+        //defaultParams.put("filter-state", new String[]{ Publication.JSON_VAL_STATE_PUBLISHED + "|" + Publication.JSON_VAL_STATE_ACCEPTED }); // Require state: published or accepted
 defaultParams.put(APIService.PARAM_FACETS, new String[]{ APIService.PARAM_VAL_FACETS_NONE }); // No facets
 defaultParams.put(APIService.PARAM_SORT_BY, new String[]{ Publication.JSON_KEY_PEOPLE.concat(Publication.JSON_KEY_LNAME).concat(",").concat(Publication.JSON_KEY_PEOPLE.concat(Publication.JSON_KEY_LNAME)) }); // Sort by last name,first name
-//defaultParams.put("sort", new String[]{ "-published-year,-published-date" }); // Sort by publish date, descending (and this is the sort parameter for that)
-
+        //defaultParams.put("sort", new String[]{ "-published-year,-published-date" }); // Sort by publish date, descending (and this is the sort parameter for that)
+*/
+        
 //
 // Access the service
 //
 
 GroupedCollection<Publication> publications = null;
 PublicationService pubService = null;
+        
 ResourceBundle labels = ResourceBundle.getBundle(Labels.getBundleName(), locale);
 try {
     pubService = new PublicationService(cms.getRequestContext().getLocale());
-    pubService.setDefaultParameters(defaultParams);
-    publications = pubService.getPublications(params);
+    //publications = pubService.getPublications();
+            //pubService.setDefaultParameters(defaultParams);
+            //publications = pubService.getPublications(params);
+    pubService.addDefaultParameter(
+            // Don't include drafts
+            PublicationService.modNot(Publication.Key.DRAFT), 
+            Publication.Val.DRAFT_TRUE
+    ).addDefaultParameter(
+            // Require state: published
+            PublicationService.modFilter(Publication.Key.STATE), 
+            Publication.Val.STATE_PUBLISHED
+    ).addDefaultParameter(
+            // No facets
+            PublicationService.Param.FACETS, 
+            PublicationService.ParamVal.FACETS_NONE
+    ).addDefaultParameter(
+            // Sort by last name,first name
+            PublicationService.Param.SORT_BY,
+            PublicationService.combine(PublicationService.Delimiter.AND, 
+                    Publication.Key.PEOPLE+"."+Publication.Key.LNAME, 
+                    Publication.Key.PEOPLE+"."+Publication.Key.FNAME)
+    );
+    pubService.setFreetextQuery(
+            // Catch-all freetext query
+            ""
+    ).addFilter(
+            // Filter on year
+            Publication.Key.PUB_TIME,
+            year
+    ).addFilter(
+            // Filter on NPI as organization
+            Publication.Key.ORGS_ID,
+            Publication.Val.ORG_NPI
+    ).addParameter(
+            // No limit on number of results
+            PublicationService.Param.RESULTS_LIMIT,
+            PublicationService.ParamVal.RESULTS_LIMIT_NO_LIMIT
+    );
+    // Done setting the service parameters
+    
+    // Get the publications
+    publications = pubService.getPublications();
     
     out.println("<!-- \nAPI URL: \n" + pubService.getLastServiceURL() + " \n-->");
     
@@ -166,40 +270,92 @@ try {
     return; // IMPORTANT!
 }
 
-int totalResults = -1;
+//int totalResults = -1;
+
+
 
 
 // -----------------------------------------------------------------------------
 // HTML output
 //------------------------------------------------------------------------------
+
 if (COMMENTS) out.println("<!-- Ready to output HTML, " + publications.size() + " publication(s) in this set. -->");
 if (!publications.isEmpty()) {
-    out.println("<h2>" + publications.size() + " " + labels.getString(Labels.PUB_0).toLowerCase() + " for " + year.substring(0,4) + "</h2>");
+    %>
+    <h2><%= publications.size() %> <%= labels.getString(Labels.PUB_0).toLowerCase() %> for <%= year.substring(0,4) %></h2>
+    <%
+    
+    final Comparator<Publication> COMPARATOR_CITESTRING =
+            new Comparator<Publication>() {
+                //@Override
+                public int compare(Publication pub1, Publication pub2) {
+                    //Collator comparer = Collator.getInstance(new Locale("no")); // Norwegian; put Æ Ø, Å and Aa last
+                    Collator comparer = Collator.getInstance(new Locale("en")); // English; place Æ Ø and Å last, but Aa is sorted normally
+                    try {
+                        return comparer.compare(
+                                getSortReady(CmsHtmlExtractor.extractText(pub1.toString(), "utf-8")), 
+                                getSortReady(CmsHtmlExtractor.extractText(pub2.toString(), "utf-8"))
+                        );
+                    } catch (Exception e) {
+                        return comparer.compare(getSortReady(pub1.toString()), getSortReady(pub2.toString()));
+                    }
+                }
+            };
+    
     
     // Get types of publications
     Iterator<String> iTypes = publications.getTypesContained().iterator();
     while (iTypes.hasNext()) {
         String listType = iTypes.next();
         //out.println("<div class=\"toggleable open\">");
-        out.println("<div class=\"toggleable collapsed\">");
-        List pubGroup = publications.getListGroup(listType);
+        %>
+        <!--<div class="toggleable collapsed">-->
+        <div class="toggleable open">
+        <%
+        List<Publication> pubGroup = publications.getListGroup(listType);
         
-        Collections.sort(pubGroup, Publication.COMPARATOR_CITESTRING);
+        Collections.sort(pubGroup, COMPARATOR_CITESTRING);
+        //Collections.sort(pubGroup, Publication.COMPARATOR_CITESTRING);
         
         Iterator<Publication> iPubs = pubGroup.iterator();
         if (iPubs.hasNext()) {
             //out.println("<h2>" + cms.labelUnicode("label.np.pubtype." + listType) + " (" + publications.getListByType(listType).size() + ")</h2>");
-            out.println("<a class=\"toggletrigger\" href=\"javascript:void(0);\">"
-                                + cms.labelUnicode("label.np.pubtype." + listType) + " (" + publications.getListGroup(listType).size() + ")"
-                        + "</a>");
+            %>
+            <a class="toggletrigger" href="javascript:void(0);">
+                <%= cms.labelUnicode("label.np.pubtype.".concat(listType)) %> (<%= publications.getListGroup(listType).size() %>)
+            </a>
+            <div class="toggletarget publications">
+            <%
+            boolean clean = "yes".equals(request.getParameter("clean"));
             
-            out.println("<div class=\"toggletarget\">");
+            if (!clean){
+                // Use list only for online purposes (and <p> tags for "offline" purposes)
+                %>
+                <ul class="fullwidth line-items">
+                <%
+            }
             
-            out.println("<ul class=\"fullwidth line-items\">");
             while (iPubs.hasNext()) {
-                String citeString = iPubs.next().toString();
-                if ("yes".equals(request.getParameter("clean"))) {
-                    // NB: Requires the Jsoup library! (It's included in the NPI forms module)
+                Publication p = iPubs.next();
+                
+                // Check if this is a part-contribution (e.g. chapter in a book
+                // or report): If yes, AND if the parent (e.g. the complete 
+                // book/report) is also published by the NPI, then SKIP THIS ONE
+                if (p.isPartContribution()) {
+                    try {
+                        Publication parent = new PublicationService(locale).get(p.getParentId());
+                        String parentPublisher = parent.getPublisher();
+                        if (StringUtils.containsIgnoreCase(parentPublisher, "Norwegian Polar Institute") || StringUtils.containsIgnoreCase(parentPublisher, "Norsk Polarinstitutt")) {
+                            out.println("<!--\nskipped (parent already in list):\n" + p.getTitle() + "\n-->");
+                            continue;
+                        }
+                    } catch (Exception e) {}
+                }
+                
+                String citeString = p.toString();
+                if (clean) {
+                    // NB: Requires the Jsoup library! 
+                    // (It's included in the NPI forms module)
                     org.jsoup.nodes.Document doc = org.jsoup.Jsoup.parse(citeString);
                     org.jsoup.safety.Whitelist whitelist = 
                             org.jsoup.safety.Whitelist.simpleText()
@@ -207,26 +363,32 @@ if (!publications.isEmpty()) {
                             .addAttributes("span", "style", "class", "id")
                             .addAttributes("em", "style", "class", "id");
                     
-                    citeString = org.jsoup.Jsoup.clean(doc.html(), whitelist).replaceAll("\\n", "");
+                    citeString = org.jsoup.Jsoup.clean(doc.html(), whitelist)
+                            .replaceAll("\\n", "")
+                            .replace("<br />DOI: ", "DOI:&nbsp;")
+                            .replaceAll("npi\\\"\\>", "npi\" style=\"font-weight:bold;\">");
                 }
-                out.println("<li>" + citeString + "</li>");
+                // Use <p> for "offline" purposes, otherwise use a list item
+                out.println((clean ? "<p>" : "<li>") + citeString + (clean ? "</p>" : "</li>"));
             }
-            out.println("</ul>");
             
-            out.println("</div>");
+            if (!clean) {
+                %>
+                </ul>
+                <%
+            }
+            %>
+            </div>
+            <%
         }
-        out.println("</div>");
+        %>
+        </div>
+        <%
     }
-    /*<script type="text/javascript">
-    $('.toggleable.collapsed > .toggletarget').slideUp(1);
-    $('.toggleable.open > .toggletrigger').append(' <em class="icon-up-open-big"></em>');
-    $('.toggleable.collapsed > .toggletrigger').append(' <em class="icon-down-open-big"></em>');
-    $('.toggleable > .toggletrigger').click(function() { $(this).next('.toggletarget').slideToggle(500); $(this).children().first().toggleClass('icon-up-open-big icon-down-open-big'); });
-    </script>*/
-    %>
-    <%
 }
 else {
-    out.println("<!-- No publications found on " + pubService.getLastServiceURL() + " -->");
+    %>
+    <!-- No publications found on " + <%= pubService.getLastServiceURL() %> + " -->
+    <%
 }
 %>

@@ -73,7 +73,83 @@ String pubTypes = cms.getRequest().getParameter("pubtypes");
 final boolean LOGGED_IN_USER = OpenCms.getRoleManager().hasRole(cms.getCmsObject(), CmsRole.WORKPLACE_USER);
 // Output "debug" info?
 final boolean DEBUG = false;
+PublicationService pubService = null;
 
+try {
+    // Set up the publication service
+    pubService = new PublicationService(cms.getRequestContext().getLocale());
+    
+    // Add all default settings
+    pubService.setAllowDrafts(
+            false
+    ).addDefaultParameter(
+            PublicationService.modFilter(Publication.Key.STATE), 
+            PublicationService.Delimiter.OR,
+            Publication.Val.STATE_PUBLISHED,
+            Publication.Val.STATE_ACCEPTED
+    ).addDefaultParameter(
+            PublicationService.Param.FACETS,
+            PublicationService.ParamVal.FACETS_NONE
+    ).addDefaultParameter(
+            PublicationService.Param.SORT_BY,
+            PublicationService.modReverse(Publication.Key.PUB_TIME)
+    ).addDefaultParameter(
+            // Specifying the fields here, in order to reduce response size
+            PublicationService.Param.FIELDS,
+            PublicationService.Delimiter.AND,
+            Publication.Key.ID,
+            Publication.Key.DOI, 
+            Publication.Key.TITLE,
+            Publication.Key.TYPE,
+            Publication.Key.STATE,
+            Publication.Key.PUB_TIME,
+            Publication.Key.VOLUME,
+            Publication.Key.ISSUE,
+            Publication.Key.ARTICLE_NUMBER,
+            Publication.Key.PAGE_COUNT,
+            Publication.Key.JOURNAL,
+            Publication.Key.CONF,
+            Publication.Key.PAGES,
+            Publication.Key.PEOPLE,
+            Publication.Key.ORGS,
+            Publication.Key.LINKS,
+            Publication.Key.COMMENT
+    );
+    
+    // Add all "freely modifiable" settings
+    pubService.addParameter(
+            PublicationService.Param.RESULTS_LIMIT, 
+            PublicationService.ParamVal.RESULTS_LIMIT_NO_LIMIT
+    ).addParameter(
+            PublicationService.modFilter(PublicationService.combine(PublicationService.Delimiter.CHILD, Publication.Key.PEOPLE, Publication.Key.EMAIL)),
+            email
+    );
+    
+    // The personal pages in the CMS has an option to include only certain types 
+    // of publications, so add a filter if this is used
+    if (pubTypes != null && !pubTypes.isEmpty()) {
+        pubService.addParameter(
+                PublicationService.modFilter(Publication.Key.TYPE), 
+                pubTypes
+        );
+    }
+    
+    // Set freetext query empty => catch all
+    pubService.setFreetextQuery("");
+    
+} catch (Exception e) {
+    out.println("Unable to retrieve publications list. Please try again later.");
+    if (LOGGED_IN_USER) {
+    out.println("<h3>ERROR configuring publication service instance!</h3>");
+        out.println("<p>Seeing as you're logged in, here's what happened:</p>"
+                    + "<div class=\"stacktrace\" style=\"overflow: auto; font-size: 0.9em; font-family: monospace; background: #fdd; padding: 1em; border: 1px solid #900;\">"
+                        + getStackTrace(e) 
+                    + "</div>");
+    }
+    return;
+}
+
+/*
 //
 // Parameters to use in the request to the service:
 //
@@ -94,13 +170,15 @@ if (pubTypes != null && !pubTypes.isEmpty()) {
             new String[]{ pubTypes }
     );
 }
+//*/
+
 //params.put("sort"               , new String[]{ "-published-year" }); // Sort by publish year, descending
 //params.put("sort"               , new String[]{ "-published-year,-published-date" }); // Sort by publish date, descending (and this is the sort parameter for that)
 //params.put("facets"             , new String[]{ "false" }); // No facets 
 //params.put("filter-state"       , new String[]{ "published" }); // Must be published
 //params.put("filter-draft"       , new String[]{ "no" }); // Must be published (does not work, entries with a missing "draft" flag will also be included)
 
-//*
+/*
 // Set custom default parameters (needed because the standard default sort parameter is no good)
 // ToDo: Fix parameter handling in class library, sort out:
 //          - default parameters (should be fallbacks for non-existing but needed parameters, overridden as soon as a value is given)
@@ -115,7 +193,7 @@ defaultParams.put(
         new String[]{ Publication.JSON_VAL_STATE_PUBLISHED + "|" + Publication.JSON_VAL_STATE_ACCEPTED }
 ); 
 // No facets
-defaultParams.put(APIService.PARAM_FACETS, new String[]{ "false" }); 
+defaultParams.put(APIService.PARAM_FACETS, new String[]{ "false" });
 // Sort by publish time, descending
 defaultParams.put("sort", new String[]{ "-" + Publication.JSON_KEY_PUB_TIME });
 // Only fetch necessary fields (currently no way to exclude fields, so we must define the ones we want instead)
@@ -161,11 +239,14 @@ defaultParams.put(
 GroupedCollection<Publication> publications = null;
 try {
     // Create the "publication service" instance
-    PublicationService pubService = new PublicationService(cms.getRequestContext().getLocale());
+    //PublicationService pubService = new PublicationService(locale);
+    
     // Set custom defaults
-    pubService.setDefaultParameters(defaultParams);
+    //pubService.setDefaultParameters(defaultParams);
+    
     // Get publications
-    publications = pubService.getPublications(params);
+    publications = pubService.getPublications();
+    //publications = pubService.getPublications(params);
     out.println("<!-- API URL: " + pubService.getLastServiceURL() + " -->");
     if (DEBUG) { out.println("Read " + (publications == null ? "null" : publications.size()) + " publications from service URL <a href=\"" + pubService.getLastServiceURL() + "\" target=\"_blank\">" + pubService.getLastServiceURL() + "</a>."); }
 } catch (Exception e) {
@@ -197,8 +278,10 @@ if (publications != null && !publications.isEmpty()) {
         ArrayList<Publication> pubs = publications.getListGroup(listType);
         Iterator<Publication> iPubs = pubs.iterator();
         
-        // Remove unwanted stuff
-        if (listType.equals(Publication.TYPE_BOOK) || listType.equals(Publication.TYPE_REPORT)) { // Do this for these types only
+        // Remove "unwanted" entries (applies only to certain types of publications, 
+        // and in particular part-contributions where this person is also the 
+        // author/editor of the "parent" publication)
+        if (listType.equals(Publication.Type.BOOK.toString()) || listType.equals(Publication.Type.REPORT.toString())) {
             while (iPubs.hasNext()) { // Loop all publications in this group
                 Publication p = iPubs.next(); // Get the next publication
                 if (p.isPartContribution()) { // Require part-contribution (e.g. report in report series or chapter in book)
