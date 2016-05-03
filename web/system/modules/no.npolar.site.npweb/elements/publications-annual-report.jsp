@@ -69,7 +69,7 @@ public static String createYearParameter(int year) {
 /**
  * Returns the sort string for the given cite string. For example, "von Quillfeldt"
  * will return "QUILLFELDT", "Nilsen" will return "NILSEN", and "Aars" will 
- * return "ÅRS".
+ * return "AARS".
  */
 public static String getSortReady(String citeString) {
     if (citeString == null || CmsStringUtil.isEmptyOrWhitespaceOnly(citeString))
@@ -79,21 +79,6 @@ public static String getSortReady(String citeString) {
     while (true) {
         try {
             String letter = String.valueOf(citeString.charAt(i));
-            /* // Skip this routine, we want "Aars" sorted as "A", not "Å" here
-            if (i == 0 && letter.equalsIgnoreCase("A")) {
-                try {
-                    String secondLetter = String.valueOf(citeString.charAt(i+1));
-                    if (secondLetter.equalsIgnoreCase("a")) { // We have a case of "Aa" => make it an "Å"
-                        try {
-                            return "Å" + citeString.substring(i+2).toUpperCase();
-                        } catch (Exception ee) {
-                            return "Å";
-                        }
-                    }
-                } catch (Exception e) {
-                    // Well never mind that then
-                }
-            }*/
             if (StringUtils.isAllUpperCase(letter)) {
                 try {
                     return letter + citeString.substring(i+1).toUpperCase(); // Uppercase letter - return it
@@ -124,7 +109,6 @@ int currentYear         = nowCal.get(Calendar.YEAR);
 final boolean COMMENTS  = false;
 
 final String LABEL_YEAR_SELECT = loc.equalsIgnoreCase("no") ? "År" : "Year";
-final String LABEL_YEAR_SELECT_OPT_ALL = loc.equalsIgnoreCase("no") ? "Alle år" : "All years";
 
 if (request.getParameter("locale") != null)  {
     loc = request.getParameter("locale");
@@ -137,8 +121,6 @@ if (year == null || year.isEmpty()) {
 } else {
     year = createYearParameter(year);
 }
-
-//String yearAPIParam = year + "-01-01T00:00:00Z.." + year + "-12-31T23:59:59Z";
 
 %>
 <style type="text/css">
@@ -155,9 +137,7 @@ if (year == null || year.isEmpty()) {
 <form action="<%= cms.link(requestFileUri) %>" method="get">
     
     <label for="pubyear"><%= LABEL_YEAR_SELECT %>: </label>
-    <!--<select name="<%= PublicationService.modFilter(Publication.Key.PUB_TIME) %>" onchange="submit()" id="pubyear">-->
     <select name="year" onchange="submit()" id="pubyear">
-        <!--<option value=""><%= LABEL_YEAR_SELECT_OPT_ALL %></option>-->
         <%
         //*
         for (int yOpt = new GregorianCalendar().get(Calendar.YEAR); yOpt >= 1970; yOpt--) {
@@ -175,33 +155,6 @@ if (year == null || year.isEmpty()) {
 <%
 
 final boolean LOGGED_IN_USER = OpenCms.getRoleManager().hasRole(cms.getCmsObject(), CmsRole.WORKPLACE_USER);
-//final int LIMIT = 9999;
-
-/* // Parameter maps below are now replaced by addFilter(), addParameter(), addDefaultParameter() etc.
-
-//
-// Parameters: Used when querying the service.
-//
-Map<String, String[]> params = new HashMap<String, String[]>();
-params.put(APIService.PARAM_QUERY, new String[]{ "" }); // Use a catch-all search phrase
-params.put(SearchFilter.PARAM_NAME_PREFIX.concat(Publication.JSON_KEY_PUB_TIME), new String[] { year }); // Filter on the given year (or the current year, if no year was given)
-        //params.put("filter-published-year", new String[] { year }); // Filter on the given year (or the current year, if no year was given)
-        //params.put("sort", new String[]{ "-publication_year" }); // Sort by publish year, descending
-        //params.put("sort", new String[]{ "-published-year,-published-date" }); // Sort by publish year, descending
-        //params.put("sort", new String[]{ "people.last_name,people.first_name" }); // Sort by name
-params.put(SearchFilter.PARAM_NAME_PREFIX.concat(Publication.JSON_KEY_ORGS_ID), new String[] { Publication.JSON_VAL_ORG_NPI }); // Filter on checked "Yes, publication is affiliated to NP activity" (require this box was checked)
-params.put(APIService.PARAM_RESULTS_COUNT, new String[]{ APIService.PARAM_VAL_RESULTS_COUNT_LIMITLESS }); // Set an entry limit
-        //params.put("filter-draft", new String[]{ "no" }); // Don't allow drafts
-        //params.put("filter-state", new String[]{ "published" }); // Allow only published publications
-
-Map<String, String[]> defaultParams = new HashMap<String, String[]>();
-defaultParams.put(APIService.PARAM_MODIFIER_NOT.concat(Publication.JSON_KEY_DRAFT), new String[]{ Publication.JSON_VAL_DRAFT_TRUE }); // Don't include drafts
-defaultParams.put(SearchFilter.PARAM_NAME_PREFIX.concat(Publication.JSON_KEY_STATE), new String[]{ Publication.JSON_VAL_STATE_PUBLISHED }); // Require state: published
-        //defaultParams.put("filter-state", new String[]{ Publication.JSON_VAL_STATE_PUBLISHED + "|" + Publication.JSON_VAL_STATE_ACCEPTED }); // Require state: published or accepted
-defaultParams.put(APIService.PARAM_FACETS, new String[]{ APIService.PARAM_VAL_FACETS_NONE }); // No facets
-defaultParams.put(APIService.PARAM_SORT_BY, new String[]{ Publication.JSON_KEY_PEOPLE.concat(Publication.JSON_KEY_LNAME).concat(",").concat(Publication.JSON_KEY_PEOPLE.concat(Publication.JSON_KEY_LNAME)) }); // Sort by last name,first name
-        //defaultParams.put("sort", new String[]{ "-published-year,-published-date" }); // Sort by publish date, descending (and this is the sort parameter for that)
-*/
         
 //
 // Access the service
@@ -213,9 +166,6 @@ PublicationService pubService = null;
 ResourceBundle labels = ResourceBundle.getBundle(Labels.getBundleName(), locale);
 try {
     pubService = new PublicationService(cms.getRequestContext().getLocale());
-    //publications = pubService.getPublications();
-            //pubService.setDefaultParameters(defaultParams);
-            //publications = pubService.getPublications(params);
     pubService.addDefaultParameter(
             // Don't include drafts
             PublicationService.modNot(Publication.Key.DRAFT), 
@@ -270,8 +220,6 @@ try {
     return; // IMPORTANT!
 }
 
-//int totalResults = -1;
-
 
 
 
@@ -309,7 +257,6 @@ if (!publications.isEmpty()) {
         String listType = iTypes.next();
         //out.println("<div class=\"toggleable open\">");
         %>
-        <!--<div class="toggleable collapsed">-->
         <div class="toggleable open">
         <%
         List<Publication> pubGroup = publications.getListGroup(listType);

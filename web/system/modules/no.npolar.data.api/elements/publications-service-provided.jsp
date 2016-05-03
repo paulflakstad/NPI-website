@@ -51,14 +51,6 @@
 static Map<String, String> dp = new HashMap<String, String>();
 /* Stop words. */
 static List<String> sw = new ArrayList<String>();
-/* Map storage for active facets (filters). */
-//static Map<String, String> activeFacets = new HashMap<String, String>();
-/* Facet (filter) parameter name prefix. */
-//final static  String FACET_PREFIX = "filter-";
-/* On-screen/service value mappings. */
-//public static Map<String, String> mappings = new HashMap<String, String>();
-/* On-screen/service value mappings. */
-//public static Map<String, String> norm = new HashMap<String, String>();
 
 /**
  * Default ("system") parameters: The end-user should never see these.
@@ -66,7 +58,6 @@ static List<String> sw = new ArrayList<String>();
 public static Map<String, String> getDefaultParamMap() {
     if (dp.isEmpty()) {
         dp.put(PublicationService.Param.SORT_BY, PublicationService.modReverse(Publication.Key.PUB_TIME));
-        //dp.put("sort", "-publication_year");
         dp.put(PublicationService.Param.FORMAT, APIService.ParamVal.FORMAT_JSON);
         dp.put(PublicationService.modFilter(Publication.Key.DRAFT), Publication.Val.DRAFT_FALSE);
     }
@@ -144,17 +135,6 @@ public static String getLimit(CmsAgent cms) {
     return getParameter(cms, PublicationService.Param.RESULTS_LIMIT).isEmpty() ? "25" : getParameter(cms, PublicationService.Param.RESULTS_LIMIT);
 }
 
-/** 
- * Swap the given value (retrieved from the service) with a "normalized" value.
- * NOTE: MOVED TO Labels.java
- */
-/*public String normalize(String serviceValue) {
-    String s = norm.get(serviceValue);
-    if (s == null || s.isEmpty())
-        return serviceValue;
-    return s;
-}*/
-
 public static String markdownToHtml(String s) {
     try { return new Markdown4jProcessor().process(s); } catch (Exception e) { return s + "\n<!-- Could not process this as markdown -->"; }
 }
@@ -206,15 +186,12 @@ final boolean ONLINE = cmso.getRequestContext().currentProject().isOnlineProject
 final String LABEL_SEARCHBOX_HEADING = loc.equalsIgnoreCase("no") ? "Søk i publikasjoner" : "Search publications";
 
 final String LABEL_YEAR_SELECT = loc.equalsIgnoreCase("no") ? "År" : "Year";
-final String LABEL_YEAR_SELECT_OPT_ALL = loc.equalsIgnoreCase("no") ? "Alle år" : "All years";
 
-final String LABEL_MATCHES_FOR = cms.label("label.np.matches.for");
+//final String LABEL_MATCHES_FOR = cms.label("label.np.matches.for");
 final String LABEL_SEARCH = cms.label("label.np.search");
 final String LABEL_NO_MATCHES = cms.label("label.np.matches.none");
 final String LABEL_MATCHES = cms.label("label.np.matches");
 final String LABEL_FILTERS = cms.label("label.np.filters");
-
-final boolean EDITABLE_TEMPLATE = false;
 
 
 final String YLOW = "ylow";
@@ -231,165 +208,7 @@ if (isInteger(request.getParameter(YHIGH))) {
     yhigh = Integer.valueOf(request.getParameter(YHIGH)).intValue();
 }
 
-// 3 calendar instances: 
-// - today
-// - range start
-// - range end
 Calendar todayCal = new GregorianCalendar();
-/*
-Calendar ylowCal = new GregorianCalendar();
-ylowCal.clear();
-if (ylow > -1) {
-    ylowCal.set(ylow, Calendar.JANUARY, 1, 0, 0, 0);
-} else {
-    ylowCal.set(1, Calendar.JANUARY, 1, 0, 0, 0);
-}
-
-Calendar yhighCal = new GregorianCalendar();
-yhighCal.clear();
-if (yhigh > -1) {
-    yhighCal.set(yhigh, Calendar.DECEMBER, 31, 23, 59, 59);
-} else {
-    yhighCal.set(2999, Calendar.DECEMBER, 31, 23, 59, 59);
-}*/
-/*
-final String LABEL_ORG_COMM                 = loc.equalsIgnoreCase("no") ? "Kommunikasjon" : "Communications";
-final String LABEL_ORG_COMM_INFO            = loc.equalsIgnoreCase("no") ? "Informasjon" : "Information";
-final String LABEL_ORG_ADM                  = loc.equalsIgnoreCase("no") ? "Administrasjon" : "Administration";
-final String LABEL_ORG_ADM_ECONOMICS        = loc.equalsIgnoreCase("no") ? "Økonomi" : "Economics";
-final String LABEL_ORG_ADM_HR               = loc.equalsIgnoreCase("no") ? "Personal" : "Human resources";
-final String LABEL_ORG_ADM_SENIOR           = loc.equalsIgnoreCase("no") ? "Seniorrådgivere" : "Senior advisers";
-final String LABEL_ORG_ADM_ICT              = loc.equalsIgnoreCase("no") ? "IKT" : "ICT";
-final String LABEL_ORG_LEADER               = loc.equalsIgnoreCase("no") ? "Ledergruppen" : "Leaders group";
-final String LABEL_ORG_RESEARCH             = loc.equalsIgnoreCase("no") ? "Forskning" : "Scientific research";
-final String LABEL_ORG_RESEARCH_BIODIV      = loc.equalsIgnoreCase("no") ? "Biodiversitet" : "Biodiversity";
-final String LABEL_ORG_RESEARCH_GEO         = loc.equalsIgnoreCase("no") ? "Geologi og geofysikk" : "Geology and geophysics";
-final String LABEL_ORG_RESEARCH_MARINE_CRYO = loc.equalsIgnoreCase("no") ? "Hav og havis" : "Oceans and sea ice";
-final String LABEL_ORG_RESEARCH_ICE         = loc.equalsIgnoreCase("no") ? "Senter for is, klima og økosystemer (ICE)" : "Centre for Ice, Climate and Ecosystems (ICE)";
-final String LABEL_ORG_RESEARCH_ICE_FIMBUL  = loc.equalsIgnoreCase("no") ? "ICE-Fimbulisen" : "ICE Fimbul Ice Shelf";
-final String LABEL_ORG_RESEARCH_ICE_ECOSYSTEMS= loc.equalsIgnoreCase("no") ? "ICE-økosystemer" : "ICE Ecosystems";
-final String LABEL_ORG_RESEARCH_ICE_SEA_ICE = loc.equalsIgnoreCase("no") ? "ICE-havis" : "ICE Fluxes";
-final String LABEL_ORG_RESEARCH_ECOTOX      = loc.equalsIgnoreCase("no") ? "Miljøgifter" : "Environmental pollutants";
-final String LABEL_ORG_RESEARCH_SUPPORT     = loc.equalsIgnoreCase("no") ? "Støtte" : "Support";
-final String LABEL_ORG_ENVMAP               = loc.equalsIgnoreCase("no") ? "Miljø- og kart" : "Environment and mapping";
-final String LABEL_ORG_ENVMAP_DATA          = loc.equalsIgnoreCase("no") ? "Miljødata" : "Environmental data";
-final String LABEL_ORG_ENVMAP_MANAGEMENT    = loc.equalsIgnoreCase("no") ? "Miljørådgivning" : "Environmental management";
-final String LABEL_ORG_ENVMAP_MAP           = loc.equalsIgnoreCase("no") ? "Kart" : "Map";
-final String LABEL_ORG_OL                   = loc.equalsIgnoreCase("no") ? "Operasjons- og logistikk" : "Operations and logistics";
-final String LABEL_ORG_OL_ANTARCTIC         = loc.equalsIgnoreCase("no") ? "Antarktis" : "The Antarctic";
-final String LABEL_ORG_OL_ARCTIC            = loc.equalsIgnoreCase("no") ? "Arktis" : "The Arctic";
-final String LABEL_ORG_OL_LYR               = loc.equalsIgnoreCase("no") ? "Støtte" : "Support";
-final String LABEL_ORG_OTHER                = loc.equalsIgnoreCase("no") ? "Sekretariater og organer" : "Secretariats and organizational bodies";
-final String LABEL_ORG_OTHER_AC             = loc.equalsIgnoreCase("no") ? "Arktisk råd" : "Arctic Council";
-final String LABEL_ORG_OTHER_CLIC           = loc.equalsIgnoreCase("no") ? "Climate and Cryosphere (CliC)" : "Climate and Cryosphere (CliC)";
-final String LABEL_ORG_OTHER_NA2011         = loc.equalsIgnoreCase("no") ? "Nansen-Amundsenåret 2011" : "Nansen-Amundsen-year 2011";
-final String LABEL_ORG_OTHER_NYSMAC         = loc.equalsIgnoreCase("no") ? "Ny-Ålesund Science Managers Committee (NySMAC)" : "Ny-Ålesund Science Managers Committee (NySMAC)";
-final String LABEL_ORG_OTHER_SSF            = loc.equalsIgnoreCase("no") ? "Svalbard Science Forum" : "Svalbard Science Forum";
-
-final String LABEL_JOB_TITLE            = loc.equalsIgnoreCase("no") ? "Ord i stillingstittel" : "Words in job title";
-final String LABEL_ORG_AFFIL            = loc.equalsIgnoreCase("no") ? "Organisatorisk tilknytning" : "Org. affiliation";
-final String LABEL_WORKPLACE            = loc.equalsIgnoreCase("no") ? "Arbeidssted" : "Work place";
-
-final String LABEL_EMAIL                = loc.equalsIgnoreCase("no") ? "E-post" : "E-mail";
-final String LABEL_PUBYEAR              = loc.equalsIgnoreCase("no") ? "Publikasjonsår" : "Published year";
-final String LABEL_TOPIC                = loc.equalsIgnoreCase("no") ? "Tema" : "Topic";
-
-final String LABEL_BIODIVERSITY = loc.equalsIgnoreCase("no") ? "Biologisk mangfold" : "Biodiversity";
-final String LABEL_CLIMATE = loc.equalsIgnoreCase("no") ? "Klima" : "Climate";
-final String LABEL_GEOLOGY = loc.equalsIgnoreCase("no") ? "Geologi" : "Geology";
-final String LABEL_GLACIERS = loc.equalsIgnoreCase("no") ? "Isbreer" : "Glaciers";
-final String LABEL_MARINE_ECOSYSTEMS = loc.equalsIgnoreCase("no") ? "Marine økosystemer" : "Marine ecosystems";
-final String LABEL_ECOSYSTEMS = loc.equalsIgnoreCase("no") ? "Økosystemer" : "Ecosystems";
-final String LABEL_MARINE = loc.equalsIgnoreCase("no") ? "Marint" : "Marine";
-final String LABEL_OCEANOGRAPHY = loc.equalsIgnoreCase("no") ? "Oseanografi" : "Oceanography";
-final String LABEL_ENVIRONMENTAL_POLLUTANTS = loc.equalsIgnoreCase("no") ? "Miljøgifter" : "Envoronmental pollutants";
-final String LABEL_ECOTOXICOLOGY = loc.equalsIgnoreCase("no") ? "Økotoksikologi" : "Ecotoxicology";
-final String LABEL_BIOLOGY = loc.equalsIgnoreCase("no") ? "Biologi" : "Biology";
-final String LABEL_ECOLOGY = loc.equalsIgnoreCase("no") ? "Økologi" : "Ecology";
-final String LABEL_SEA_ICE = loc.equalsIgnoreCase("no") ? "Havis" : "Sea ice";
-final String LABEL_GEOPHYSICS = loc.equalsIgnoreCase("no") ? "Geofysikk" : "Geofysikk";
-final String LABEL_TOPOGRAPHY = loc.equalsIgnoreCase("no") ? "Topografi" : "Topography";
-
-mappings.put("admin",       LABEL_ORG_ADM);
-mappings.put("ikt",         LABEL_ORG_ADM_ICT);
-mappings.put("okonomi",     LABEL_ORG_ADM_ECONOMICS);
-mappings.put("personal",    LABEL_ORG_ADM_HR);
-mappings.put("senior",      LABEL_ORG_ADM_SENIOR);
-mappings.put("forskning",   LABEL_ORG_RESEARCH);
-mappings.put("biodiv",      LABEL_ORG_RESEARCH_BIODIV);
-mappings.put("geo",         LABEL_ORG_RESEARCH_GEO);
-mappings.put("havkryo",     LABEL_ORG_RESEARCH_MARINE_CRYO);
-mappings.put("ice",         LABEL_ORG_RESEARCH_ICE);
-mappings.put("okosystemer", LABEL_ORG_RESEARCH_ICE_ECOSYSTEMS);
-mappings.put("fimbul",      LABEL_ORG_RESEARCH_ICE_FIMBUL);
-mappings.put("havis",       LABEL_ORG_RESEARCH_ICE_SEA_ICE);
-mappings.put("miljogift",   LABEL_ORG_RESEARCH_ECOTOX);
-mappings.put("support",     LABEL_ORG_RESEARCH_SUPPORT);
-mappings.put("komm",        LABEL_ORG_COMM);
-mappings.put("info",        LABEL_ORG_COMM_INFO);
-mappings.put("leder",       LABEL_ORG_LEADER);
-mappings.put("mika",        LABEL_ORG_ENVMAP);
-mappings.put("data",        LABEL_ORG_ENVMAP_DATA);
-mappings.put("forvaltning", LABEL_ORG_ENVMAP_MANAGEMENT);
-mappings.put("kart",        LABEL_ORG_ENVMAP_MAP);
-mappings.put("ola",         LABEL_ORG_OL);
-mappings.put("antarktis",   LABEL_ORG_OL_ANTARCTIC);
-mappings.put("arktis",      LABEL_ORG_OL_ARCTIC);
-mappings.put("other",       LABEL_ORG_OTHER);
-mappings.put("ac",          LABEL_ORG_OTHER_AC);
-mappings.put("clic",        LABEL_ORG_OTHER_CLIC);
-mappings.put("na2011",      LABEL_ORG_OTHER_NA2011);
-mappings.put("nysmac",      LABEL_ORG_OTHER_NYSMAC);
-mappings.put("ssf",         LABEL_ORG_OTHER_SSF);
-mappings.put("jobtitle.no", LABEL_JOB_TITLE);
-mappings.put("jobtitle.en", LABEL_JOB_TITLE);
-mappings.put("orgtree",     LABEL_ORG_AFFIL);
-mappings.put("workplace",   LABEL_WORKPLACE);
-
-
-mappings.put("biodiversity", LABEL_BIODIVERSITY);
-mappings.put("climate", LABEL_CLIMATE);
-mappings.put("geology", LABEL_GEOLOGY);
-mappings.put("geophysics", LABEL_GEOPHYSICS);
-mappings.put("glaciers", LABEL_GLACIERS);
-mappings.put("glaciology", LABEL_GLACIERS);
-mappings.put("marine ecosystems", LABEL_MARINE_ECOSYSTEMS);
-mappings.put("oceanography", LABEL_OCEANOGRAPHY);
-mappings.put("environmental pollutants", LABEL_ENVIRONMENTAL_POLLUTANTS);
-mappings.put("ecotoxicology", LABEL_ECOTOXICOLOGY);
-mappings.put("seaice", LABEL_SEA_ICE);
-mappings.put("biology", LABEL_BIOLOGY);
-mappings.put("ecology", LABEL_ECOLOGY);
-mappings.put("ecosystems", LABEL_ECOSYSTEMS);
-mappings.put("marine", LABEL_MARINE);
-mappings.put("topography", LABEL_TOPOGRAPHY);
-
-mappings.put("people.email", LABEL_EMAIL);
-mappings.put("publication_year", LABEL_PUBYEAR);
-mappings.put("year-published_sort", LABEL_PUBYEAR);
-mappings.put("topics", LABEL_TOPIC);
-
-norm.put("publication_type", "publication.type");
-norm.put("topics", "topic");
-norm.put("research_stations", "research.station");
-
-// HACKS!!! :-O
-norm.put("programme", loc.equalsIgnoreCase("no") ? "Program" : "Programme");
-norm.put("programme.Biodiversity", loc.equalsIgnoreCase("no") ? "Biodiversitet" : "Biodiversity");
-norm.put("programme.Oceans and sea ice", loc.equalsIgnoreCase("no") ? "Hav og havis" : "Oceans and sea ice");
-norm.put("programme.Geology and geophysics", loc.equalsIgnoreCase("no") ? "Geologi og geofysikk" : "Geology and geophysics");
-norm.put("ICE Fluxes", loc.equalsIgnoreCase("no") ? "ICE-havis" : "ICE Fluxes");
-norm.put("Environmental pollutants", loc.equalsIgnoreCase("no") ? "Miljøgifter" : "Environmental pollutants");
-norm.put("ICE Ecosystems", loc.equalsIgnoreCase("no") ? "ICE-økosystemer" : "ICE Ecosystems");
-norm.put("ICE Antarctica", loc.equalsIgnoreCase("no") ? "ICE-Antarktis" : "ICE Antarctica");
-norm.put("ICE", loc.equalsIgnoreCase("no") ? "ICE" : "ICE");
-//*/
-
-
-
-
-// Call master template (and output the opening part - hence the [0])
-//cms.include(cms.getTemplate(), cms.getTemplateIncludeElements()[0], EDITABLE_TEMPLATE);
 
 ResourceBundle labels = ResourceBundle.getBundle(Labels.getBundleName(), locale);
 PublicationService pubService = new PublicationService(locale);
@@ -474,6 +293,7 @@ pubService.addDefaultParameter(
         Publication.Key.STATIONS,
         Publication.Key.PROGRAMMES
 ).addDefaultParameter(
+        // Get all possible filters (not just "greatest hits")
         "size-facet",// PublicationService.Param.FACETS_SIZE,
         "9999"
 ).addDefaultParameter(
@@ -481,27 +301,6 @@ pubService.addDefaultParameter(
         PublicationService.modFilter(Publication.Key.ORGS_ID),
         Publication.Val.ORG_NPI
 ); 
-/*
-//defaultParams.put("filter-state", new String[]{ "published" }); // Require state: published
-//defaultParams.put("facets", new String[]{ "topics,category,publication_type,research_stations,locations" }); // This is why we're overriding the regular defaults; we want full filter control
-//defaultParams.put("facets", new String[]{ "topics,category,publication_type,research_stations,area" });
-defaultParams.put(APIService.Param.FACETS, 
-        new String[]{ 
-            Publication.Key.TOPICS // "topics"
-            //+ ",category"
-            + "," + Publication.Key.TYPE // "publication_type"
-            + "," + Publication.Key.STATIONS // "research_stations"
-            + "," + Publication.Key.PROGRAMMES // "programme"
-        }
-);
-defaultParams.put("size-facet", new String[]{ "9999" }); // Get all possible filters
-// Filter on "Yes, publication is affiliated to NPI activity" (require this box was checked)
-defaultParams.put(
-        PublicationService.Param.MOD_FILTER+Publication.Key.ORGS_ID,
-        new String[] { Publication.Val.ORG_NPI }
-); 
-pubService.setDefaultParameters(defaultParams);
-//*/
 try {
     // Overrideable parameters
     Map<String, String[]> params = new HashMap<String, String[]>(request.getParameterMap());
@@ -513,10 +312,6 @@ try {
                 PublicationService.Param.SORT_BY, 
                 PublicationService.modReverse(Publication.Key.PUB_TIME)
         );
-        /*params.put(
-                PublicationService.Param.SORT_BY, 
-                new String[]{ PublicationService.ParamVal.PREFIX_REVERSE+Publication.Key.PUB_TIME }
-        );*/
     } else {
         // Use default sort order (typically "by relevancy")
     }
@@ -526,27 +321,14 @@ try {
                 PublicationService.modFilter(Publication.Key.PUB_TIME), 
                 normalizeTimestampFilterValue(ylow, yhigh)
         );
-        /*params.put(
-                SearchFilter.PARAM_NAME_PREFIX+Publication.Key.PUB_TIME, 
-                new String[] { normalizeTimestampFilterValue(ylow, yhigh) }
-        );*/
     }
-            
-    //params.putAll(request.getParameterMap());
     
     // ToDo: Do we really need to encode here..?
     Iterator<String> iParam = params.keySet().iterator();
     while (iParam.hasNext()) {
         String key = iParam.next();
-        //params.put(key, new String[] { URLEncoder.encode(params.get(key)[0], "utf-8") });
         //*
         String[] val = params.get(key);
-        /*
-        // Is it a filter?
-        if (key.startsWith(PublicationService.Param.MOD_FILTER)) {
-            try {} catch (Exception e) {}
-        }
-        */
         // Encode is necessary to get predictable results
         for (int iVal = 0; iVal < val.length; iVal++) {
             val[iVal] = URLEncoder.encode(val[iVal], "utf-8");
@@ -560,9 +342,8 @@ try {
     
     if (!params.containsKey(PublicationService.Param.QUERY)) {
         pubService.setFreetextQuery("");
-        //params.put(PublicationService.Param.QUERY, new String[]{ "" });
     } //else {
-        //params.put("q", new String[] { URLEncoder.encode(params.get("q")[0], "utf-8") });
+        //pubService.setFreetextQuery(URLEncoder.encode(params.get("q")[0], "utf-8"));
     //}
     
     // Fetch the list, passing all dynamic parameters – including those from the request
@@ -631,7 +412,7 @@ try {
                 %>
                 <input class="cta cta--search-submit" type="submit" value="<%= LABEL_SEARCH %>" />
             
-            <!--<div id="filters-wrap">-->
+            
             <div class="filters-wrapper">
                 <a class="cta cta--filters-toggle" id="filters-toggler" onclick="$('#filters').slideToggle();" tabindex="0"><%= LABEL_FILTERS %></a>
                 
@@ -675,13 +456,6 @@ try {
                                     </h3>
                                     <ul>
                                         <%
-                                        /*try {
-                                            out.print(labels.getString(normalize(filterSet.getName())));
-                                        } catch (Exception transE) {
-                                            out.print(normalize(filterSet.getName()));
-                                        }*/
-                                        //out.print(" R=" + filterSet.getRelevancy());
-                                        //out.print(" N=" + filterSet.getName());
                                         try {
                                             Iterator<SearchFilter> iFilters = filters.iterator();
                                             while (iFilters.hasNext()) {
@@ -772,7 +546,6 @@ try {
         <ul class="fullwidth line-items blocklist">
         
             <%
-            //for (int pCount = 0; pCount < entries.length(); pCount++) {
             Iterator<Publication> iPubs = pubList.iterator();
             while (iPubs.hasNext()) {
                 Publication pub = iPubs.next();
@@ -791,7 +564,6 @@ try {
                 if (pagesTotal > 1) { // More than one page total
                     if (pageNumber > 1) { // At least one previous page exists
                     %>
-                        <!--<a class="prev" href="<%= prev.equals("false") ? "#" : cms.link(requestFileUri + "?" + prev) %>"><</a>-->
                     <a class="prev" href="<%= cms.link(requestFileUri + "?" + StringEscapeUtils.escapeHtml(prev)) %>"></a>
                     <% 
                     }
@@ -843,7 +615,6 @@ try {
                 if (pagesTotal > 1) { // More than one page total
                     if (pageNumber < pagesTotal) { // At least one more page exists
                         %>
-                        <!--<a class="next" href="<%= next.equals("false") ? "#" : cms.link(requestFileUri + "?" + getParameterString(next)) %>">></a>-->
                         <a class="next" href="<%= cms.link(requestFileUri + "?" + StringEscapeUtils.escapeHtml(next)) %>"></a>
                         <% 
                     }
@@ -864,7 +635,6 @@ try {
     }
 //*  
 } catch (Exception e) {
-    //out.println("<div class=\"paragraph\"><p>An error occured. Please try a different search or come back later.</p></div>");
     out.println("<div class=\"paragraph\"><p>");
     if (loc.equalsIgnoreCase("no")) {
         out.println("En feil oppsto ved uthenting av publikasjoner. Vennligst prøv å oppdater siden, prøv et annet søk, eller kom tilbake senere.</p><p>Skulle problemet vedvare, er det fint om du kan <a href=\"mailto:web@npolar.no\">gi oss beskjed</a>.");
@@ -878,11 +648,6 @@ try {
     }
 }
 //*/
-
-//String facetsJSReady = getFacets(cms, json.getJSONArray("facets")).replaceAll("\"", "\\\\\"");
-//<script type="text/javascript">
-//    $("#filters").html("%= facetsJSReady %");
-//</script>
 %>
 
 <%
@@ -950,7 +715,4 @@ if (true) {//(!pubService.isUserFiltered()) {
 // Clear all static vars
 dp.clear();
 sw.clear();
-//activeFacets.clear();
-//mappings.clear();
-//norm.clear();
 %>
