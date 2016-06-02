@@ -553,12 +553,14 @@ $(document).ready( function() {
         filtersToggler.click(function(e) {
             e.preventDefault();
             filters.slideToggle();
+            $(this).closest(".filters-wrapper").toggleClass("expanded");
         }); 
         $("#filters li a .remove-filter").closest("a").addClass("filter--active");
         
         // Create a separate overview of the active filters
         var activeFilters = filters.find(".filter--active");
         if (activeFilters.length > 0) {
+            //console.log("Found " + activeFilters.length + " active filters.");
         
             if ( $("#filters-details").length === 0 ) {
                 filters.closest(".searchbox-big").next("h2").after("<div id=\"filters-details\"></div>");
