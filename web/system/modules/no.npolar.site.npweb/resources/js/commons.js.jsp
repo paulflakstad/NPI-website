@@ -356,44 +356,51 @@ $(document).ready( function() {
             }
         }
     }*/
+    var isHomePage = $("body").attr("id") === "homepage" || $("body").hasClass("homepage");
     
-    $("#nav_toggler").click(function () {
-        //var contentWidth = $("#content").css("width"); // Store the CSS-defined width, complete with unit, e.g. "75%"
-        //alert(contentWidth);
-		
-        if ($("#leftside").css("display") == "none") { // Show navigation
-            $("#nav_top_wrap").slideToggle(300);
-            //$("#nav_top_wrap").slideToggle(300, function() { $("#sm-links-top").fadeIn(); });
-            $("#leftside").css({"display" : "block"});
-            if (!emptyOrNonExistingElement("leftside")) {
-                $("#leftside").animate({
-                        marginLeft: "0"
-                    }, 250, function(){});
-                $("#content").animate({
-                        width: "78%"
-                        //width: contentWidth
-                    }, 250, function(){ });
+    if (!isHomePage) {
+        $("#nav_toggler").click(function () {
+            //var contentWidth = $("#content").css("width"); // Store the CSS-defined width, complete with unit, e.g. "75%"
+            //alert(contentWidth);
+
+            if ($("#leftside").css("display") == "none") { // Show navigation
+                $("#nav_top_wrap").slideToggle(300);
+                //$("#nav_top_wrap").slideToggle(300, function() { $("#sm-links-top").fadeIn(); });
+                $("#leftside").css({"display" : "block"});
+                if (!emptyOrNonExistingElement("leftside")) {
+                    $("#leftside").animate({
+                            marginLeft: "0"
+                        }, 250, function(){});
+                    $("#content").animate({
+                            width: "78%"
+                            //width: contentWidth
+                        }, 250, function(){ });
+                }
+                $(this).addClass("pinned"); // Toggle the class
+                $.post("/settings", { pinned_nav: "true" }); // Store the navbar visibility state in the user session
+            } 
+
+            else { // Hide navigation
+                $("#nav_top_wrap").slideToggle(300);
+                //$("#sm-links-top").fadeOut(50, function() { $("#nav_top_wrap").slideToggle(300); });
+                $("#leftside").css({"display" : "none"});
+                if (!emptyOrNonExistingElement("leftside")) {
+                    $("#leftside").animate({
+                            marginLeft: "-500px"
+                        }, 250, function(){});
+                    $("#content").animate({
+                            width: "100%"
+                        }, 250, function(){  });
+                }
+                $(this).removeClass("pinned"); // Toggle the class
+                $.post("/settings", { pinned_nav: "false" }); // Store the navbar visibility state in the user session
             }
-            $(this).addClass("pinned"); // Toggle the class
-            $.post("/settings", { pinned_nav: "true" }); // Store the navbar visibility state in the user session
-        } 
-        
-        else { // Hide navigation
-            $("#nav_top_wrap").slideToggle(300);
-            //$("#sm-links-top").fadeOut(50, function() { $("#nav_top_wrap").slideToggle(300); });
-            $("#leftside").css({"display" : "none"});
-            if (!emptyOrNonExistingElement("leftside")) {
-                $("#leftside").animate({
-                        marginLeft: "-500px"
-                    }, 250, function(){});
-                $("#content").animate({
-                        width: "100%"
-                    }, 250, function(){  });
-            }
-            $(this).removeClass("pinned"); // Toggle the class
-            $.post("/settings", { pinned_nav: "false" }); // Store the navbar visibility state in the user session
-        }
-    });
+        });
+    } else {
+        // Always show top-level menu on home page (and hence no toggler needed)
+        $("#nav_top_wrap").attr("style", "display:block;")
+        $("#nav_toggler_wrapper").hide();
+    }
 	
 	// Make menu togglers keyboard accessible
 	$(document).keyup(function(e){
@@ -552,7 +559,6 @@ $(document).ready( function() {
         // Create a separate overview of the active filters
         var activeFilters = filters.find(".filter--active");
         if (activeFilters.length > 0) {
-            
         
             if ( $("#filters-details").length === 0 ) {
                 filters.closest(".searchbox-big").next("h2").after("<div id=\"filters-details\"></div>");

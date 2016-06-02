@@ -131,7 +131,7 @@ HttpSession sess            = request.getSession();
 String siteName             = cms.property("sitename", "search", cms.label("label.np.sitename"));
 boolean pinnedNav           = false; 
 boolean homePage            = false;
-try { pinnedNav = Boolean.parseBoolean((String)sess.getAttribute("pinned_nav")); } catch (Exception e) {  }
+try { pinnedNav             = Boolean.parseBoolean((String)sess.getAttribute("pinned_nav")); } catch (Exception e) {  }
 
 
 
@@ -429,7 +429,7 @@ css.add("");
 <link rel="stylesheet" type="text/css" href="<%= cms.link("/system/modules/no.npolar.site.npweb/resources/style/npweb-2014-base.css") %>" />
 <link rel="stylesheet" type="text/css" href="<%= cms.link("/system/modules/no.npolar.site.npweb/resources/style/npweb-2014-smallscreens.css") %>" media="(min-width:310px)" />
 <link rel="stylesheet" type="text/css" href="<%= cms.link("/system/modules/no.npolar.site.npweb/resources/style/npweb-2014-largescreens.css") %>" media="(min-width:801px)" />
-<% if (homePage) { %>
+<% if (true) { %>
 <link rel="stylesheet" type="text/css" href="<%= cms.link("/system/modules/no.npolar.site.npweb/resources/style/layout-atomic.css") %>" />
 <% } %>
 <link rel="stylesheet" type="text/css" href="<%= cms.link("/system/modules/no.npolar.site.npweb/resources/style/npweb-2014-print.css") %>" media="print" />
@@ -438,6 +438,7 @@ css.add("");
 
 <!--<link href="<%= cms.link("/system/modules/no.npolar.site.npweb/resources/style/menu-dropdown.css") %>" rel="stylesheet" type="text/css" />-->
 <!--[if IE]>
+<link href="<%= cms.link("/system/modules/no.npolar.site.npweb/resources/style/ie.css") %>" rel="stylesheet" type="text/css" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="-1" />
 <![endif]-->
@@ -462,7 +463,13 @@ if (sess.getAttribute("fs") != null && !((String)sess.getAttribute("fs")).equals
 %>
 
 <script type="text/javascript" src="<%= cms.link("/system/modules/no.npolar.site.npweb/resources/js/modernizr.js") %>"></script>
-<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<!--[if lt IE 9]>
+     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<![endif]-->
+<!--[if gte IE 9]><!-->
+     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<!--<![endif]-->
+<!--<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>-->
 <script type="text/javascript" src="<%= cms.link("/system/modules/no.npolar.site.npweb/resources/js/highslide/highslide-full.js") %>"></script>
 <!--<script type="text/javascript" src="<cms:link>/system/modules/no.npolar.common.jquery/resources/jquery.qtip.min.js</cms:link>"></script>-->
 <!--<script type="text/javascript" src="<cms:link>//cdnjs.cloudflare.com/ajax/libs/qtip2/2.1.1/jquery.qtip.min.js</cms:link>"></script>-->
@@ -496,9 +503,12 @@ $(document).ready(function() {
     //$(".addthis_button_google_plusone").attr('g:plusone:count','false');
     //$(".addthis_button_facebook_like").attr({ 'fb:like:layout':'button_count', 'fb:like:action':'recommend'});
 <%
-if (!pinnedNav) {
+if (!pinnedNav && !homePage) {
 %>
     $("#nav_top_wrap").hide();
+<%
+} if (!pinnedNav) {
+%>
     $("#leftside").hide();
     $("#leftside").css("margin-left", "-500px");
     $("#content").css("width", "100%");
@@ -601,7 +611,8 @@ if (!loggedInUser) {
                 </div>
             </div>
             <!-- Top-level navigation: -->
-            <nav id="nav_top_wrap" class="clearfix"<%= sess.getAttribute("pinned_nav") != null ? (Boolean.valueOf((String)sess.getAttribute("pinned_nav")) ? "" : " style=\"display:none;\"") : "" %>><!-- Main navigation wrapper -->
+            <nav id="nav_top_wrap" class="clearfix"><!-- Main navigation wrapper -->
+            <!--<nav id="nav_top_wrap" class="clearfix"<%= sess.getAttribute("pinned_nav") != null ? (Boolean.valueOf((String)sess.getAttribute("pinned_nav")) ? "" : " style=\"display:none;\"") : "" %>>--><!-- Main navigation wrapper -->
                 <%
                 
                 //
