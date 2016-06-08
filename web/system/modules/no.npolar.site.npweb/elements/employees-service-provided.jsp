@@ -1209,7 +1209,7 @@ try {
         
         // Client side suggestions
         /*
-        var employees = <% cms.includeAny("/no/employees-ac.json", null); %>;
+        var employees = <% cms.includeAny("/no/employees-ac.json"); %>;
         // Mappings for special characters
         var accentMap = {
                 "á": "a",
