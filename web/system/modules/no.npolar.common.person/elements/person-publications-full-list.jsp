@@ -315,9 +315,10 @@ if (publications != null && !publications.isEmpty()) {
         
         if (iPubs.hasNext()) {
             int listSize = publications.getListGroup(listType).size();
+            String listHeading = listType;
+            try { listHeading = labels.getString(Labels.PUB_TYPE_PREFIX_0 + listType + (listSize > 1 ? ".plural" : "")); } catch (Exception e) {}
             %>
-            <h3><%= labels.getString(Labels.PUB_TYPE_PREFIX_0 + listType + (listSize > 1 ? ".plural" : "")) + " (" + listSize + ")" %></h3>
-            <!--<h3><%= cms.labelUnicode("label.np.pubtype." + listType) + " (" + publications.getListGroup(listType).size() + ")" %></h3>-->
+            <h3><%= listHeading + " (" + listSize + ")" %></h3>
             <ul class="fullwidth indent line-items">
             <%
             while (iPubs.hasNext()) {
