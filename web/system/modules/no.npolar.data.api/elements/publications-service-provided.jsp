@@ -6,7 +6,6 @@
 --%><%@page import="no.npolar.data.api.*,
             no.npolar.data.api.util.APIUtil,
             no.npolar.util.CmsAgent,
-            org.apache.commons.httpclient.params.HttpParams,
             org.apache.commons.lang.StringUtils,
             org.apache.commons.lang.StringEscapeUtils,
             org.markdown4j.Markdown4jProcessor,
@@ -186,6 +185,7 @@ final boolean ONLINE = cmso.getRequestContext().currentProject().isOnlineProject
 final String LABEL_SEARCHBOX_HEADING = loc.equalsIgnoreCase("no") ? "Søk i publikasjoner" : "Search publications";
 
 final String LABEL_YEAR_SELECT = loc.equalsIgnoreCase("no") ? "År" : "Year";
+final String LABEL_YEAR_SUBMIT = loc.equalsIgnoreCase("no") ? "Aktiver årstallsfilter" : "Activate year filter";
 
 //final String LABEL_MATCHES_FOR = cms.label("label.np.matches.for");
 final String LABEL_SEARCH = cms.label("label.np.search");
@@ -294,7 +294,7 @@ pubService.addDefaultParameter(
         Publication.Key.PROGRAMMES
 ).addDefaultParameter(
         // Get all possible filters (not just "greatest hits")
-        "size-facet",// PublicationService.Param.FACETS_SIZE,
+        PublicationService.Param.FACETS_SIZE,
         "9999"
 ).addDefaultParameter(
         // Filter on "Yes, publication is affiliated to NPI"
@@ -363,13 +363,13 @@ try {
     filterSets.removeByName("year-published"); // ToDo: Use this to determine the min/max values in the publish year selector
     //filterSets.removeByName("category");
     
-    // Adjust the order of the  filter sets
-    filterSets.order(new String[] { 
-        Publication.Key.TOPICS // topics
-        ,Publication.Key.TYPE //"publication_type"
-        ,Publication.Key.STATIONS //"research_stations"
-        ,Publication.Key.PROGRAMMES //"programme" 
-    });
+    // Adjust the order of the filter sets
+    filterSets.order(
+        Publication.Key.TOPICS
+        ,Publication.Key.TYPE
+        ,Publication.Key.STATIONS
+        ,Publication.Key.PROGRAMMES
+    );
     
     String lastSearchPhrase = pubService.getLastSearchPhrase();
     int totalResults = pubService.getTotalResults();
@@ -427,7 +427,7 @@ try {
                                     – <input type="number" value="<%= yhigh > -1 ? yhigh : "" %>" name="<%= YHIGH %>" id="range-year-high" style="padding:0.5em; border:1px solid #ddd; width:4em; font-size:1.25em;" />
                                     <div id="range-slider" style="margin: 2em 40px 0;"></div> 
                                     <br />
-                                    <input type="button" class="cta cta--filters-toggle" value="Oppdater årstall" style="margin-top:1em;" onclick="submit()" />
+                                    <input type="button" class="cta cta--button" value="<%= LABEL_YEAR_SUBMIT %>" style="margin-top:1em;" onclick="submit()" />
                                 </div>
                             </div>
                         </div>
@@ -520,6 +520,7 @@ try {
             </div>
             </form>
         </div>
+        <div id="filters-details"></div>
         <%
 
 
@@ -537,7 +538,7 @@ try {
         <h2 style="color:#999; border-bottom:1px solid #eee;">
             <span id="totalResultsCount"><%= totalResults %></span> <%= LABEL_MATCHES.toLowerCase() %>
         </h2>
-        <div id="filters-details"></div>
+        
 
         <% if (!ONLINE) { %>
         <div id="admin-msg" style="margin:1em 0; background: #eee; color: #444; padding:1em; font-family: monospace; font-size:1.2em;"></div>
