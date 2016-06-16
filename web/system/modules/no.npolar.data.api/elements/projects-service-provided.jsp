@@ -261,20 +261,24 @@ try {
 
         // Query 
         %>
-        <div class="searchbox-big">
+        <div class="searchbox-big search-widget search-widget--filterable">
             <h2><%= LABEL_SEARCHBOX_HEADING %></h2>
             <form action="<%= cms.link(requestFileUri) %>" method="get">
                 <input name="q" type="search" value="<%= lastSearchPhrase == null ? "" : CmsStringUtil.escapeHtml(lastSearchPhrase) %>" />
                 <input name="start" type="hidden" value="0" />
                 <input type="submit" value="<%= LABEL_SEARCH %>" />
-            
-            <div id="filters-wrap"> 
-                <a id="filters-toggler" onclick="$('#filters').slideToggle();" href="javascript:void(0);"><%= LABEL_FILTERS %></a>
-                <div id="filters">
+            <%
+            if (!filterSets.isEmpty()) {
+                out.println(filterSets.toHtml(LABEL_FILTERS, cms, labels));
+            }
+            %>
+            <div id="filters-wrap" class="filters-wrapper">
+                <a id="filters-toggler" class="cta cta--filters-toggle" tabindex="0"><%= LABEL_FILTERS %></a>
+                <div id="filters" class="filters-container">
                     <%
                     if (!filterSets.isEmpty()) {
                         Iterator<SearchFilterSet> iFilterSets = filterSets.iterator();
-                        out.println("<section class=\"layout-row quadruple clearfix\">");
+                        out.println("<div class=\"layout-row quadruple clearfix\">");
                         out.println("<div class=\"boxes\">");
                         while (iFilterSets.hasNext()) {
                             SearchFilterSet filterSet = iFilterSets.next();
@@ -282,9 +286,9 @@ try {
                             
                             if (filters != null) {
                                 out.println("<div class=\"span1\">");
-                                out.print("<h3 class=\"filters-heading\" style=\"font-size:1.5em;\">");
+                                out.print("<h3 class=\"filters-heading\">");
                                 out.print(filterSet.getTitle(locale));
-                                out.print(" (" + filterSet.size() + ")");
+                                out.print("<span class=\"filter__num-matches\"> (" + filterSet.size() + ")</span>");
                                 out.println("</h3>");
                                 out.println("<ul>");
                                 try {
@@ -298,14 +302,16 @@ try {
                                             // Try to fetch a better (and localized) text for the filter
                                             filterText = labels.getString( filterSet.labelKeyFor(filter) );
                                         } catch (Exception skip) {}
-                                        out.println("<li><a href=\"" + cms.link(requestFileUri + "?" + CmsStringUtil.escapeHtml(filter.getUrlPartParameters())) + "\">" 
-                                                            + (filter.isActive() ? "<span style=\"background:red; border-radius:3px; color:white; padding:0 0.3em;\" class=\"remove-filter\">X</span> " : "")
+                                        out.println("<li><a href=\"" + cms.link(requestFileUri + "?" + CmsStringUtil.escapeHtml(filter.getUrlPartParameters())) + "\""
+                                                            + " class=\"filter" + (filter.isActive() ? " filter--active" : "") + "\""
+                                                            + ">" 
+                                                            //+ (filter.isActive() ? "<span style=\"background:red; border-radius:3px; color:white; padding:0 0.3em;\" class=\"remove-filter\">X</span> " : "")
                                                             + filterText
-                                                            + " (" + filter.getCount() + ")"
+                                                            + "<span class=\"filter__num-matches\"> (" + filter.getCount() + ")</span>"
                                                         + "</a></li>");
                                     }
                                 } catch (Exception filterE) {
-                                    out.println("<!-- " + filterE.getMessage() + " -->");
+                                    //out.println("<!-- " + filterE.getMessage() + " -->");
                                 }
                                 out.println("</ul>");
                                 out.println("</div>");
@@ -317,7 +323,7 @@ try {
                         <%
                         out.println("</div>");
                         out.println("</div>");
-                        out.println("</section>");
+                        out.println("</div>");
                     }
                     //out.println(getFacets(cms, json.getJSONArray("facets")));
                     %>
@@ -326,8 +332,8 @@ try {
             </div>
             </form>
         </div>
+        <div id="filters-details"></div>
         <%
-
 
     if (totalResults > 0) {
 
@@ -366,6 +372,13 @@ try {
             }  
             %>
         </ul>
+        
+        <%    
+        out.println("<!-- service.getPrevPageParameters(): '" + service.getPrevPageParameters() + "' -->");
+        out.println("<!-- service.getNextPageParameters(): '" + service.getNextPageParameters() + "' -->");
+        SearchResultsPagination pagination = new SearchResultsPagination(service, requestFileUri);
+        out.println(pagination.getPaginationHtml());
+        %>
 
         <% if (pagesTotal > 1) { %>
         <nav class="pagination clearfix">
@@ -464,7 +477,7 @@ try {
 if (!service.isUserFiltered()) {
 %>
 <script type="text/javascript">
-    $("#filters").hide();
+    //$("#filters").hide();
 </script>
 
 <%

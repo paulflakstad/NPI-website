@@ -76,7 +76,7 @@ public String getFacets(CmsAgent cms, JSONArray facets) throws JSONException, ja
                                                     }
                                                 )
                                             );
-    String s = "<section class=\"clearfix quadruple layout-row overlay-headings\">";
+    String s = "<div class=\"clearfix quadruple layout-row\">";
     s += "<div class=\"boxes\">";
 
     for (int i = 0; i < facets.length(); i++) {
@@ -88,7 +88,7 @@ public String getFacets(CmsAgent cms, JSONArray facets) throws JSONException, ja
             if (facetArray.length() > 0) { 
                 //s += "\n\n<div class=\"span1 facets-set\">";
                 s += "\n\n<div class=\"span1\">";
-                s += "\n<h3>" + capitalize(getMapping(facetSetName)) + "</h3>";
+                s += "\n<h3 class=\"filters-heading\">" + capitalize(getMapping(facetSetName)) + "</h3>";
                 s += "\n<ul>";
                 for (int j = 0; j < facetArray.length(); j++) {
                     JSONObject facet = facetArray.getJSONObject(j);
@@ -100,7 +100,7 @@ public String getFacets(CmsAgent cms, JSONArray facets) throws JSONException, ja
             }
         }
     }
-    s += "</div></section>";
+    s += "</div></div>";
     return s;
 }
  
@@ -150,13 +150,20 @@ public String getFacetLink(CmsAgent cms, String facetSetName, JSONObject facetDe
     //cms.getResponse().getWriter().println("<!-- comparing '" + facetUri + "' to '" + requestFullUri + "': active=" + active + " -->");
     
     facetToggleUri = facetToggleUri.replaceAll("\\&", "&amp;");
+
+    return "<a href=\"" + cms.link(facetToggleUri) + "\" class=\"filter" + (active ? " filter--active" : "") + "\">" 
+                //+ (active ? "<span style=\"background:red; border-radius:3px; color:white; padding:0 0.3em;\" class=\"remove-filter\">X</span> " : "")
+                + facetText 
+            + "<span class=\"filter__num-matches\"> (" + facetCount + ")</span>"
+            + "</a>"
+            ;
     
-    return "<a href=\"" + cms.link(facetToggleUri) + "\"" + (active ? " style=\"font-weight:bold;\"" : "") + ">" 
+    /*return "<a href=\"" + cms.link(facetToggleUri) + "\"" + (active ? " style=\"font-weight:bold;\"" : "") + ">" 
                 + (active ? "<span style=\"background:red; border-radius:3px; color:white; padding:0 0.3em;\" class=\"remove-filter\">X</span> " : "")
                 + facetText 
             + "&nbsp;(" + facetCount + ")"
             + "</a>"
-            ;
+            ;*/
     /*
     String facetText = facetDetails.get("term").toString();
     String facetCount = facetDetails.get("count").toString();
@@ -910,7 +917,7 @@ try {
 
         // Query 
         %>
-        <div class="searchbox-big">
+        <div class="searchbox-big search-widget search-widget--filterable">
             <h2><%= LABEL_SEARCH_EMPLOYEES %></h2>
             <form action="<%= requestFileUri %>" method="get" id="employeelookup">
                 <input name="<%= PARAM_NAME_SEARCHPHRASE_LOCAL %>" type="search" placeholder="<%= LABEL_SEARCH_PH %>" value="<%= CmsStringUtil.escapeHtml(getParameter(cms, PARAM_NAME_SEARCHPHRASE_LOCAL)) %>" style="padding: 0.5em; font-size: larger;" id="q" />
@@ -918,9 +925,10 @@ try {
                 <input name="employeeuri" type="hidden" id="employeeuri" value="" />
                 <input type="submit" value="<%= LABEL_SEARCH %>" />
             </form>
-            <div id="filters-wrap">
-                <a id="filters-toggler" onclick="$('#filters').slideToggle();"><%= LABEL_FILTERS %></a>
-                <div id="filters">
+            <div id="filters-wrap" class="filters-wrapper">
+                <!--<a class="cta cta--filters-toggle" id="filters-toggler" onclick="$('#filters').slideToggle();"><%= LABEL_FILTERS %></a>-->
+                <a class="cta cta--filters-toggle" id="filters-toggler"><%= LABEL_FILTERS %></a>
+                <div id="filters" class="filters-container">
                     <!-- Filters: -->
                     <%= getFacets(cms, json.getJSONArray("facets")) %>
                 </div>
@@ -956,6 +964,7 @@ try {
         String indexLetter = "notaletter";
 
         %>
+        <div id="filters-details"></div>
         <h2 class="info-secondary serp-heading" style="color:#999; border-bottom:1px solid #eee;"><span id="totalResultsCount"><%= totalResults %></span> <%= LABEL_MATCHES.toLowerCase() %>
             <!--<em><%= CmsStringUtil.escapeHtml(getParameter(cms, "q")) %></em>-->
         </h2>
