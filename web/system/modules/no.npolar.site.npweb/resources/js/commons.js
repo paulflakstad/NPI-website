@@ -1,25 +1,62 @@
-<%@page import="org.opencms.jsp.CmsJspActionElement, java.util.Locale"
-%><% 
-CmsJspActionElement cms = new CmsJspActionElement(pageContext, request, response);
-String requestFileUri   = cms.getRequestContext().getUri();
-Locale locale = null;
-String loc = null;
-
-// Make sure that the 
-try {
-    locale = new Locale(request.getParameter("locale"));
-} catch (NullPointerException npe) {
-    locale = new Locale("en");
-}
-
-loc = locale.toString();
-%>
-
 /**
  * Common javascript funtions, used throughout the site.
  * Dependency: jQuery (must be loaded before this script)
- * Dependency: Highslide (must be loaded before this script)
+ * Dependency: Highslide (assets must be available at the provided locations)
  */
+
+/**
+ * Global variable that holds localized Highslide strings / labels. 
+ */
+var HS_LABELS = {
+    no : {
+        loadingText :     'Laster...',
+        loadingTitle :    'Klikk for Ã¥ avbryte',
+        focusTitle :      'Klikk for Ã¥ flytte fram',
+        fullExpandText :  'Full stÃ¸rrelse',
+        fullExpandTitle : 'Utvid til full stÃ¸rrelse',
+        creditsText :     'Drevet av <i>Highslide JS</i>',
+        creditsTitle :    'GÃ¥ til hjemmesiden til Highslide JS',
+        previousText :    'Forrige',
+        previousTitle :   'Forrige (pil venstre)',
+        nextText :        'Neste',
+        nextTitle :       'Neste (pil hÃ¸yre)',
+        moveText :        'Flytt',
+        moveTitle :       'Flytt',
+        closeText :       'Lukk',
+        closeTitle :      'Lukk (esc)',
+        resizeTitle :     'Endre stÃ¸rrelse',
+        playText :        'Spill av',
+        playTitle :       'Vis bildeserie (mellomrom)',
+        pauseText :       'Pause',
+        pauseTitle :      'Pause (mellomrom)',
+        number :          'Bilde %1 av %2',
+        restoreTitle :    'Klikk for Ã¥ lukke bildet, klikk og dra for Ã¥ flytte. Bruk piltastene for forrige og neste.'
+    },
+    en : {
+        loadingText :     'Loading...',
+        loadingTitle :    'Click to cancel',
+        focusTitle :      'Click to move forwrard',
+        fullExpandText :  'Fullsize',
+        fullExpandTitle : 'Expand to full size',
+        creditsText :     'Powered by <i>Highslide JS</i>',
+        creditsTitle :    'Go to the Highslide JS website',
+        previousText :    'Previous',
+        previousTitle :   'Previous (left arrow)',
+        nextText :        'Next',
+        nextTitle :       'Next (right arrow)',
+        moveText :        'Move',
+        moveTitle :       'Move',
+        closeText :       'Close',
+        closeTitle :      'Close (esc)',
+        resizeTitle :     'Change size',
+        playText :        'Play',
+        playTitle :       'View slideshow (space)',
+        pauseText :       'Pause',
+        pauseTitle :      'Pause (space)',
+        number :          'Image %1 of %2',
+        restoreTitle :    'Click to close, click and drag to move. Use arrow keys for next / previous.'
+    }
+};
   
 /**
  * Function for altering table rows by class insertion.
@@ -180,6 +217,57 @@ function getSmallScreenBreakpoint() {
 
 function isSmallScreen() {
     return getVisibleWidth() <= getSmallScreenBreakpoint();
+}
+
+
+
+/**
+ * Makes ready Highslide, by injecting the necessary css/js in the HTML head.
+ * 
+ * @param {String} cssUri The URI to the Highslide css.
+ * @param {String} jsUri The URI to the Highslide javascript.
+ * @param {String} lang The desired language, e.g. "no" or "en".
+ * @returns {Boolean} True if no error is thrown, false if not.
+ */
+function readyHighslide(cssUri, jsUri, lang) {
+    'use strict';
+    try {
+        if ($(".highslide")[0]) {
+            $('head').append('<link rel="stylesheet" type="text/css" href="' + cssUri + '" />');
+            $.getScript(jsUri, function() {
+                //hs.align = 'center';
+                //hs.marginBottom = 10;
+                //hs.marginTop = 10;
+                hs.marginBottom = 50; // Make room for the "Share" widget
+                hs.marginTop = 50; // Make room for the thumbstrip
+                hs.marginLeft = 50;
+                hs.marginRight = 50;
+                //hs.maxHeight = 600;
+                //hs.outlineType = 'rounded-white';
+                hs.outlineType = 'drop-shadow';
+                hs.lang = getHighslideLabels(lang);
+            });
+        }
+    } catch (err) {
+        return false;
+    }
+    return true;
+}
+
+/**
+ * Gets Highslide labels localized according to the given language.
+ * 
+ * @param {type} lang The desired language, e.g. 'en' or 'no'.
+ * @returns {Object} Highslide labels localized according to the given language or, if that language isn't configured, in the default language.
+ * @see HC_LABELS
+ */
+function getHighslideLabels(/*String*/lang) {
+    'use strict';
+    if (!(lang === 'en' || lang === 'no')) {
+        // Non-supported language, fallback to default
+        lang = 'en';
+    }
+    return HS_LABELS[lang];
 }
 
 function initToggleable(/*jQuery*/ el) {
@@ -635,70 +723,3 @@ $(document).ajaxComplete(function() {
     // Initialize toggleable content
     //initToggleables();
 });
-
-
-/**
- * Highslide settings
- */
-//hs.align = 'center';
-//hs.marginBottom = 10;
-//hs.marginTop = 10;
-hs.marginBottom = 50; // Make room for the "Share" widget
-hs.marginTop = 50; // Make room for the thumbstrip
-hs.marginLeft = 50;
-hs.marginRight = 50; 
-//hs.maxHeight = 600;
-//hs.outlineType = 'rounded-white';
-hs.outlineType = 'drop-shadow';
-<% if (loc.equalsIgnoreCase("no")) { %>
-hs.lang = {
-    loadingText :     'Laster...',
-    loadingTitle :    'Klikk for å avbryte',
-    focusTitle :      'Klikk for å flytte fram',
-    fullExpandText :  'Full størrelse',
-    fullExpandTitle : 'Utvid til full størrelse',
-    creditsText :     'Drevet av <i>Highslide JS</i>',
-    creditsTitle :    'Gå til hjemmesiden til Highslide JS',
-    previousText :    'Forrige',
-    previousTitle :   'Forrige (pil venstre)',
-    nextText :        'Neste',
-    nextTitle :       'Neste (pil høyre)',
-    moveText :        'Flytt',
-    moveTitle :       'Flytt',
-    closeText :       'Lukk',
-    closeTitle :      'Lukk (esc)',
-    resizeTitle :     'Endre størrelse',
-    playText :        'Spill av',
-    playTitle :       'Vis bildeserie (mellomrom)',
-    pauseText :       'Pause',
-    pauseTitle :      'Pause (mellomrom)',
-    number :          'Bilde %1 av %2',
-    restoreTitle :    'Klikk for å lukke bildet, klikk og dra for å flytte. Bruk piltastene for forrige og neste.'
-};
-<% } else { %>
-hs.lang = {
-    cssDirection:     'ltr',
-    loadingText :     'Loading...',
-    loadingTitle :    'Click to cancel',
-    focusTitle :      'Click to bring to front',
-    fullExpandTitle : 'Expand to actual size (f)',
-    fullExpandText :  'Full size',
-    creditsText :     'Powered by <i>Highslide JS</i>',
-    creditsTitle :    'Go to the Highslide JS homepage',
-    previousText :    'Previous',
-    previousTitle :   'Previous (arrow left)',
-    nextText :        'Next',
-    nextTitle :       'Next (arrow right)',
-    moveTitle :       'Move',
-    moveText :        'Move',
-    closeText :       'Close',
-    closeTitle :      'Close (esc)',
-    resizeTitle :     'Resize',
-    playText :        'Play',
-    playTitle :       'Play slideshow (spacebar)',
-    pauseText :       'Pause',
-    pauseTitle :      'Pause slideshow (spacebar)',   
-    number :          'Image %1 of %2',
-    restoreTitle :    'Click to close image, click and drag to move. Use arrow keys for next and previous.'
-};
-<% } %>

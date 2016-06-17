@@ -422,7 +422,7 @@ css.add("");
 <!--<link rel="stylesheet" type="text/css" href="<%= cms.link("//cdnjs.cloudflare.com/ajax/libs/qtip2/2.1.1/jquery.qtip.min.css") %>" />-->
 <link rel="stylesheet" type="text/css" href="<%= cms.link("/system/modules/no.npolar.common.jquery/resources/qtip2/2.1.1/jquery.qtip.min.css") %>" />
 <!--<link rel="stylesheet" type="text/css" href="<%= cms.link("/system/modules/no.npolar.common.jquery/resources/jquery.qtip.min.css") %>" />-->
-<link rel="stylesheet" type="text/css" href="<%= cms.link("/system/modules/no.npolar.common.highslide/resources/js/highslide/highslide.css") %>" />
+<!--<link rel="stylesheet" type="text/css" href="<%= cms.link("/system/modules/no.npolar.common.highslide/resources/js/highslide/highslide.css") %>" />-->
 
 
 <!--<link rel="stylesheet" type="text/css" href="<%= cms.link("/system/modules/no.npolar.site.npweb/resources/style/npweb-2014-menu.css") %>" />-->
@@ -470,7 +470,7 @@ if (sess.getAttribute("fs") != null && !((String)sess.getAttribute("fs")).equals
      <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <!--<![endif]-->
 <!--<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>-->
-<script type="text/javascript" src="<%= cms.link("/system/modules/no.npolar.site.npweb/resources/js/highslide/highslide-full.js") %>"></script>
+<!--<script type="text/javascript" src="<%= cms.link("/system/modules/no.npolar.site.npweb/resources/js/highslide/highslide-full.js") %>"></script>-->
 <!--<script type="text/javascript" src="<cms:link>/system/modules/no.npolar.common.jquery/resources/jquery.qtip.min.js</cms:link>"></script>-->
 <!--<script type="text/javascript" src="<cms:link>//cdnjs.cloudflare.com/ajax/libs/qtip2/2.1.1/jquery.qtip.min.js</cms:link>"></script>-->
 <script type="text/javascript" src="<%= cms.link("/system/modules/no.npolar.common.jquery/resources/jquery.qtip.min.js") %>"></script>
@@ -499,6 +499,12 @@ out.println(cms.getHeaderElement(CmsAgent.PROPERTY_JAVASCRIPT, requestFileUri));
 <!--<script type="text/javascript" src="<cms:link>/system/modules/no.npolar.common.highslide/resources/js/highslide/highslide-settings.js?locale=<%= locale %></cms:link>"></script>-->
 <script type="text/javascript">
 $(document).ready(function() {
+    // Prepare Highslide (loas assets only if necessary)
+    readyHighslide('<%= cms.link("/system/modules/no.npolar.common.highslide/resources/js/highslide/highslide.css") %>', 
+                    '<%= cms.link("/system/modules/no.npolar.site.npweb/resources/js/highslide/highslide-full.js") %>',
+                    '<%= locale %>'
+                    );
+                    
     //$(".addthis_button_tweet").attr('tw:count','none');
     //$(".addthis_button_google_plusone").attr('g:plusone:count','false');
     //$(".addthis_button_facebook_like").attr({ 'fb:like:layout':'button_count', 'fb:like:action':'recommend'});
