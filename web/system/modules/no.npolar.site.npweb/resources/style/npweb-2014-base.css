@@ -499,8 +499,8 @@ ul.line-items li {
  */
 .searchbox {
     position: relative;
-    width: 40em;
-    max-width: 96%;
+    max-width: 40em;
+    width: 96%;
     vertical-align: middle;
     margin: 0 auto;
 }
@@ -587,9 +587,20 @@ ul.line-items li {
     cursor: pointer;
 }
 
+.searchbox p {
+    margin: 0.5em auto;
+    font-size: smaller;
+}
+.searchbox p.search-alternative {
+    font-size: medium;
+}
+.search-panel input + p {
+    margin-top: 0.5em;
+}
+
 .search-widget .searchbox {
-    width: 45em;
-    max-width: 96%;
+    max-width: 45em;
+    width: 96%;
     margin: 1em auto;
     padding-bottom: 2.4em;
     padding-bottom: 3.2em;
@@ -3398,16 +3409,16 @@ nav.pagination a {
 /* "Level up" links in the small-screen navigation */
 #header a.navtarget {
     float:left;	
-    background:#0e88ce;
-    background:#0af;
+    /*background:#0e88ce;*/
+    /*background:#0af;*/
     background:#1570B1;
     color:#fff;
     display:inline-block;
-	margin:0 0.5em 0 0;
-	padding:0.25em 0.35em 0.45em 0.3em;
-	border:1px solid #0e88ce;
-	border:1px solid #0af;
-	border:1px solid #1570B1;
+    margin:0 0.5em 0 0;
+    padding:0.25em 0.35em 0.45em 0.3em;
+    /*border:1px solid #0e88ce;*/
+    /*border:1px solid #0af;*/
+    border:1px solid #1570B1;
 }
 /*#header a.navtarget img {
     width:1.3em;
@@ -3423,8 +3434,8 @@ nav.pagination a {
     display:none;
     font-size:2em;
     padding:0.5em 0.2em;
-	margin-bottom:0.5em;
-	text-shadow:1px 1px 2px #fff;
+    margin-bottom:0.5em;
+    text-shadow:1px 1px 2px #fff;
 }
 
 
