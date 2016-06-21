@@ -73,8 +73,8 @@
 @media (min-width:400px) {
 
 .person .media.pull-right.xs {
-	float:right;
-	width:20%;
+    float:right;
+    width:20%;
 }
 .media.pull-right,
 .media.pull-left {
