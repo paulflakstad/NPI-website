@@ -473,17 +473,24 @@ if (!result.isEmpty()) {
         //$("#q").focus();
         /*]]>*/
     </script>
-    <div class="searchbox-big">
-        <h2><%= cms.labelUnicode("label.np.searchemployee") %></h2>
-        <form id="employeelookup" method="post" action="<%= cms.link(employeeFolder) %>">
+    <!--<div class="searchbox-big">-->
+        <form class="search-panel" id="employeelookup" method="post" action="<%= cms.link(employeeFolder) %>">
+            
+            <h2 class="search-panel__heading"><%= cms.labelUnicode("label.np.searchemployee") %></h2>
+            
             <!--<input type="search" name="employeename" size="30" id="employeename" value="" />-->
-            <input type="search" name="q" size="30" id="q" value="" />
+            <div class="search-widget">
+                <div class="searchbox">
+                    <input class="search-input" type="search" name="q" size="30" id="q" value="" />
+                    <input class="search-button" type="submit" value=" <%= cms.label("label.np.search") %> " />
+                    <p class="search-alternative"><strong><%= secondaryCTA %></strong></p>
+                </div>
+            </div>
+            
             <input type="hidden" name="employeeuri" id="employeeuri" value="" />
             <input type="hidden" name="start" value="0" />
-            <input type="submit" value=" <%= cms.label("label.np.search") %> " />
         </form>
-        <p><strong><%= secondaryCTA %></strong></p>
-    </div>
+    <!--</div>-->
     <%
 }
 stop = System.currentTimeMillis();

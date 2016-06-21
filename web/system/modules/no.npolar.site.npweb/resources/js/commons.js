@@ -293,6 +293,7 @@ function initToggleable(/*jQuery*/ el) {
 }
 
 function initToggleables() {
+    'use strict';
     $('.toggleable.collapsed > .toggletarget').slideUp(1); // Hide normally-closed ("collapsed") accordion content		
     $('.toggleable.collapsed > .toggletrigger').append(' <em class="icon-down-open-big"></em>'); // Append arrow icon to "show accordion content" triggers
     $('.toggleable.open > .toggletrigger').append(' <em class="icon-up-open-big"></em>'); // Append arrow icon to "hide accordion content" triggers
@@ -302,6 +303,29 @@ function initToggleables() {
             //$(this).children().first().toggleClass('icon-up-open-big').toggleClass('icon-down-open-big');
             $(this).children().first().toggleClass('icon-up-open-big icon-down-open-big'); // ... and toggle the icon class, so the arrows change corresponding to the slide up/down
         });
+        
+    // Newer toggler:
+    //  [container]
+    //      |- [.toggler]
+    //      |- [.toggleable]
+    var toggler = $('.toggler');
+    toggler.next('.toggleable').attr('aria-hidden', 'true').slideUp(1); // Hide toggleable content
+    toggler.attr('aria-expanded', 'false'); // Add ARIA info
+    toggler.click(function(e) {
+        e.preventDefault();
+        var target = $(this).next('.toggleable');
+        target.toggleClass('expanded');
+        target.parent().toggleClass('expanded');
+        target.slideToggle(400);
+        
+        if (target.hasClass('expanded')) {
+            $(this).attr('aria-expanded', 'true');
+            target.attr('aria-hidden', 'false');
+        } else {
+            $(this).attr('aria-expanded', 'false');
+            target.attr('aria-hidden', 'true');
+        }
+    });
 }
 
 function showOutlines() {
@@ -613,7 +637,8 @@ $(document).ready( function() {
         
         ////////////////////////////////////////////////////////////////////////
         // BEGIN search filters
-        var filterTogglers = $(".cta--filters-toggle"); //= $("#filters-toggler");
+        //
+        var filterTogglers = $(".cta--filters-toggle, .toggler--filters-toggle"); //= $("#filters-toggler");
         var filters = $(".filters-wrapper"); //= $("#filters");
         var filterHeadings = $(".filter-set__heading"); //= $("#filters h3");
         var filterLinks = $(".filter-set .filter"); //= $("#filters li a");
@@ -622,9 +647,10 @@ $(document).ready( function() {
         filterHeadings.addClass("filters-heading");
         filterLinks.addClass("filter");
         
+        // Add hints to filter toggler + remove number of matches from filter set headings
         filterTogglers.each(function() {
             var toggler = $(this);
-            var headings = toggler.next(".filters-wrapper").find(".filter-set__heading");
+            var headings = toggler.next(".filters-wrapper, .toggleable").find(".filter-set__heading");
             if (headings.length > 0) {
                 toggler.append("<div class=\"filter-hints\"></div>");
 
@@ -644,7 +670,8 @@ $(document).ready( function() {
             }
         });
         
-        filterTogglers.addClass("cta cta--filters-toggle").removeAttr("onclick");
+        //filterTogglers.addClass("cta cta--filters-toggle")
+        filterTogglers.removeAttr("onclick");
         filterTogglers.click(function(e) {
             e.preventDefault();
             $(this).next(".filters-wrapper").slideToggle();
@@ -655,7 +682,10 @@ $(document).ready( function() {
         
         //$("#filters li a .remove-filter").closest("a").addClass("filter--active");
         
+        //
         // Create a separate overview of the active filters
+        //
+        filters = $('.filters-wrapper, .filter-set');
         var activeFilters = filters.find(".filter--active");
         if (activeFilters.length > 0) {
             //console.log("Found " + activeFilters.length + " active filters.");
@@ -670,6 +700,7 @@ $(document).ready( function() {
                 $(".filters--active").append( $("<li>").append( $(this).clone() ) );
             });
         }
+        // 
         // END search filters
         ////////////////////////////////////////////////////////////////////////
         

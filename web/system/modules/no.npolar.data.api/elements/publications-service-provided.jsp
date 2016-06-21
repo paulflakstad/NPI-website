@@ -46,98 +46,6 @@
             pageEncoding="UTF-8" 
             session="true" 
  %><%!
-/* Map storage for default parameters. */
-static Map<String, String> dp = new HashMap<String, String>();
-/* Stop words. */
-static List<String> sw = new ArrayList<String>();
-
-/**
- * Default ("system") parameters: The end-user should never see these.
- */
-public static Map<String, String> getDefaultParamMap() {
-    if (dp.isEmpty()) {
-        dp.put(PublicationService.Param.SORT_BY, PublicationService.modReverse(Publication.Key.PUB_TIME));
-        dp.put(PublicationService.Param.FORMAT, APIService.ParamVal.FORMAT_JSON);
-        dp.put(PublicationService.modFilter(Publication.Key.DRAFT), Publication.Val.DRAFT_FALSE);
-    }
-    return dp;
-}
-
-/**
- * Gets the parameters part of the given URL string. 
- * (Equivalent to request.getQueryString().)
- */
-public static String getParameterString(String theURL) {
-    try {
-        return theURL.split("\\?")[1];
-    } catch (ArrayIndexOutOfBoundsException e) {
-        return theURL;
-    }  
-}
-
-/**
- * Gets the dynamic parameters from the request (typically the URL).
- * The end-user may see these parameters in the URL, and could potentially 
- * modify them there, in addition to indirectly modifying them using the 
- * end-user tools presented on-page. (Search form, pagination etc.)
- */
-public static String getDynamicParams(CmsAgent cms, boolean includeStart) {
-    String s = "";
-    int i = 0;
-    Map<String, String[]> pm = cms.getRequest().getParameterMap();
-    
-    if (!pm.isEmpty()) {
-        Iterator<String> pNames = pm.keySet().iterator();
-        while (pNames.hasNext()) {
-            String pName = pNames.next();
-            if (PublicationService.Param.START_AT.equals(pName) && !includeStart
-                    || getDefaultParamMap().containsKey(pName))
-                continue;
-            String pValue = "";
-            try { pValue = URLEncoder.encode(pm.get(pName)[0], "utf-8"); } catch (Exception e) { pValue = ""; }
-            s += (++i > 1 ? "&" : "") + pName + "=" + pValue;
-        }
-    }
-    else {
-        String start = cms.getRequest().getParameter(APIService.Param.START_AT);
-
-        // Query
-        try {
-            s += PublicationService.Param.QUERY + "=" + URLEncoder.encode(getParameter(cms, PublicationService.Param.QUERY), "utf-8");
-        } catch (Exception e) {
-            s += PublicationService.Param.QUERY + "=" + getParameter(cms, PublicationService.Param.QUERY);
-        }
-
-        // Items per page
-        s += "&" + PublicationService.Param.RESULTS_LIMIT + "=" + getLimit(cms);
-
-        // Start index
-        if (includeStart && (start != null && !start.isEmpty()))
-            s += "&" + PublicationService.Param.START_AT + "=" + start;
-    }
-    return s;
-}
-
-/**
- * Gets a particular parameter value. If no such parameter exists, an empty 
- * string is returned.
- */
-public static String getParameter(CmsAgent cms, String paramName) {
-    String param = cms.getRequest().getParameter(paramName);
-    return param != null ? param : "";
-}
-
-/**
- * Gets the current limit value, with fallback to default value.
- */
-public static String getLimit(CmsAgent cms) {
-    return getParameter(cms, PublicationService.Param.RESULTS_LIMIT).isEmpty() ? "25" : getParameter(cms, PublicationService.Param.RESULTS_LIMIT);
-}
-
-public static String markdownToHtml(String s) {
-    try { return new Markdown4jProcessor().process(s); } catch (Exception e) { return s + "\n<!-- Could not process this as markdown -->"; }
-}
-
 public static boolean isInteger(String s) {
     if (s == null || s.isEmpty())
         return false;
@@ -230,51 +138,19 @@ final String ERROR_MSG_NO_SERVICE = loc.equalsIgnoreCase("no") ?
             + "<p>We hate it when this happens, and hope to have everything sorted out shortly.</p>"
             + "<p>Please try reloading this page in a little while.</p>"
             + "<p style=\"font-style:italic;\">If the error persist, we would appreciate it if you could take the time to <a href=\"mailto:web@npolar.no\">send us a short note about this</a>.</p>");
+
 try {
-    URL url = new URL(pubService.getServiceBaseURL().concat("?" + PublicationService.Param.QUERY + "="));
-    // set the connection timeout value to 30 seconds (30000 milliseconds)
-    //final HttpParams httpParams = new BasicHttpParams();
-    //HttpConnectionParams.setConnectionTimeout(httpParams, 30000);
-    
-    HttpURLConnection connection = (HttpURLConnection)url.openConnection();
-    connection.setRequestMethod("GET");
-    connection.setReadTimeout(7000);
-    connection.connect();
-    responseCode = connection.getResponseCode();
-} catch (Exception e) {
-} finally {
-    if (responseCode != 200) {
-        out.println("<div class=\"error\">" + ERROR_MSG_NO_SERVICE + "</div>");
-        
-        // Send error message
+    boolean isAvailable = APIUtil.testAvailability(pubService.getServiceBaseURL().concat("?" + PublicationService.Param.QUERY + "="), new int[]{200}, 5000, 3);
+    if (!isAvailable) {
+        out.println("<div class=\"error message message--error\">" + ERROR_MSG_NO_SERVICE + "</div>");
         try {
-            String lastErrorNotificationTimestampName = "last_err_notification_publications";
-            int errorNotificationTimeout = 1000*60*60*12; // 12 hours
-            Date lastErrorNotificationTimestamp = (Date)application.getAttribute(lastErrorNotificationTimestampName);
-            if (lastErrorNotificationTimestamp == null // No previous error
-                    || (lastErrorNotificationTimestamp.getTime() + errorNotificationTimeout) < new Date().getTime()) { // Previous error sent, but timeout exceeded
-                application.setAttribute(lastErrorNotificationTimestampName, new Date());
-                CmsSimpleMail errorMail = new CmsSimpleMail();
-                errorMail.addTo("web@npolar.no");
-                errorMail.setFrom("no-reply@npolar.no");
-                errorMail.setSubject("Error on NPI website / data centre");
-                errorMail.setMsg("The page at " + OpenCms.getLinkManager().getOnlineLink(cmso, requestFileUri) + (request.getQueryString() != null ? "?".concat(request.getQueryString()) : "")
-                        + " is having problems connecting to the data centre."
-                        + "\n\nPlease look into this."
-                        + "\n\nThis notification was generated because the data centre is down, frozen/hanging, or did not respond with the expected response code \"200 OK\"."
-                        + "\n\nGenerated by OpenCms: " + cms.info("opencms.uri") + " - No further notifications will be sent for the next " + errorNotificationTimeout/(1000*60*60) + " hour(s).");
-                errorMail.send();
-            }
+            no.npolar.util.SystemMessenger.sendStandardError(-1, "last_err_notification_publications", application, cms, "flakstad@npolar.no", "no-reply@npolar.no", "Projects");
         } catch (Exception e) { 
-            out.println("\n<!-- \nError sending error notification: " + e.getMessage() + " \n-->");
+            out.println("\n<!-- \nError sending email notification about problems with this page: " + e.getMessage() + " \n-->");
         }
-        
         return;
     }
-}
-
-// Set new defaults (hidden / not overrideable parameters), overriding the standard defaults
-Map<String, String[]> defaultParams = new HashMap<String, String[]>();
+} catch (Exception e) {}
 
 pubService.addDefaultParameter(
         // Don't include drafts
@@ -380,13 +256,22 @@ try {
                             "<strong>Can't find the publication? Try " + "<a href=\"" + cms.link("/en/publications/brage.html") + "\">" + "searching our publications&nbsp;archive" + " «Brage»</a>.</strong><br />(We're working on offering all publications in a single archive.)";
 
         // Query 
+        // ToDo: rename "searchbox-big" / "search-widget" => "search-panel" (?)
+        //       - "search-widget" suggests a single tool or group of related 
+        //         tools (like filter sets)
         %>
-        <div class="searchbox-big search-widget search-widget--filterable">
-            <h2><%= LABEL_SEARCHBOX_HEADING %></h2>
+        <form class="search-panel" action="<%= cms.link(requestFileUri) %>" method="get">
+        <!--<div class="search-panel">-->
+            <h2 class="search-panel__heading"><%= LABEL_SEARCHBOX_HEADING %></h2>
             <p class="smalltext"><%= disclaimer %></p>
             
-            <form action="<%= cms.link(requestFileUri) %>" method="get">
-                <input name="<%= APIService.Param.QUERY %>" type="search" value="<%= lastSearchPhrase == null ? "" : CmsStringUtil.escapeHtml(lastSearchPhrase) %>" />
+            <!--<form action="<%= cms.link(requestFileUri) %>" method="get">-->
+                <div class="search-widget">
+                    <div class="searchbox">
+                        <input name="<%= APIService.Param.QUERY %>" type="search" value="<%= lastSearchPhrase == null ? "" : CmsStringUtil.escapeHtml(lastSearchPhrase) %>" />
+                        <input class="search-button" type="submit" value="<%= LABEL_SEARCH %>" />
+                    </div>
+                </div>
                 <input name="<%= APIService.Param.START_AT %>" type="hidden" value="0" />
                 <%
                 // If we don't want any existing "regular" filters to reset upon 
@@ -410,130 +295,80 @@ try {
                     %><!-- No regular filters active --><%
                 }
                 %>
-                <input class="cta cta--search-submit" type="submit" value="<%= LABEL_SEARCH %>" />
-            
-            
-            <div class="filters-wrapper">
-                <a class="cta cta--filters-toggle" id="filters-toggler" onclick="$('#filters').slideToggle();" tabindex="0"><%= LABEL_FILTERS %></a>
-                
-                <div id="filters" class="filters-container">
+                <!--<div class="search-panel__filters">-->
+                    <!--<a class="toggler toggler--filters-toggle" tabindex="0"><%= LABEL_FILTERS %></a>-->
+                    <!--<div class="toggleable toggleable--filters">-->
+            <%
+                out.println(filterSets.getFiltersWrapperHtmlStart(LABEL_FILTERS));
+            %>
                     
-                    <div class="layout-row single clearfix" style="text-align:center;">
-                        <div class="boxes">
-                            <div class="span1">
-                                <div class="filter-widget">
-                                    <h3 class="filters-heading filter-widget-heading"><%= LABEL_YEAR_SELECT %></h3>
-                                    <input type="number" value="<%= ylow > -1 ? ylow : "" %>" name="<%= YLOW %>" id="range-year-low" style="padding:0.5em; border:1px solid #ddd; width:4em; font-size:1.25em;" /> 
-                                    – <input type="number" value="<%= yhigh > -1 ? yhigh : "" %>" name="<%= YHIGH %>" id="range-year-high" style="padding:0.5em; border:1px solid #ddd; width:4em; font-size:1.25em;" />
-                                    <div id="range-slider" style="margin: 2em 40px 0;"></div> 
-                                    <br />
-                                    <input type="button" class="cta cta--button" value="<%= LABEL_YEAR_SUBMIT %>" style="margin-top:1em;" onclick="submit()" />
-                                </div>
-                            </div>
+                    <div class="layout-group single layout-group--single filter-widget" style="text-align:center;">
+                        <div class="layout-box">
+                            <h3 class="filter-widget__heading"><%= LABEL_YEAR_SELECT %></h3>
+                            <input class="input input--year" type="number" value="<%= ylow > -1 ? ylow : "" %>" name="<%= YLOW %>" id="range-year-low" /> 
+                            – <input class="input input--year" type="number" value="<%= yhigh > -1 ? yhigh : "" %>" name="<%= YHIGH %>" id="range-year-high" />
+                            <div class="range-slider" id="range-slider" style="margin: 2em 40px 0;"></div>
+                            <br />
+                            <input type="button" class="cta cta--button" value="<%= LABEL_YEAR_SUBMIT %>" style="margin-top:1em;" onclick="submit()" />
                         </div>
                     </div>
                     
                     <%
+                        
                     if (!filterSets.isEmpty()) {
-                        Iterator<SearchFilterSet> iFilterSets = filterSets.iterator();
+                        out.println(filterSets.toHtml(cms, labels));
+                    }
+                    
+                    // If year filtering is active, we need to make sure it's picked up by the javascript
+                    if (ylow > -1 || yhigh > -1) {
+                        Map<String, String[]> paramsTemp = new HashMap<String, String[]>(params);
+                        paramsTemp.remove(YLOW);
+                        paramsTemp.remove(YHIGH);
+                        paramsTemp.remove(PublicationService.modFilter(Publication.Key.PUB_TIME));
+                        String yearRemoveLinkUrl = CmsRequestUtil.appendParameters(cms.link(requestFileUri), paramsTemp, false);
+                        String yearRemoveLinkText = (ylow > -1 ? String.valueOf(ylow).concat("&ndash;").concat(yhigh > -1 ? "" : String.valueOf(ylow)) : "") 
+                                                    + (yhigh > -1 ? String.valueOf(yhigh).concat( ylow > -1 ? "" : "&ndash".concat(String.valueOf(yhigh)) ) : "");
                         %>
-                        <section class="layout-row quadruple clearfix">
-                        <div class="boxes">
-                        <%
-                        while (iFilterSets.hasNext()) {
-                            // Get the filter set ...
-                            SearchFilterSet filterSet = iFilterSets.next();
-                            // ... and the filters in that set
-                            List<SearchFilter> filters = filterSet.getFilters();
-                            
-                            if (filters != null) {
-                                // Filter set has filters
-                                %>
-                                <div class="span1">
-                                    <h3 class="filters-heading">
-                                        <%= filterSet.getTitle(locale) %>
-                                        <span class="filter__num-matches"> (<%= filterSet.size() %>)</span>
-                                    </h3>
-                                    <ul>
-                                        <%
-                                        try {
-                                            Iterator<SearchFilter> iFilters = filters.iterator();
-                                            while (iFilters.hasNext()) {
-                                                SearchFilter filter = iFilters.next();
-                                                String filterText = filter.getTerm();
-                                                try {
-                                                    filterText = labels.getString(filterSet.labelKeyFor(filter)); //labels.getString(normalize(filterSet.getName()) + "." + filter.getTerm());
-                                                } catch (Exception skip) {
-                                                    //normalize(filterSet.getName() + "." + filter.getTerm()); // HACK :-O
-                                                }
-                                                %>
-                                                <li>
-                                                <%
-                                                out.println("<a" + (filter.isActive() ? (" class=\"filter--active\"") : "") 
-                                                                + " href=\"" + cms.link(requestFileUri + "?" + CmsStringUtil.escapeHtml(filter.getUrlPartParameters())) + "\">" 
-                                                                    + (filter.isActive() ? "<span style=\"background:red; border-radius:3px; color:white; padding:0 0.3em;\" class=\"remove-filter\">X</span> " : "")
-                                                                    + filterText
-                                                                    + "<span class=\"filter__num-matches\"> (" + filter.getCount() + ")</span>"
-                                                                + "</a>");
-                                                %>
-                                                </li>
-                                                <%
-                                            }
-                                        } catch (Exception filterE) {
-                                            out.println("<!-- " + filterE.getMessage() + " -->");
-                                        }
-                                        %>
-                                    </ul>
-                                </div>
-                                <%
-                            }
-                        }
-                        // If year filtering is active, we need to make sure it's picked up by the javascript
-                        if (ylow > -1 || yhigh > -1) {
-                            Map<String, String[]> paramsTemp = new HashMap<String, String[]>(params);
-                            paramsTemp.remove(YLOW);
-                            paramsTemp.remove(YHIGH);
-                            paramsTemp.remove(PublicationService.modFilter(Publication.Key.PUB_TIME));
-                            String yearRemoveLinkUrl = CmsRequestUtil.appendParameters(cms.link(requestFileUri), paramsTemp, false);
-                            String yearRemoveLinkText = (ylow > -1 ? String.valueOf(ylow).concat("&ndash;").concat(yhigh > -1 ? "" : String.valueOf(ylow)) : "") 
-                                                        + (yhigh > -1 ? String.valueOf(yhigh).concat( ylow > -1 ? "" : "&ndash".concat(String.valueOf(yhigh)) ) : "");
-                            %>
-                            <div class="span1" style="display:none;">
-                                <h3 class="filters-heading">
+                        <div class="layout-group quadruple layout-group--quadruple filter-widget">
+                            <div class="layout-box filter-set" style="display:none;">
+                                <h3 class="filters-heading filter-set__heading">
                                     <%= LABEL_YEAR_SELECT %>
                                 </h3>
-                                <ul>
-                                    <li><a class="filter--active" href="<%= yearRemoveLinkUrl %>"><%= yearRemoveLinkText %></a></li>
+                                <ul class="filter-set__filters">
+                                    <li><a class="filter filter--active" href="<%= yearRemoveLinkUrl %>" rel="nofollow"><%= yearRemoveLinkText %></a></li>
                                 </ul>
                             </div>
-                            <%
-                        }
-                        %>
                         </div>
-                        </section>
                         <%
                     }
+
                     //out.println(getFacets(cms, json.getJSONArray("facets")));
+
+                    out.println(filterSets.getFiltersWrapperHtmlEnd());
                     %>
-                    
-                </div>
-            </div>
-            </form>
-        </div>
+                    <!--</div>--><!-- .toggleable -->
+                <!--</div>--><!-- .search-panel__filters -->
+            <!--</form>-->
+        </form><!-- .search-panel (former .search-widget--filterable) -->
         <div id="filters-details"></div>
+        <!--
+        <div class="something">
+            <a class="toggler" href="#"><span class="toggler__text">Toggle!</span></a>
+            <div class="toggleable">this is toggleable</div>
+            <a class="toggler" href="#"><span class="toggler__text">Toggle!</span></a>
+            <div class="toggleable">this is toggleable</div>
+            <a class="toggler" href="#"><span class="toggler__text">Toggle!</span></a>
+            <div class="toggleable">this is toggleable</div>
+            <a class="toggler" href="#"><span class="toggler__text">Toggle!</span></a>
+            <div class="toggleable">this is toggleable</div>
+            <a class="toggler" href="#"><span class="toggler__text">Toggle!</span></a>
+            <div class="toggleable">this is toggleable</div>
+        </div>
+        -->
         <%
 
 
     if (totalResults > 0) {
-
-        int itemsPerPage = pubService.getItemsPerPage();
-        int startIndex = pubService.getStartIndex();
-        int pageNumber = (startIndex + itemsPerPage) / itemsPerPage;
-        int pagesTotal = (int)(Math.ceil((double)(totalResults + itemsPerPage) / itemsPerPage)) - 1;
-
-        String next = pubService.getNextPageParameters();
-        String prev = pubService.getPrevPageParameters();
-
         %>
         <h2 style="color:#999; border-bottom:1px solid #eee;">
             <span id="totalResultsCount"><%= totalResults %></span> <%= LABEL_MATCHES.toLowerCase() %>
@@ -556,80 +391,13 @@ try {
                             + "</li>");
             }  
             %>
+            
         </ul>
 
-        <% if (pagesTotal > 1) { %>
-        <nav class="pagination clearfix">
-            <div class="pagePrevWrap">
-                <% 
-                if (pagesTotal > 1) { // More than one page total
-                    if (pageNumber > 1) { // At least one previous page exists
-                    %>
-                    <a class="prev" href="<%= cms.link(requestFileUri + "?" + StringEscapeUtils.escapeHtml(prev)) %>"></a>
-                    <% 
-                    }
-                    else { // No previous page
-                    %>
-                        <a class="prev inactive"></a>
-                    <%
-                    }
-                }
-                %>
-            </div>
-            <div class="pageNumWrap">
-                <%
-                for (int pageCounter = 1; pageCounter <= pagesTotal; pageCounter++) {
-                    boolean splitNav = pagesTotal >= 8;
-                    // if (first page OR last page OR (pages total > 10 AND (this page number > (current page number - 4) AND this page number < (current page number + 4)))
-                    // Pseudo: if this is the first page, the last page, or a page close to the current page (± 4)
-                    if (!splitNav
-                                || (splitNav && (pageCounter == 1 || pageCounter == pagesTotal))
-                                //|| (pagesTotal > 10 && (pageCounter > (pageNumber-4) && pageCounter < (pageNumber+4)))) {
-                                || (splitNav && (pageCounter > (pageNumber-3) && pageCounter < (pageNumber+3)))) {
-                        if (pageCounter != pageNumber) { // Not the current page: print a link
-                        %>
-                            <a href="<%= cms.link(requestFileUri + "?" + StringEscapeUtils.escapeHtml(getDynamicParams(cms, false) + "&" + APIService.Param.START_AT + "=" + ((pageCounter-1) * itemsPerPage))) %>"><%= pageCounter %></a>
-                        <% 
-                        }
-                        else { // The current page: no link
-                        %>
-                            <span class="currentpage"><%= pageCounter %></span>
-                        <%
-                        }
-                    }
-                    // Pseudo: 
-                    else if (splitNav && (pageCounter == 2 || pageCounter+1 == pagesTotal)) { 
-                    %>
-                        <span> &hellip; </span>
-                    <%
-                    } else {
-                        //out.println("<!-- page " + pageCounter + " dropped ... -->");
-                    }
-                } 
-                %>
-            </div>
-            <div class="pageNextWrap">
-                <!--<span>Page <%= pageNumber %> of <%= pagesTotal %></span>-->
-
-
-                <% 
-                if (pagesTotal > 1) { // More than one page total
-                    if (pageNumber < pagesTotal) { // At least one more page exists
-                        %>
-                        <a class="next" href="<%= cms.link(requestFileUri + "?" + StringEscapeUtils.escapeHtml(next)) %>"></a>
-                        <% 
-                    }
-                    else {
-                        %>
-                        <a class="next inactive"></a>
-                        <%
-                    }
-                }
-                %>
-            </div>
-        </nav>
-        <%
-        }
+        <% 
+        // Standard pagination
+        SearchResultsPagination pagination = new SearchResultsPagination(pubService, requestFileUri);
+        out.println(pagination.getPaginationHtml());
     }
     else {
         out.println("<h2 style=\"color:#999;\">" + LABEL_NO_MATCHES + "</h2>");
@@ -651,9 +419,6 @@ try {
 //*/
 %>
 
-<%
-if (true) {//(!pubService.isUserFiltered()) {
-%>
 <script type="text/javascript">
     //$("#filters").hide();
     $('input[type=number].input-year').attr({ max:'<%= todayCal.get(Calendar.YEAR) %>', min:'1970'});
@@ -710,10 +475,3 @@ if (true) {//(!pubService.isUserFiltered()) {
         });
     }
 </script>
-<%
-}
-
-// Clear all static vars
-dp.clear();
-sw.clear();
-%>

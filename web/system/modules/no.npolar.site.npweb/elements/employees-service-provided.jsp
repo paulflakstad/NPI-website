@@ -32,6 +32,7 @@
             java.util.HashMap,
             java.util.Iterator,
             java.text.SimpleDateFormat,
+            no.npolar.data.api.SearchFilterSets,
             no.npolar.util.CmsAgent,
             org.opencms.json.JSONObject,
             org.opencms.json.JSONException,
@@ -76,8 +77,8 @@ public String getFacets(CmsAgent cms, JSONArray facets) throws JSONException, ja
                                                     }
                                                 )
                                             );
-    String s = "<div class=\"clearfix quadruple layout-row\">";
-    s += "<div class=\"boxes\">";
+    String s = "<div class=\"layout-group quadruple layout-group--quadruple filter-widget\">";
+    //s += "<div class=\"boxes\">";
 
     for (int i = 0; i < facets.length(); i++) {
         JSONObject facetSet = facets.getJSONObject(i);
@@ -87,20 +88,21 @@ public String getFacets(CmsAgent cms, JSONArray facets) throws JSONException, ja
             JSONArray facetArray = facetSet.getJSONArray(facetSetName);
             if (facetArray.length() > 0) { 
                 //s += "\n\n<div class=\"span1 facets-set\">";
-                s += "\n\n<div class=\"span1\">";
-                s += "\n<h3 class=\"filters-heading\">" + capitalize(getMapping(facetSetName)) + "</h3>";
-                s += "\n<ul>";
+                s += "\n\n<div class=\"layout-box filter-set\">";
+                s += "\n<h3 class=\"filters-heading filter-set__heading\">" + capitalize(getMapping(facetSetName)) + "</h3>";
+                s += "\n<ul class=\"filter-set__filters\">";
                 for (int j = 0; j < facetArray.length(); j++) {
                     JSONObject facet = facetArray.getJSONObject(j);
                     String facetLink = getFacetLink(cms, facetSetName, facet);
                     if (!getStopWords().contains(facet.get("term")))
                         s += "\n\t<li>" + facetLink + "</li>";
                 }
-                s += "\n</ul>\n</div>";
+                s += "\n</ul>";
+                s += "\n</div>";
             }
         }
     }
-    s += "</div></div>";
+    s += "</div>";
     return s;
 }
  
@@ -151,7 +153,7 @@ public String getFacetLink(CmsAgent cms, String facetSetName, JSONObject facetDe
     
     facetToggleUri = facetToggleUri.replaceAll("\\&", "&amp;");
 
-    return "<a href=\"" + cms.link(facetToggleUri) + "\" class=\"filter" + (active ? " filter--active" : "") + "\">" 
+    return "<a href=\"" + cms.link(facetToggleUri) + "\" class=\"filter" + (active ? " filter--active" : "") + "\" rel=\"nofollow\">" 
                 //+ (active ? "<span style=\"background:red; border-radius:3px; color:white; padding:0 0.3em;\" class=\"remove-filter\">X</span> " : "")
                 + facetText 
             + "<span class=\"filter__num-matches\"> (" + facetCount + ")</span>"
@@ -915,25 +917,30 @@ try {
     JSONObject openSearch = json.getJSONObject("opensearch");
     int totalResults = openSearch.getInt("totalResults");
 
+    // For now, just a dummy collection
+    SearchFilterSets filterSets = new SearchFilterSets();
+
         // Query 
         %>
-        <div class="searchbox-big search-widget search-widget--filterable">
-            <h2><%= LABEL_SEARCH_EMPLOYEES %></h2>
-            <form action="<%= requestFileUri %>" method="get" id="employeelookup">
-                <input name="<%= PARAM_NAME_SEARCHPHRASE_LOCAL %>" type="search" placeholder="<%= LABEL_SEARCH_PH %>" value="<%= CmsStringUtil.escapeHtml(getParameter(cms, PARAM_NAME_SEARCHPHRASE_LOCAL)) %>" style="padding: 0.5em; font-size: larger;" id="q" />
-                <input name="start" type="hidden" value="0" />
-                <input name="employeeuri" type="hidden" id="employeeuri" value="" />
-                <input type="submit" value="<%= LABEL_SEARCH %>" />
-            </form>
-            <div id="filters-wrap" class="filters-wrapper">
-                <!--<a class="cta cta--filters-toggle" id="filters-toggler" onclick="$('#filters').slideToggle();"><%= LABEL_FILTERS %></a>-->
-                <a class="cta cta--filters-toggle" id="filters-toggler"><%= LABEL_FILTERS %></a>
-                <div id="filters" class="filters-container">
-                    <!-- Filters: -->
-                    <%= getFacets(cms, json.getJSONArray("facets")) %>
+        <form class="search-panel" action="<%= requestFileUri %>" method="get" id="employeelookup">
+        <!--<div class="searchbox-big search-widget search-widget--filterable">-->
+            <h2 class="search-panel__heading"><%= LABEL_SEARCH_EMPLOYEES %></h2>
+            
+            <div class="search-widget">
+                <div class="searchbox">
+                    <input name="<%= PARAM_NAME_SEARCHPHRASE_LOCAL %>" type="search" placeholder="<%= LABEL_SEARCH_PH %>" value="<%= CmsStringUtil.escapeHtml(getParameter(cms, PARAM_NAME_SEARCHPHRASE_LOCAL)) %>" id="q" />
+                    <input class="search-button" type="submit" value="<%= LABEL_SEARCH %>" />
                 </div>
             </div>
-        </div>
+            
+            <input name="start" type="hidden" value="0" />
+            <input name="employeeuri" type="hidden" id="employeeuri" value="" />
+            <%
+                out.println(filterSets.getFiltersWrapperHtmlStart(LABEL_FILTERS));
+                out.println(getFacets(cms, json.getJSONArray("facets")));
+                out.println(filterSets.getFiltersWrapperHtmlEnd());
+            %>
+        </form>
         <%
 
 

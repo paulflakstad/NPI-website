@@ -3,131 +3,24 @@
     Description: Lists publications using the data.npolar.no API.
     Created on : Mar 12, 2013, 5:32:42 PM
     Author     : flakstad
---%><%@page import="org.opencms.file.CmsResource"%>
-<%@page import="org.opencms.mail.CmsSimpleMail"%>
-<%@page import="no.npolar.data.api.util.APIUtil,
-                    java.util.ResourceBundle,
+--%><%@page import="java.util.ResourceBundle, 
                     no.npolar.data.api.*,
-                    org.apache.commons.lang.StringUtils,
-                    java.util.Set,
+                    no.npolar.data.api.util.APIUtil,
+                    no.npolar.util.CmsAgent,
+                    no.npolar.util.SystemMessenger,
                     java.io.PrintWriter,
-                    org.opencms.jsp.CmsJspActionElement,
-                    java.io.IOException,
                     java.util.Locale,
-                    java.net.URLDecoder,
                     java.net.URLEncoder,
-                    org.opencms.main.OpenCms,
+                    org.opencms.file.CmsObject,
                     org.opencms.util.CmsStringUtil,
-                    org.opencms.util.CmsRequestUtil,
-                    java.io.InputStreamReader,
-                    java.io.BufferedReader,
-                    java.net.URLConnection,
-                    java.net.URL,
-                    java.net.HttpURLConnection,
-                    java.util.ArrayList,
-                    java.util.Arrays,
-                    org.opencms.json.JSONArray,
                     java.util.List,
-                    java.util.Date,
                     java.util.Map,
                     java.util.HashMap,
-                    java.util.Iterator,
-                    java.text.SimpleDateFormat,
-                    no.npolar.util.CmsAgent,
-                    org.opencms.json.JSONObject,
-                    org.opencms.json.JSONException,
-                    org.opencms.file.CmsObject"
+                    java.util.Iterator"
                 contentType="text/html" 
                 pageEncoding="UTF-8" 
                 session="true"
- %><%!
-/* Map storage for default parameters. */
-static Map<String, String> dp = new HashMap<String, String>();
-
-/**
- * Default ("system") parameters: The end-user should never see these.
- */
-public static Map<String, String> getDefaultParamMap() {
-    if (dp.isEmpty()) {
-        dp.put(ProjectService.Param.SORT_BY, ProjectService.modReverse(Project.Key.BEGIN));
-        dp.put(ProjectService.modNot("notdraft"), "yes");
-    }
-    return dp;
-}
-
-/**
- * Gets the parameters part of the given URL string. 
- * (Equivalent to request.getQueryString().)
- */
-public static String getParameterString(String theURL) {
-    try {
-        return theURL.split("\\?")[1];
-    } catch (ArrayIndexOutOfBoundsException e) {
-        return theURL;
-    }  
-}
-
-/**
- * Gets the dynamic parameters from the request (typically the URL).
- * The end-user may see these parameters in the URL, and could potentially 
- * modify them there, in addition to indirectly modifying them using the 
- * end-user tools presented on-page. (Search form, pagination etc.)
- */
-public static String getDynamicParams(CmsAgent cms, boolean includeStart) {
-    String s = "";
-    int i = 0;
-    Map<String, String[]> pm = cms.getRequest().getParameterMap();
-    
-    if (!pm.isEmpty()) {
-        Iterator<String> pNames = pm.keySet().iterator();
-        while (pNames.hasNext()) {
-            String pName = pNames.next();
-            if ("start".equals(pName) && !includeStart
-                    || getDefaultParamMap().containsKey(pName))
-                continue;
-            String pValue = "";
-            try { pValue = URLEncoder.encode(pm.get(pName)[0], "utf-8"); } catch (Exception e) { pValue = ""; }
-            s += (++i > 1 ? "&" : "") + pName + "=" + pValue;
-        }
-    }
-    else {
-        String start = cms.getRequest().getParameter("start");
-
-        // Query
-        try {
-            s += "q=" + URLEncoder.encode(getParameter(cms, "q"), "utf-8");
-        } catch (Exception e) {
-            s += "q=" + getParameter(cms, "q");
-        }
-
-        // Items per page
-        s += "&limit=" + getLimit(cms);
-
-        // Start index
-        if (includeStart && (start != null && !start.isEmpty()))
-            s += "&start=" + start;
-    }
-    return s;
-}
-
-/**
- * Gets a particular parameter value. If no such parameter exists, an empty 
- * string is returned.
- */
-public static String getParameter(CmsAgent cms, String paramName) {
-    String param = cms.getRequest().getParameter(paramName);
-    return param != null ? param : "";
-}
-
-/**
- * Gets the current limit value, with fallback to default value.
- */
-public static String getLimit(CmsAgent cms) {
-    return getParameter(cms, "limit").isEmpty() ? "25" : getParameter(cms, "limit");
-}
-%><%
-
-
+ %><%
 CmsAgent cms = new CmsAgent(pageContext, request, response);
 CmsObject cmso = cms.getCmsObject();
 String requestFileUri = cms.getRequestContext().getUri();
@@ -146,16 +39,14 @@ final String LABEL_NO_MATCHES = cms.label("label.np.matches.none");
 final String LABEL_MATCHES = cms.label("label.np.matches");
 final String LABEL_FILTERS = cms.label("label.np.filters");
 
-
-
+// This holds translations
 ResourceBundle labels = ResourceBundle.getBundle(Labels.getBundleName(), locale);
+
+// Create the service instance that will talk to the API 
 ProjectService service = new ProjectService(locale);
 
 // Test service 
-// ToDo: Use a servlet context variable instead of a helper file in the e-mail routine.
-//       Also, the error message should be moved to workplace.properies or something
-//       The whole "test the API availability" procedure should also be moved to a central location.
-int responseCode = 0;
+// ToDo: The error message should be moved to workplace.properies or something
 final String ERROR_MSG_NO_SERVICE = loc.equalsIgnoreCase("no") ? 
         ("<h2>Vel, dette skulle ikke skje&nbsp;&hellip;</h2>"
             + "<p>Sideinnholdet som skulle vært her kan dessverre ikke vises akkurat nå, på grunn av en midlertidig feil.</p>"
@@ -168,66 +59,38 @@ final String ERROR_MSG_NO_SERVICE = loc.equalsIgnoreCase("no") ?
             + "<p>We hate it when this happens, and hope to have everything sorted out shortly.</p>"
             + "<p>Please try reloading this page in a little while.</p>"
             + "<p style=\"font-style:italic;\">If the error persist, we would appreciate it if you could take the time to <a href=\"mailto:web@npolar.no\">send us a short note about this</a>.</p>");
+
 try {
-    URL url = new URL(service.getServiceBaseURL().concat("?q="));    
-    HttpURLConnection connection = (HttpURLConnection)url.openConnection();
-    connection.setRequestMethod("GET");
-    connection.setReadTimeout(7000);
-    connection.connect();
-    responseCode = connection.getResponseCode();
-} catch (Exception e) {
-} finally {
-    if (responseCode != 200) {
-        out.println("<div class=\"error\">" + ERROR_MSG_NO_SERVICE + "</div>");
-        
-        // Send error message
+    boolean isAvailable = APIUtil.testAvailability(service.getServiceBaseURL().concat("?q="), new int[]{200}, 5000, 3);
+    if (!isAvailable) {
+        out.println("<div class=\"error message message--error\">" + ERROR_MSG_NO_SERVICE + "</div>");
         try {
-            String lastErrorNotificationTimestampName = "last_err_notification_projects";
-            int errorNotificationTimeout = 1000*60*60*12; // 12 hours
-            Date lastErrorNotificationTimestamp = (Date)application.getAttribute(lastErrorNotificationTimestampName);
-            if (lastErrorNotificationTimestamp == null // No previous error
-                    || (lastErrorNotificationTimestamp.getTime() + errorNotificationTimeout) < new Date().getTime()) { // Previous error sent, but timeout exceeded
-                application.setAttribute(lastErrorNotificationTimestampName, new Date());
-                CmsSimpleMail errorMail = new CmsSimpleMail();
-                errorMail.addTo("web@npolar.no");
-                errorMail.setFrom("no-reply@npolar.no");
-                errorMail.setSubject("Error on NPI website / data centre");
-                errorMail.setMsg("The page at " + OpenCms.getLinkManager().getOnlineLink(cmso, requestFileUri) + (request.getQueryString() != null ? "?".concat(request.getQueryString()) : "")
-                        + " is having problems connecting to the data centre."
-                        + "\n\nPlease look into this."
-                        + "\n\nThis notification was generated because the data centre is down, frozen/hanging, or did not respond with the expected response code \"200 OK\"."
-                        + "\n\nGenerated by OpenCms: " + cms.info("opencms.uri") + " - No further notifications will be sent for the next " + errorNotificationTimeout/(1000*60*60) + " hour(s).");
-                errorMail.send();
-            }
+            no.npolar.util.SystemMessenger.sendStandardError(-1, "last_err_notification_projects", application, cms, "flakstad@npolar.no", "no-reply@npolar.no", "Projects");
         } catch (Exception e) { 
-            out.println("\n<!-- \nError sending error notification: " + e.getMessage() + " \n-->");
+            out.println("\n<!-- \nError sending email notification about problems with this page: " + e.getMessage() + " \n-->");
         }
-        
         return;
     }
-}
+} catch (Exception e) {}
 
-// Set defaults (override regular defaults)
+// Set defaults
+// (No need to filter out drafts, as that is the default setting)
 service.addDefaultParameter(
-        // Exclude drafts
-        ProjectService.modNot("draft"), 
-        "yes"
-).addDefaultParameter(
         // Define what fields we want filters for
         ProjectService.Param.FACETS, 
         ProjectService.Delimiter.AND, 
-        "area", 
-        "state", 
-        "topics", 
-        "type"
+        Project.Key.AREA,
+        Project.Key.STATE,
+        Project.Key.TOPICS,
+        Project.Key.TYPE
 ).addDefaultParameter(
         // Get all possible filters (not just "greatest hits")
-        "size-facet", 
-        "9999"
+        ProjectService.Param.FACETS_SIZE,
+        ProjectService.ParamVal.FACETS_SIZE_MAX
 );
 
 try {
-    Map<String, String[]> params = new HashMap<String, String[]>(request.getParameterMap());
+    Map<String, String[]> params = new HashMap(request.getParameterMap());
     
     // ToDo: Is encoding absolutely necessary here???
     Iterator<String> iParam = params.keySet().iterator();
@@ -264,87 +127,23 @@ try {
         <div class="searchbox-big search-widget search-widget--filterable">
             <h2><%= LABEL_SEARCHBOX_HEADING %></h2>
             <form action="<%= cms.link(requestFileUri) %>" method="get">
-                <input name="q" type="search" value="<%= lastSearchPhrase == null ? "" : CmsStringUtil.escapeHtml(lastSearchPhrase) %>" />
+                <div class="searchbox">
+                    <input class="searchbox__search-query search-query" name="q" type="search" value="<%= lastSearchPhrase == null ? "" : CmsStringUtil.escapeHtml(lastSearchPhrase) %>" />
+                    <input class="searchbox__search-button search-button" type="submit" value="<%= LABEL_SEARCH %>" />
+                </div>
                 <input name="start" type="hidden" value="0" />
-                <input type="submit" value="<%= LABEL_SEARCH %>" />
             <%
             if (!filterSets.isEmpty()) {
                 out.println(filterSets.toHtml(LABEL_FILTERS, cms, labels));
             }
             %>
-            <div id="filters-wrap" class="filters-wrapper">
-                <a id="filters-toggler" class="cta cta--filters-toggle" tabindex="0"><%= LABEL_FILTERS %></a>
-                <div id="filters" class="filters-container">
-                    <%
-                    if (!filterSets.isEmpty()) {
-                        Iterator<SearchFilterSet> iFilterSets = filterSets.iterator();
-                        out.println("<div class=\"layout-row quadruple clearfix\">");
-                        out.println("<div class=\"boxes\">");
-                        while (iFilterSets.hasNext()) {
-                            SearchFilterSet filterSet = iFilterSets.next();
-                            List<SearchFilter> filters = filterSet.getFilters();
-                            
-                            if (filters != null) {
-                                out.println("<div class=\"span1\">");
-                                out.print("<h3 class=\"filters-heading\">");
-                                out.print(filterSet.getTitle(locale));
-                                out.print("<span class=\"filter__num-matches\"> (" + filterSet.size() + ")</span>");
-                                out.println("</h3>");
-                                out.println("<ul>");
-                                try {
-                                    // Iterate through the filters in this set
-                                    Iterator<SearchFilter> iFilters = filters.iterator();
-                                    while (iFilters.hasNext()) {
-                                        SearchFilter filter = iFilters.next();
-                                        // The visible filter text (initialize this as the term)
-                                        String filterText = filter.getTerm();
-                                        try {
-                                            // Try to fetch a better (and localized) text for the filter
-                                            filterText = labels.getString( filterSet.labelKeyFor(filter) );
-                                        } catch (Exception skip) {}
-                                        out.println("<li><a href=\"" + cms.link(requestFileUri + "?" + CmsStringUtil.escapeHtml(filter.getUrlPartParameters())) + "\""
-                                                            + " class=\"filter" + (filter.isActive() ? " filter--active" : "") + "\""
-                                                            + ">" 
-                                                            //+ (filter.isActive() ? "<span style=\"background:red; border-radius:3px; color:white; padding:0 0.3em;\" class=\"remove-filter\">X</span> " : "")
-                                                            + filterText
-                                                            + "<span class=\"filter__num-matches\"> (" + filter.getCount() + ")</span>"
-                                                        + "</a></li>");
-                                    }
-                                } catch (Exception filterE) {
-                                    //out.println("<!-- " + filterE.getMessage() + " -->");
-                                }
-                                out.println("</ul>");
-                                out.println("</div>");
-                            }
-                        }
-                        out.println("<div class=\"span1\">");
-                        %>
-                        
-                        <%
-                        out.println("</div>");
-                        out.println("</div>");
-                        out.println("</div>");
-                    }
-                    //out.println(getFacets(cms, json.getJSONArray("facets")));
-                    %>
-                    
-                </div>
-            </div>
             </form>
         </div>
         <div id="filters-details"></div>
         <%
+            
 
     if (totalResults > 0) {
-
-        int itemsPerPage = service.getItemsPerPage();
-        int startIndex = service.getStartIndex();
-        int pageNumber = (startIndex + itemsPerPage) / itemsPerPage;
-        int pagesTotal = (int)(Math.ceil((double)(totalResults + itemsPerPage) / itemsPerPage)) - 1;
-
-        String next = service.getNextPageParameters();
-        String prev = service.getPrevPageParameters();
-
         %>
         <h2 style="color:#999; border-bottom:1px solid #eee;">
             <span id="totalResultsCount"><%= totalResults %></span> <%= LABEL_MATCHES.toLowerCase() %>
@@ -373,85 +172,10 @@ try {
             %>
         </ul>
         
-        <%    
-        out.println("<!-- service.getPrevPageParameters(): '" + service.getPrevPageParameters() + "' -->");
-        out.println("<!-- service.getNextPageParameters(): '" + service.getNextPageParameters() + "' -->");
+        <%
+        // Standard pagination
         SearchResultsPagination pagination = new SearchResultsPagination(service, requestFileUri);
         out.println(pagination.getPaginationHtml());
-        %>
-
-        <% if (pagesTotal > 1) { %>
-        <nav class="pagination clearfix">
-            <div class="pagePrevWrap">
-                <% 
-                if (pagesTotal > 1) { // More than one page total
-                    if (pageNumber > 1) { // At least one previous page exists
-                    %>
-                        <a class="prev" href="<%= cms.link(requestFileUri + "?" + prev) %>"></a>
-                    <% 
-                    }
-                    else { // No previous page
-                    %>
-                        <a class="prev inactive"></a>
-                    <%
-                    }
-                }
-                %>
-            </div>
-            <div class="pageNumWrap">
-                <%
-                for (int pageCounter = 1; pageCounter <= pagesTotal; pageCounter++) {
-                    boolean splitNav = pagesTotal >= 8;
-                    // if (first page OR last page OR (pages total > 10 AND (this page number > (current page number - 4) AND this page number < (current page number + 4)))
-                    // Pseudo: if this is the first page, the last page, or a page close to the current page (± 4)
-                    if (!splitNav
-                                || (splitNav && (pageCounter == 1 || pageCounter == pagesTotal))
-                                //|| (pagesTotal > 10 && (pageCounter > (pageNumber-4) && pageCounter < (pageNumber+4)))) {
-                                || (splitNav && (pageCounter > (pageNumber-3) && pageCounter < (pageNumber+3)))) {
-                        if (pageCounter != pageNumber) { // Not the current page: print a link
-                        %>
-                            <a href="<%= cms.link(requestFileUri + "?" + getDynamicParams(cms, false) + "&amp;start=" + ((pageCounter-1) * itemsPerPage)) %>"><%= pageCounter %></a>
-                        <% 
-                        }
-                        else { // The current page: no link
-                        %>
-                            <span class="currentpage"><%= pageCounter %></span>
-                        <%
-                        }
-                    }
-                    // Pseudo: 
-                    else if (splitNav && (pageCounter == 2 || pageCounter+1 == pagesTotal)) { 
-                    %>
-                        <span> &hellip; </span>
-                    <%
-                    } else {
-                        out.println("<!-- page " + pageCounter + " dropped ... -->");
-                    }
-                } 
-                %>
-            </div>
-            <div class="pageNextWrap">
-                <!--<span>Page <%= pageNumber %> of <%= pagesTotal %></span>-->
-
-
-                <% 
-                if (pagesTotal > 1) { // More than one page total
-                    if (pageNumber < pagesTotal) { // At least one more page exists
-                        %>
-                        <a class="next" href="<%= cms.link(requestFileUri + "?" + next) %>"></a>
-                        <% 
-                    }
-                    else {
-                        %>
-                        <a class="next inactive"></a>
-                        <%
-                    }
-                }
-                %>
-            </div>
-        </nav>
-        <%
-        }
     }
     else {
         out.println("<h2 style=\"color:#999;\">" + LABEL_NO_MATCHES + "</h2>");
@@ -471,18 +195,4 @@ try {
     }
 }
 //*/
-%>
-
-<%
-if (!service.isUserFiltered()) {
-%>
-<script type="text/javascript">
-    //$("#filters").hide();
-</script>
-
-<%
-}
-
-// Clear all static vars
-dp.clear();
 %>

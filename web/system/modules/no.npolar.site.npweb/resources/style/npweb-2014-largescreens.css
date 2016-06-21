@@ -739,8 +739,9 @@ orange  |  red  |  lightblue  |  green
     display:inline-block;
     margin-right:1em;
 }
-.filters--active a::after {
-    float:none;
+.filters--active .filter:after {
+    /*float:none;*/
+    position: static;
 }
 }
 
