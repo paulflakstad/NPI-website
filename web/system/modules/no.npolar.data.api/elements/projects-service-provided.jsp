@@ -65,7 +65,14 @@ try {
     if (!isAvailable) {
         out.println("<div class=\"error message message--error\">" + ERROR_MSG_NO_SERVICE + "</div>");
         try {
-            no.npolar.util.SystemMessenger.sendStandardError(-1, "last_err_notification_projects", application, cms, "flakstad@npolar.no", "no-reply@npolar.no", "Projects");
+            SystemMessenger.sendStandardError(
+                    SystemMessenger.DEFAULT_INTERVAL, 
+                    "last_err_notification_projects", 
+                    application, 
+                    cms, 
+                    "web@npolar.no", 
+                    "no-reply@npolar.no", 
+                    "Projects");
         } catch (Exception e) { 
             out.println("\n<!-- \nError sending email notification about problems with this page: " + e.getMessage() + " \n-->");
         }

@@ -6,6 +6,7 @@
 --%><%@page import="no.npolar.data.api.*,
             no.npolar.data.api.util.APIUtil,
             no.npolar.util.CmsAgent,
+            no.npolar.util.SystemMessenger,
             org.apache.commons.lang.StringUtils,
             org.apache.commons.lang.StringEscapeUtils,
             org.markdown4j.Markdown4jProcessor,
@@ -144,7 +145,14 @@ try {
     if (!isAvailable) {
         out.println("<div class=\"error message message--error\">" + ERROR_MSG_NO_SERVICE + "</div>");
         try {
-            no.npolar.util.SystemMessenger.sendStandardError(-1, "last_err_notification_publications", application, cms, "flakstad@npolar.no", "no-reply@npolar.no", "Projects");
+            SystemMessenger.sendStandardError(
+                    SystemMessenger.DEFAULT_INTERVAL, 
+                    "last_err_notification_publications", 
+                    application, 
+                    cms, 
+                    "web@npolar.no", 
+                    "no-reply@npolar.no", 
+                    "Publications");
         } catch (Exception e) { 
             out.println("\n<!-- \nError sending email notification about problems with this page: " + e.getMessage() + " \n-->");
         }
