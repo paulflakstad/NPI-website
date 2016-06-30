@@ -1,12 +1,12 @@
 <%-- 
     Document   : newslist-advanced-filters - Major update of newslist.jsp/list.jsp. Also meant to replace newslist-list-style.jsp (as of March 2014).
     Created on : Dec 31, 2012, 1:15:13 PM
-    Author     : flakstad
+    Author     : Paul-Inge Flakstad <flakstad at npolar.no>
 --%><%-- 
     Document   : newslist.jsp - uses the "TeaserImage" (as used in the new newsbulletin type, which has "Paragraph" sections)
     Created on : 04.jun.2010, 13:41:52
     Author     : Paul-Inge Flakstad <flakstad at npolar.no>
---%><%@page import="org.opencms.util.CmsStringUtil"%>
+--%>
 <%@ page import="no.npolar.util.*,
                  no.npolar.util.exception.MalformedPropertyValueException,
                  org.apache.commons.lang.StringEscapeUtils,
@@ -14,11 +14,13 @@
                  org.opencms.file.CmsResource,
                  org.opencms.file.types.CmsResourceTypeFolder,
                  org.opencms.file.CmsResourceFilter,
+                 org.opencms.loader.CmsImageScaler,
                  org.opencms.main.OpenCms,
                  org.opencms.main.CmsException,
                  org.opencms.jsp.I_CmsXmlContentContainer,
                  org.opencms.relations.CmsCategory,
                  org.opencms.relations.CmsCategoryService,
+                 org.opencms.util.CmsStringUtil,
                  java.io.IOException,
                  java.text.SimpleDateFormat,
                  java.util.Calendar,
@@ -146,20 +148,25 @@
             throws CmsException, MalformedPropertyValueException, JspException {
         //if (imageContainer.hasMoreContent()) { // "if" instead of "while" => don't loop over all images, just get the first one (if any)
         if (CmsAgent.elementExists(imagePath)) {
+            /*
             String imageLink = null;
             //String imagePath = cms.contentshow(imageContainer, "URI");
             
-            //int imageHeight = cms.calculateNewImageHeight(imageWidth, imagePath);
-            int imageHeight = (int)(((double)imageWidth / 16) * 9); // Calculate width based on 16:9 proportions (used for type 2 - crop)
+            // Exact size: Calculate new height based on given width
+            int imageHeight = cms.calculateNewImageHeight(imageWidth, imagePath);
+            // Crop: Calculate new height based on a ratio
+            //int imageHeight = (int)(((double)imageWidth / 16) * 9); // Ratio is 16:9
             
             
             //CmsImageProcessor imgPro = new CmsImageProcessor("__scale=t:3,q:100,w:".concat(String.valueOf(imageWidth)).concat("h:").concat(String.valueOf(imageHeight)));
-            CmsImageProcessor imgPro = new CmsImageProcessor();
-            //imgPro.setType(4); // Exact size
-            imgPro.setType(2); // Crop
+            //CmsImageProcessor imgPro = new CmsImageProcessor(); // Not needed?
+            CmsImageScaler imgPro = new CmsImageScaler();
+            imgPro.setType(4); // Exact size
+            //imgPro.setType(2); // Crop
             imgPro.setQuality(100);
             imgPro.setWidth(imageWidth);
             imgPro.setHeight(imageHeight);
+            //*/
             /*
             imageLink = "<a href=\"" + cms.link(fileName) + "\">"
                             + "<img src=\"" + CmsAgent.getTagAttributesAsMap(cms.img(imagePath, imgPro.getReScaler(imgPro), null, false)).get("src") + "\""
@@ -167,10 +174,16 @@
                             + " alt=\"\" />"
                         + "</a>";
             return imageLink;
-            */
+            //*/
+            try { 
+                return ImageUtil.getImage(cms, imagePath, "", ImageUtil.CROP_RATIO_16_9, imageWidth, 50, ImageUtil.SIZE_S, 90, "320px"); 
+            } catch (Exception e) {
+                return "<!-- ERROR producing img tag: " + e.getMessage() + " -->";
+            }
+            /*
             return "<img"
                     + " src=\"" + CmsAgent.getTagAttributesAsMap(cms.img(imagePath, imgPro.getReScaler(imgPro), null, false)).get("src") + "\""
-                    + " alt=\"\" />";
+                    + " alt=\"\" />";*/
         }
         return "";
     }
@@ -196,8 +209,10 @@
         if (visitedFiles < itemsWithImages) {
             try {
                 //out.println("<h5>Image path was '" + cms.contentshow(newsBulletin, "TeaserImage") + "', imageLink is " + getImageLinkHtml(cms, cms.contentshow(newsBulletin, "TeaserImage"), imageWidth, fileName) + "</h5>");
-                /*I_CmsXmlContentContainer imageContainer = cms.contentloop(newsBulletin, "TeaserImage");
-                imageLink = getImageLinkHtml(cms, imageContainer, imageWidth, fileName);*/
+                /*
+                I_CmsXmlContentContainer imageContainer = cms.contentloop(newsBulletin, "TeaserImage");
+                imageLink = getImageLinkHtml(cms, imageContainer, imageWidth, fileName);
+                //*/
                 imageLink = getImageLinkHtml(cms, cms.contentshow(newsBulletin, "TeaserImage"), imageWidth, fileName);
             }
             catch (Exception npe) {
@@ -374,15 +389,16 @@ cms.editable(false);
 
 
 // Constants
-final String DEFAULT_ROOT_CATEGORY_PATH = null;
+//final String DEFAULT_ROOT_CATEGORY_PATH = null;
 final String DEFAULT_CATEGORY_REFERENCE_PATH = "/";
+final int DEFAULT_IMAGE_WIDTH = 480;
 final String PARAM_NAME_CATEGORY = "cat";
-final String CAT_ROOT       = "/" + locale.toString() + "/";
-final int IMG_WIDTH_XS      = Integer.parseInt(cms.getCmsObject().readPropertyObject(resourceUri, "image.size.xs", true).getValue("100"));
-final int IMG_WIDTH_S       = Integer.parseInt(cms.getCmsObject().readPropertyObject(resourceUri, "image.size.s", true).getValue("140"));
+//final String CAT_ROOT       = "/" + locale.toString() + "/";
+//final int IMG_WIDTH_XS      = Integer.parseInt(cms.getCmsObject().readPropertyObject(resourceUri, "image.size.xs", true).getValue("100"));
+//final int IMG_WIDTH_S       = Integer.parseInt(cms.getCmsObject().readPropertyObject(resourceUri, "image.size.s", true).getValue("140"));
 final int TYPE_ID_NEWSBULL  = OpenCms.getResourceManager().getResourceType("newsbulletin").getTypeId(); // The ID for resource type "newsbulletin" (316)
 final String DATE_FORMAT    = cms.labelUnicode("label.for.newsbulletin.dateformat");
-final String JS_KEY_REGULAR = "/nothing.js";
+//final String JS_KEY_REGULAR = "/nothing.js";
 final String HEADING_TYPE   = isIncluded ? "h2" : "h1";
 
 final String LABEL_READ_MORE= cms.labelUnicode("label.np.readmore");
@@ -393,9 +409,11 @@ final String LABEL_FILTER_YEAR_LABEL = cms.labelUnicode("label.for.newsbulletin.
 final String LABEL_FILTER_REMOVE = cms.labelUnicode("label.for.newsbulletin.filter.remove");
 final String LABEL_FILTER_ALL = cms.labelUnicode("label.for.newsbulletin.filter.all");
 
-/*final int TOP = 1;
+/*
+final int TOP = 1;
 final int BOTTOM = 0;
-int stickyPlacement = BOTTOM;*/
+int stickyPlacement = BOTTOM;
+//*/
 
 // Help and config variables
 int i                       = 0;
@@ -424,7 +442,9 @@ boolean displayDescription  = false;
 boolean displayTimestamp    = false;
 ArrayList stickies          = new ArrayList(0);
 
-
+// ToDo: Standardize category filtering, see 
+// no.npolar.common.eventcalendar.ResourceCategoriesFilter.java
+// (... which should really be moved to the util package)
 String filterHeading = null;
 String filterCategoryReferencePath = DEFAULT_CATEGORY_REFERENCE_PATH;
 String filterRootCategoryPath = null;
@@ -475,7 +495,7 @@ while (configuration.hasMoreContent()) {
     try {
         itemImageWidth  = Integer.valueOf(cms.contentshow(configuration, "ItemImageWidth")).intValue(); 
     } catch (Exception e) {
-        itemImageWidth = IMG_WIDTH_XS;
+        itemImageWidth = DEFAULT_IMAGE_WIDTH;//IMG_WIDTH_XS;
     }
     editableItems   = Boolean.valueOf(cms.contentshow(configuration, "EditableItems")).booleanValue();
     dateFormat      = cms.contentshow(configuration, "DateFormat");
@@ -583,14 +603,19 @@ if (!overrideHeading.isEmpty()) {
     else
         listTitle = overrideHeading;
 }
-if (CmsAgent.elementExists(listTitle)) 
-    headAndDescr += "\n<" + HEADING_TYPE + ">" + listTitle + "</" + HEADING_TYPE + ">";
-if (CmsAgent.elementExists(listText))
+if (CmsAgent.elementExists(listTitle)) {
+    headAndDescr += "\n<" + HEADING_TYPE + (itemsAsPortalPageCards || itemsAsCards ? " class=\"section-heading bluebar-dark\"" : "") + ">" 
+                        + listTitle 
+                    + "</" + HEADING_TYPE + ">";
+}
+if (CmsAgent.elementExists(listText)) {
     headAndDescr += "\n" + listText;
-
+}
 // Print the list title and intro text
-if (!headAndDescr.isEmpty() && !itemsAsPortalPageCards) // Don't include the title here, if we're generating each item in the list as a "card" for a portal page
+// (But not if we're generating each list item as a "card" for a portal page)
+if (!headAndDescr.isEmpty() && !(itemsAsPortalPageCards || itemsAsCards)) {
     out.println(headAndDescr);
+}
 
 
 
@@ -814,11 +839,13 @@ try {
     
     
     if (itemsAsPortalPageCards) {
-        out.println(headAndDescr.replaceFirst(">", " class=\"section-heading bluebar-dark\">"));
+        //out.println(headAndDescr.replaceFirst(">", " class=\"section-heading bluebar-dark\">"));
+        out.println(headAndDescr);
         out.println("<div class=\"boxes clearfix\">");
     } else if (itemsAsCards) {
         out.println("<div class=\"portal portal-mimic\" style=\"width:100%;overflow:visible;font-size:1em;float:none;\">");
         out.println("<section class=\"clearfix quadruple layout-group dynamic\">");
+        out.println(headAndDescr);
         out.println("<div class=\"boxes clearfix\">");
     } else {
         out.println("<ul class=\"news-list\">");
