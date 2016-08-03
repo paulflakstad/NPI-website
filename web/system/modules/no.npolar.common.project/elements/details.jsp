@@ -214,30 +214,41 @@ public List<SubProject> getSubProjectList(CmsAgent cms, I_CmsXmlContentContainer
                     SubProject p = new SubProject(u);
                     
                     // Title
+                    String title = "";
                     if (CmsAgent.elementExists(t)) {
-                        p.setTitle(t); // As defined in the parent/programme file in OpenCms
+                        title = t; // As defined in the parent/programme file in OpenCms
                     } else if (project != null) {
-                        p.setTitle(project.getTitle());
+                        title = project.getTitle();
                     } else {
-                        p.setTitle(cms.property("Title", u, ""));
+                        try {
+                            title = cms.getCmsObject().readPropertyObject(u, "Title", false).getValue("");
+                        } catch (Exception e) {}
                     }
+                    p.setTitle(title);
                     
                     // Description
+                    String descr = "";
                     if (CmsAgent.elementExists(d)) {
-                        p.setDescr(d);
+                        descr = d;
                     } else if (project != null) {
-                        p.setDescr(project.getDescription());
+                        descr = project.getDescription();
                     } else {
-                        p.setDescr(cms.property("Description", u, ""));
+                        try {
+                            descr = cms.getCmsObject().readPropertyObject(u, "Description", false).getValue("");
+                        } catch (Exception e) {}    
                     }
+                    p.setDescr(descr);
                     
                     // Image 
+                    String imageUri = "";
                     if (CmsAgent.elementExists(i)) {
-                        p.setImageUri(i);
+                        imageUri = i;
                     } else {
-                        p.setImageUri(cms.property("image.thumb", u, ""));
+                        try {
+                            imageUri = cms.getCmsObject().readPropertyObject(u, "image.thumb", false).getValue("");
+                        } catch (Exception e) {}
                     }
-                    
+                    p.setImageUri(imageUri);
                     
                     sp.add(p);
                 } catch (Exception e) {
