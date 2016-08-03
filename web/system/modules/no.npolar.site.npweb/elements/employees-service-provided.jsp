@@ -672,7 +672,8 @@ CmsObject cmso = cms.getCmsObject();
 // This parameter should normally be set only when the user selected using suggestions
 String requestedEmployeeUri = request.getParameter("employeeuri");
 if (requestedEmployeeUri != null && !requestedEmployeeUri.isEmpty() && cmso.existsResource(requestedEmployeeUri)) {
-    CmsRequestUtil.redirectPermanently(cms, requestedEmployeeUri);
+    //CmsRequestUtil.redirectPermanently(cms, requestedEmployeeUri); // Bad method, sends 302
+    cms.sendRedirect(requestedEmployeeUri, HttpServletResponse.SC_MOVED_PERMANENTLY);
 }
 
 String requestFileUri = cms.getRequestContext().getUri();

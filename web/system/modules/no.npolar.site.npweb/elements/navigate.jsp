@@ -2,9 +2,9 @@
     Document   : navigate
     Created on : Nov 19, 2012, 4:30:06 PM
     Author     : flakstad
---%><%@ page import="org.opencms.jsp.CmsJspActionElement, org.opencms.util.CmsRequestUtil" 
+--%><%@ page import="no.npolar.util.CmsAgent" 
 %><%
-CmsJspActionElement cms = new CmsJspActionElement(pageContext, request, response);
+CmsAgent cms = new CmsAgent(pageContext, request, response);
 // Get the navigation target (set as a parameter value)
 String navTarget = request.getParameter("navtarget");
 String redirAbsPath = null;
@@ -26,5 +26,6 @@ else if (!navTarget.startsWith("/")) {
 
 // All should be OK. Redirect.
 redirAbsPath = request.getScheme() + "://" + request.getServerName() + navTarget;
-CmsRequestUtil.redirectPermanently(cms, redirAbsPath);
+//CmsRequestUtil.redirectPermanently(cms, redirAbsPath); // Bad method, sends 302
+cms.sendRedirect(redirAbsPath, HttpServletResponse.SC_MOVED_PERMANENTLY);
 %>

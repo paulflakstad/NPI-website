@@ -86,7 +86,8 @@ if (!loggedInUser && cms.getRequest().isSecure()) {
         redirAbsPath += "?" + qs;
     }
     //out.println("<!-- redirect path is '" + redirAbsPath + "' -->");
-    CmsRequestUtil.redirectPermanently(cms, redirAbsPath);
+    //CmsRequestUtil.redirectPermanently(cms, redirAbsPath); // Bad method, sends 302
+    cms.sendRedirect(redirAbsPath, HttpServletResponse.SC_MOVED_PERMANENTLY);
 }
 
 
@@ -110,7 +111,8 @@ if (!redirPermProp.isNullProperty()) {
         if (qs != null && !qs.isEmpty()) {
             redirAbsPath += "?" + qs;
         }
-        CmsRequestUtil.redirectPermanently(cms, redirAbsPath);
+        //CmsRequestUtil.redirectPermanently(cms, redirAbsPath); // Bad method, sends 302
+        cms.sendRedirect(redirAbsPath, HttpServletResponse.SC_MOVED_PERMANENTLY);
     } else {
         try {
             // Attempting to redirect to non-existing resource: Send error message.
@@ -161,7 +163,8 @@ try {
 if (!loggedInUser && cmso.readResource(requestFileUri).getRootPath().startsWith("/sites/isblink/")) {
     if (!requestFileUri.equals("/noaccess.html")) { // Don't hide the "No access" page
         if (!isAllowedAccess(cms)) {
-            CmsRequestUtil.redirectPermanently(cms, "/noaccess.html");
+            // CmsRequestUtil.redirectPermanently(cms, "/noaccess.html"); // Bad method, sends 302
+            cms.sendRedirect("/noaccess.html", HttpServletResponse.SC_MOVED_PERMANENTLY);
             return;
         }
     }
@@ -177,7 +180,8 @@ try {
         String detailPageUri = locale.equalsIgnoreCase("no") ? "/no/prosjekter/detaljer" : "/en/projects/details";
         String redirectTargetPath = detailPageUri + "?pid=" + projectId;// e.g. "/en/" to redirect to the localized english folder
         String redirAbsPath = request.getScheme() + "://" + request.getServerName() + redirectTargetPath;
-        CmsRequestUtil.redirectPermanently(cms, redirAbsPath);
+        //CmsRequestUtil.redirectPermanently(cms, redirAbsPath); // Bad method, sends 302
+        cms.sendRedirect(redirAbsPath, HttpServletResponse.SC_MOVED_PERMANENTLY);
     }
 } catch (Exception e) {
     // oh well ...
@@ -469,6 +473,7 @@ css.add("");
 <link rel="stylesheet" type="text/css" href="<%= cms.link("/system/modules/no.npolar.site.npweb/resources/style/npweb-2014-base.css") %>" />
 <link rel="stylesheet" type="text/css" href="<%= cms.link("/system/modules/no.npolar.site.npweb/resources/style/npweb-2014-smallscreens.css") %>" media="(min-width:310px)" />
 <link rel="stylesheet" type="text/css" href="<%= cms.link("/system/modules/no.npolar.site.npweb/resources/style/npweb-2014-largescreens.css") %>" media="(min-width:801px)" />
+<link rel="stylesheet" type="text/css" href="<%= cms.link("/system/modules/no.npolar.site.npweb/resources/style/layout-atomic.css") %>" />
 <link rel="stylesheet" type="text/css" href="<%= cms.link("/system/modules/no.npolar.site.npweb/resources/style/npweb-2014-print.css") %>" media="print" />
 
 
@@ -709,7 +714,7 @@ if (!pinnedNav) {
     </header> <!-- #header -->
     
     <div id="docwrap" class="clearfix">
-        <a id="feedback-for-url" href="/no/feedback.html">Finner du ikke det du leter etter?</a>
+        <!--<a id="feedback-for-url" href="/no/feedback.html">Finner du ikke det du leter etter?</a>-->
         <%
         //if (portal) {
             //out.println("<a id=\"nav_toggler\"><span></span></a>");

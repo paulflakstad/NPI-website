@@ -516,7 +516,8 @@ try {
     if (requestFileUri.endsWith( cms.info("opencms.uri").replace(OpenCms.getSystemInfo().getOpenCmsContext(), "") )) {
         //String redirectTargetPath = detailPageUri + "?pid=" + projectId;// e.g. "/en/" to redirect to the localized english folder
         String redirAbsPath = request.getScheme() + "://" + request.getServerName() + projectFilePath;
-        CmsRequestUtil.redirectPermanently(cms, redirAbsPath);
+        //CmsRequestUtil.redirectPermanently(cms, redirAbsPath); // Bad method, sends 302
+        cms.sendRedirect(redirAbsPath, HttpServletResponse.SC_MOVED_PERMANENTLY);
         return;
     }
 } catch (Exception ignore) {}

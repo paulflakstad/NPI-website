@@ -52,7 +52,8 @@ if (!loggedInUser && cms.getRequest().isSecure()) {
         redirAbsPath += "?" + qs;
     }
     //out.println("<!-- redirect path is '" + redirAbsPath + "' -->");
-    CmsRequestUtil.redirectPermanently(cms, redirAbsPath);
+    //CmsRequestUtil.redirectPermanently(cms, redirAbsPath); // Bad method, sends 302
+    cms.sendRedirect(redirAbsPath, HttpServletResponse.SC_MOVED_PERMANENTLY);
     return;
 }
 
@@ -64,7 +65,8 @@ if (!loggedInUser && !request.getServerName().equals(ONLINE_DOMAIN)) {
         redirAbsPath += "?" + qs;
     }
     //out.println("<!-- redirect path is '" + redirAbsPath + "' -->");
-    CmsRequestUtil.redirectPermanently(cms, redirAbsPath);
+    //CmsRequestUtil.redirectPermanently(cms, redirAbsPath); // Bad method, sends 302
+    cms.sendRedirect(redirAbsPath, HttpServletResponse.SC_MOVED_PERMANENTLY);
     return;
 }
 
@@ -97,7 +99,8 @@ if (!redirPermProp.isNullProperty()) {
         if (qs != null && !qs.isEmpty()) {
             redirAbsPath += "?" + qs;
         }
-        CmsRequestUtil.redirectPermanently(cms, redirAbsPath);
+        //CmsRequestUtil.redirectPermanently(cms, redirAbsPath); // Bad method, sends 302
+        cms.sendRedirect(redirAbsPath, HttpServletResponse.SC_MOVED_PERMANENTLY);
         return;
     } else {
         try {
