@@ -310,6 +310,52 @@ section {
     white-space:nowrap;
 }
 
+/*******************************************************************************
+ * Stuff presented as tables, but are not tables
+ */
+.table {
+    display:table;
+}
+.tr {
+    display:table-row;
+}
+.td,th {
+    display:table-cell;
+}
+
+/*******************************************************************************
+ * Quotes
+ */
+q {
+    display: inline;
+}
+q:before {
+    content: open-quote;
+}
+q:after {
+    content: close-quote;
+}
+html[lang="no"] q:before {
+    content: "«";
+}
+html[lang="no"] q:after {
+    content: "»";
+}
+/* The prepended-dash-style quote. */
+q.dashed {
+    font-style: italic;
+}
+q.dashed:before,
+html[lang="no"] q.dashed:before,
+html[lang="no"] q.dashed:before {
+    content: "– ";
+}
+q.dashed:after,
+html[lang="no"] q.dashed:after,
+html[lang="no"] q.dashed:after {
+    content: none;
+}
+
 /* Dividers - stack vertically (full width) on small screens, horizontal/vertical on larger screens */
 .span1,
 .span2,
