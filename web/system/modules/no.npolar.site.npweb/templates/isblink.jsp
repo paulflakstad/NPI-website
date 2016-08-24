@@ -164,7 +164,7 @@ if (!loggedInUser && cmso.readResource(requestFileUri).getRootPath().startsWith(
     if (!requestFileUri.equals("/noaccess.html")) { // Don't hide the "No access" page
         if (!isAllowedAccess(cms)) {
             // CmsRequestUtil.redirectPermanently(cms, "/noaccess.html"); // Bad method, sends 302
-            cms.sendRedirect("/noaccess.html", HttpServletResponse.SC_MOVED_PERMANENTLY);
+            cms.sendRedirect("/noaccess.html", HttpServletResponse.SC_MOVED_TEMPORARILY);
             return;
         }
     }
