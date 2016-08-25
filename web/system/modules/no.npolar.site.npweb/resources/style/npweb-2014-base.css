@@ -3939,10 +3939,25 @@ section > h2.bluebar-dark {
 .faces, 
 .faces__heading {
     text-align: center;
+}
+.faces__heading {
     font-family: "Shadows Into Light", "Open Sans", sans-serif;
+    margin-bottom: 4rem;
 }
 .faces {
     padding: 2em 0;
+}
+.faces a {
+    text-decoration: none;
+    color: #666;
+}
+.faces a img {
+    transition: transform 0.3s;
+}
+.faces a:hover img {
+    transform: scale(1.05);
+    /*border-width: 0;*/
+    /*box-shadow: 0 0.25em 0.25em rgba(0,0,0,0.5);*/
 }
 
 /*******************************************************************************
@@ -3974,25 +3989,69 @@ section > h2.bluebar-dark {
 /*******************************************************************************
 * Avatars
 */
+.avatar-list .avatar {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.6);
+    padding: 1em;
+    display: inline-block;
+    margin-top: 0.75rem;
+}
+.avatar {
+    /*width: 8em;*/
+    width: 7.5rem;
+    /*height: 8em;*/
+    height: 7.5rem;
+}
+.avatar.avatar--with-text {
+    width: 15rem;
+    height: auto;
+}
 .avatar a {
     display: block;
     position: relative;
 }
-.avatar {
-    width: 8em;
-    width: 7.5rem;
-    height: 8em;
-    height: 7.5rem;
-}
 .avatar img {
     display: block;
-    width: 100%;
+    /*width: 100%;*/
+    width: 7.5rem;
+    margin: 0 auto;
+}
+.avatar__text {
+    font-size: small;
+    float: none;
+    margin: 0.5rem 0 0 0;
+    /* padding-bottom: 5rem; */
+    height: 5.3em; /* set so as to clip the bottom line in half horizontally */
+    overflow-y: hidden;
+}
+.avatar__text:after {
+    content: " ";
+    position: absolute;
+    top: 90%;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,1));
 }
 .avatar--round img {
     border-radius: 50%;
-    border: 4px solid #DAE6EF;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.5);
     box-sizing: border-box;
+    border: 0.5em solid #fff;
+    /*box-shadow: 0 1px 3px rgba(0,0,0,0.5);*/
+}
+
+/* "stick-up" option: pull avatar up halfway out of the parent box */
+/*.avatar--stick-up {*/
+.avatar.avatar--with-text {
+    margin-bottom: 5rem; /* because the next avatar's image has neg. top margin */
+}
+.avatar.avatar--with-text:last-child {
+    margin-bottom: 0;
+}
+/*.avatar--stick-up img {*/
+.avatar--with-text img {
+    width:60%;
+    margin:-30% auto 0 auto;
+    margin: calc( -1 * 30% + -1 * 1em ) auto 0 auto; /* calc in parent padding */
 }
 
 

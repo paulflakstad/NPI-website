@@ -144,13 +144,17 @@ try {
                 imgSrc = "/no/images/ansatte/person.png";
             }
             %>
-            <li class="avatar avatar--round">
-                <a href="<%= cms.link(collectedResourceUri) %>" data-tooltip="<%= tooltipText %>">
+            <li class="avatar avatar--round avatar--with-text">
+            <!--<li class="avatar avatar--round avatar--stick-up avatar--with-text">-->
+                <a href="<%= cms.link(collectedResourceUri) %>">
                     <% if (imgSrc != null) { %>
-                    <img src="<%= cms.link(imgSrc) %>" alt="<%= altText %>" />
+                    <img alt="<%= altText %>" src="<%= cms.link(imgSrc) %>" />
                     <% } else { %>
                     <i class="icon-user"></i>
                     <% }%>
+                    <p class="avatar__text">
+                       <%= tooltipText %> 
+                    </p>
                 </a>
             </li>
             <%
