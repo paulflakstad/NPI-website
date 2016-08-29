@@ -388,7 +388,8 @@ html[lang="no"] q.dashed:after {
 	display:inline-block;
 	background:#eee;
 	padding:0.2em;
-	font-size:0.9em;
+    font-size:small;
+    color:#666;
 }
 ul.blocklist {
 	list-style:none !important;
