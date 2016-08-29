@@ -1,11 +1,11 @@
 <%-- 
     Document   : newslist-advanced-filters - Major update of newslist.jsp/list.jsp. Also meant to replace newslist-list-style.jsp (as of March 2014).
     Created on : Dec 31, 2012, 1:15:13 PM
-    Author     : Paul-Inge Flakstad <flakstad at npolar.no>
+    Author     : Paul-Inge Flakstad, Norwegian Polar Institute
 --%><%-- 
     Document   : newslist.jsp - uses the "TeaserImage" (as used in the new newsbulletin type, which has "Paragraph" sections)
     Created on : 04.jun.2010, 13:41:52
-    Author     : Paul-Inge Flakstad <flakstad at npolar.no>
+    Author     : Paul-Inge Flakstad, Norwegian Polar Institute
 --%>
 <%@ page import="no.npolar.util.*,
                  no.npolar.util.exception.MalformedPropertyValueException,
@@ -46,6 +46,7 @@
                                 String dateFormat,
                                 boolean displayDescription, 
                                 boolean displayTimestamp,
+                                boolean displayLabel,
                                 boolean asPortalPageCard,
                                 Locale locale) throws ServletException {
         final SimpleDateFormat DATE_FORMAT_ISO = new SimpleDateFormat("yyyy-MM-dd", locale);
@@ -95,6 +96,13 @@
                             html += TIMESTAMP;
                         if (displayDescription)
                             html += "<p itemprop=\"description\">" + teaser + "</p>";
+                        if (displayLabel) {
+                            String label = "";
+                            try {
+                                label = cms.getCmsObject().readPropertyObject(fileName, "Title.addon", true).getValue("");
+                            } catch (Exception ignore) {}
+                            html += "<span class=\"card-label tag\">" + label + "</span>";
+                        }
                     html += "</div>";
                 html += "</a>";
             html += "</div>";
@@ -198,6 +206,7 @@
                                     String dateFormat,
                                     boolean displayDescription, 
                                     boolean displayTimestamp,
+                                    boolean displayLabel,
                                     boolean asPortalPageCard,
                                     Locale locale) throws ServletException, CmsException, IOException {
         String title       = cms.contentshow(newsBulletin, "Title");
@@ -223,7 +232,7 @@
         } // if (newsbulletin should have image)
 
         // HTML OUTPUT            
-        out.println(getItemHtml(cms, fileName, title, teaser, imageLink, published, dateFormat, displayDescription, displayTimestamp, asPortalPageCard, locale));
+        out.println(getItemHtml(cms, fileName, title, teaser, imageLink, published, dateFormat, displayDescription, displayTimestamp, displayLabel, asPortalPageCard, locale));
     }
     
     /**
@@ -440,6 +449,7 @@ boolean subTree             = false;
 boolean displayRangeSelect  = true;
 boolean displayDescription  = false;
 boolean displayTimestamp    = false;
+boolean displayLabel        = false;
 ArrayList stickies          = new ArrayList(0);
 
 // ToDo: Standardize category filtering, see 
@@ -487,6 +497,7 @@ while (configuration.hasMoreContent()) {
     subTree             = Boolean.valueOf(cms.contentshow(configuration, "SubTree")).booleanValue();
     displayDescription  = Boolean.valueOf(cms.contentshow(configuration, "DisplayDescription")).booleanValue();
     displayTimestamp    = Boolean.valueOf(cms.contentshow(configuration, "DisplayTimestamp")).booleanValue();
+    displayLabel        = Boolean.valueOf(cms.contentshow(configuration, "DisplayLabel")).booleanValue();
     //itemsAsPortalPageCards = Boolean.valueOf(cms.contentshow(configuration, "ItemsAsPortalPageCards")).booleanValue();
     itemsAsCards        = Boolean.valueOf(cms.contentshow(configuration, "ItemsAsPortalPageCards")).booleanValue();
     sortOrder           = cms.contentshow(configuration, "SortOrder");
@@ -872,6 +883,7 @@ try {
                             , dateFormat
                             , displayDescription
                             , displayTimestamp
+                            , displayLabel
                             , itemsAsPortalPageCards || itemsAsCards
                             , locale);
         if (paramYear == -1) {
@@ -900,6 +912,7 @@ try {
                                         , dateFormat
                                         , displayDescription
                                         , displayTimestamp
+                                        , displayLabel
                                         , itemsAsPortalPageCards || itemsAsCards
                                         , locale);
                 }

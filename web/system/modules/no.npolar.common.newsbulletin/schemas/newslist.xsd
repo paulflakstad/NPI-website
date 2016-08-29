@@ -22,6 +22,7 @@
             <xsd:element name="DisplayRangeSelect" type="OpenCmsBoolean" default="true" />
             <xsd:element name="DisplayDescription" type="OpenCmsBoolean" default="true" />
             <xsd:element name="DisplayTimestamp" type="OpenCmsBoolean" default="true" />
+            <xsd:element name="DisplayLabel" type="OpenCmsBoolean" default="false" />
             <xsd:element name="ItemsAsPortalPageCards" type="OpenCmsBoolean" default="false" />
             <xsd:element name="Category" type="OpenCmsString" minOccurs="0" maxOccurs="10" />
             <xsd:element name="CategoryFilter" type="OpenCmsCategoryFilter" minOccurs="0" maxOccurs="1" />
@@ -70,6 +71,7 @@
                 <searchsetting element="DisplayRangeSelect" searchcontent="false" />
                 <searchsetting element="DisplayDescription" searchcontent="false" />
                 <searchsetting element="DisplayTimestamp" searchcontent="false" />
+                <searchsetting element="DisplayLabel" searchcontent="false" />
                 <searchsetting element="ItemsAsPortalPageCards" searchcontent="false" />
                 <searchsetting element="Category" searchcontent="false" />
                 <searchsetting element="CategoryFilter" searchcontent="false" />
