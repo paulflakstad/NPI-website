@@ -20,7 +20,7 @@
                 java.text.DateFormat,
                 no.npolar.common.menu.*,
                 no.npolar.util.CmsAgent,
-                no.npolar.util.contentnotation.*"
+                no.npolar.util.contentnotation.*" pageEncoding="UTF-8"
 %><%@taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"
 %><%!
 
@@ -32,43 +32,45 @@ private String getDateAsDatetimeAttribute(Date date) {
     dfFullIso.setTimeZone(TimeZone.getTimeZone("GMT+1"));
     return dfFullIso.format(date);
 }
-
+/**
+ * Checks if the client/user is allowed acces. Duplicated in "noaccess.jsp".
+ */
 public boolean isAllowedAccess(CmsAgent cms) {
     if (OpenCms.getRoleManager().hasRole(cms.getCmsObject(), CmsRole.WORKPLACE_USER)) {
-        // Allow logged-in user
+        // Logged-in user -> allow
         return true;
     }
-    
-    HttpServletRequest request = cms.getRequest();
-    String ip = request.getRemoteAddr();
-    // 158.39.97.128-255, 158.39.97.80-94, 158.39.64 og 65 samt 193.156.10 og 193.156.15
-    
-    // Troll:
-    if (ip.startsWith("158.39.97.")) // Troll
-    { 
+
+    try {
+        // 158.39.64/65      // TromsÃ¸
+        // 158.39.97.80-94   // VPN
+        // 158.39.97.128-255 // Troll
+        // 193.156.10/15     // Svalbard
+
+        String ip = cms.getRequest().getRemoteAddr();
         String[] ipParts = ip.split("\\.");
-        try {
-            int ipLast = Integer.parseInt(ipParts[ipParts.length - 1]);
-            if (ipLast >= 128 && ipLast <= 255) // These are the specific Troll IPs
+        int ipA = Integer.parseInt(ipParts[0]);
+        int ipB = Integer.parseInt(ipParts[1]);
+        int ipC = Integer.parseInt(ipParts[2]);
+        int ipD = Integer.parseInt(ipParts[3]);
+
+        if (ipA == 158 && ipB == 39) {
+            if (ipC == 64 || ipC == 65) {
                 return true;
-            else if (ipLast >= 80 && ipLast <= 94) // VPN series
+            } else if (ipC == 97) {
+                if ((ipD >= 80 && ipD <= 94) || (ipD >= 128 && ipD <= 255)) {
+                    return true;
+                }
+            }
+        } else if (ipA == 193 && ipB == 156) {
+            if (ipC == 10 || ipC == 15) {
                 return true;
-            return false;
-        } catch (Exception e) {
-            return false;
+            }
         }
+        return false;
+    } catch (Exception e) {
+        return false;
     }
-    
-    // Others:
-    else if (ip.startsWith("158.39.64.")    // tromsø
-            || ip.startsWith("158.39.65.") // tromsø
-            || ip.startsWith("193.156.10.") // svalbard
-            || ip.startsWith("193.156.15.")) // svalbard
-    {
-        // All allowed
-        return true;
-    }
-    return false;
 }
 %><%
 CmsAgent cms                = new CmsAgent(pageContext, request, response);
@@ -77,6 +79,18 @@ String requestFileUri       = cms.getRequestContext().getUri();
 String requestFolderUri     = cms.getRequestContext().getFolderUri();
 Integer requestFileTypeId   = cmso.readResource(requestFileUri).getTypeId();
 boolean loggedInUser        = OpenCms.getRoleManager().hasRole(cms.getCmsObject(), CmsRole.WORKPLACE_USER);
+
+
+// Handle Intranet requests (restrict access)
+if (!isAllowedAccess(cms) 
+        //&& cmso.readResource(requestFileUri).getRootPath().startsWith("/sites/isblink/") // Goes without saying...
+        //&& !requestFileUri.equals("/noaccess.html") // Prevent infinite redirect loop -- unnecessary, noaccess.html is a standalone page
+        ) {
+    cms.sendRedirect("/noaccess.html", HttpServletResponse.SC_MOVED_TEMPORARILY);
+    //cms.include("/noaccess.html");
+
+    return;
+}
 
 // Redirect HTTPS requests to HTTP for any non-logged in user
 if (!loggedInUser && cms.getRequest().isSecure()) {
@@ -158,17 +172,6 @@ try {
 } catch (Exception e) {
 }
 
-
-// Handle Intranet requests (restrict access)
-if (!loggedInUser && cmso.readResource(requestFileUri).getRootPath().startsWith("/sites/isblink/")) {
-    if (!requestFileUri.equals("/noaccess.html")) { // Don't hide the "No access" page
-        if (!isAllowedAccess(cms)) {
-            // CmsRequestUtil.redirectPermanently(cms, "/noaccess.html"); // Bad method, sends 302
-            cms.sendRedirect("/noaccess.html", HttpServletResponse.SC_MOVED_TEMPORARILY);
-            return;
-        }
-    }
-}
 
 
 // Redirect requests for np_project resources to the correct URL
