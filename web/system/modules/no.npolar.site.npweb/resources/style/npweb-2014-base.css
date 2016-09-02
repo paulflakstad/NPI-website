@@ -271,6 +271,8 @@ p,
 table {
     width:100%;
     border:none;
+    border-spacing: 0;
+    border-collapse: collapse;
 }
 table caption {
     margin-top:1em;
@@ -321,6 +323,14 @@ section {
 }
 .td,th {
     display:table-cell;
+}
+.table__heading {
+}
+.table__heading--subsection,
+th.table__heading--subsection {
+    background-color:#eee;
+    padding-top:1em;
+    font-size:larger;
 }
 
 /*******************************************************************************
@@ -446,9 +456,23 @@ ul.line-items li {
     border-bottom:none;
 }
 
-
+/**
+ * Things that screen-readers etc. should *not* see (only visible on-screen)
+ */
 .ui-helper-hidden-accessible {
 	display:none;
+}
+/**
+ * Things that only bots, screenreaders, etc. should see (not visible on-screen)
+ */
+.bots-only {
+    position: absolute;
+    left: -9999px;
+    left: -200vw;
+    top: -9999px;
+    top: -200vw;
+    height: 1px;
+    overflow: hidden;
 }
 
 
@@ -3444,6 +3468,16 @@ a.cta.more.news-list-more {
     padding:1%;
     width:98%;*/
 }
+
+.cta.cta--disabled,
+.cta.cta--disabled:hover,
+button[disabled], 
+button[disabled]:hover {
+    background-color: #d3d3d3;
+    color: #808080;
+    text-shadow: none;
+}
+
 ul + .load-more {
     display: block;
     text-align: center;
