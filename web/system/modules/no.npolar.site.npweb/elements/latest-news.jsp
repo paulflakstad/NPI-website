@@ -3,8 +3,9 @@
     Created on : Nov 17, 2015, 12:54:48 PM
     Author     : Paul-Inge Flakstad, Norwegian Polar Institute <flakstad at npolar.no>
 --%>
-
-<%@page import="no.npolar.util.*,org.opencms.jsp.*,org.opencms.file.CmsObject,java.util.*,java.text.SimpleDateFormat" contentType="text/html" pageEncoding="UTF-8"
+<%@page import="no.npolar.util.*,org.opencms.jsp.*,org.opencms.file.CmsObject,org.opencms.file.CmsResource,java.util.*,java.text.SimpleDateFormat" 
+        contentType="text/html" 
+        pageEncoding="UTF-8"
 %><%!
     public String getItemHtml(CmsAgent cms, 
                                 String fileName,
@@ -15,6 +16,8 @@
                                 //String dateFormat,
                                 //boolean displayDescription, 
                                 //boolean displayTimestamp,
+                                boolean isFeatured,
+                                String featuredFolderUri,
                                 Locale locale) throws ServletException {
         final String DATE_FORMAT    = cms.labelUnicode("label.for.newsbulletin.dateformat");
         final SimpleDateFormat DATE_FORMAT_ISO = new SimpleDateFormat("yyyy-MM-dd", locale);
@@ -22,6 +25,9 @@
         
         
         html += "<a href=\"" + cms.link(fileName) + "\"><h3 class=\"news-title\" style=\"font-size:1em; font-weight:bold;\">" + title + "</h3></a>";
+        if (isFeatured) {
+            html += "<a class=\"tag\" href=\"" + cms.link(featuredFolderUri) + "\">" + (locale.toString().equalsIgnoreCase("no") ? "Kronikk" : "Featured").toUpperCase() + "</a> ";
+        }
         html += "<time class=\"timestamp\" datetime=\"" + DATE_FORMAT_ISO.format(new Date(Long.valueOf(published).longValue())) + "\">" 
                     + CmsAgent.formatDate(published, DATE_FORMAT, locale) 
                 + "</time>";
@@ -52,13 +58,44 @@
         moreLink = "<a class=\"cta more\" href=\"" + cms.link(listFolder) + "\">" + moreText + "</a>";
     }
     
+    // Featured article (Norwegian: "kronikk")
+    String featuredFolderUri = null;
+    int featuredLimit = 0;
+    String featuredLimitStr = cms.getRequest().getParameter("featuredLimit");
+    if (featuredLimitStr != null && !featuredLimitStr.trim().isEmpty()) {
+        try {
+            featuredLimit = Integer.valueOf(featuredLimitStr);
+        } catch (NumberFormatException nfe) {
+            // Not an integer
+        }
+    }
+    if (featuredLimit > 0) {
+        featuredFolderUri = cms.getRequest().getParameter("featuredFolder");
+    }
+    
     I_CmsXmlContentContainer all = cms.contentload("allInSubTreePriorityDateDesc", listFolder.concat("|"+TYPE_ID).concat("|"+limit), EDITABLE);
+    
+    List<CmsResource> allResources = all.getCollectorResult();
+    List<CmsResource> featuredResources = new ArrayList<CmsResource>(0);
+    
+    if (featuredLimit > 0 && featuredFolderUri != null && !featuredFolderUri.trim().isEmpty()) {
+        allResources = allResources.subList(0, allResources.size()-(featuredLimit));
+        I_CmsXmlContentContainer featuredContainer = cms.contentload("allInSubTreePriorityDateDesc", featuredFolderUri.concat("|"+TYPE_ID).concat("|" + featuredLimit), EDITABLE);
+        featuredResources = featuredContainer.getCollectorResult();
+        allResources.addAll(1, featuredResources);
+    }
 %>
     <ul class="blocklist">
 <%
-    while (all.hasMoreResources()) {
+    for (CmsResource r : allResources) {
 %>
-        <li class="news"><%= getItemHtml(cms, cms.contentshow(all, "%(opencms.filename)"), cms.contentshow(all, "Title"), cms.contentshow(all, "Published"), locale) %></li>
+        <li class="news"><%= getItemHtml(cms, 
+                cmso.getSitePath(r), 
+                cmso.readPropertyObject(r, "Title", false).getValue("[NO TITLE]"), 
+                cmso.readPropertyObject(r, "collector.date", false).getValue("0"), 
+                featuredResources.contains(r),
+                featuredFolderUri,
+                locale) %></li>
 <%
     }
 %>
