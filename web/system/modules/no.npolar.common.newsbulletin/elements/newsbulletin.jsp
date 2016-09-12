@@ -1,22 +1,27 @@
-<%@page import="java.util.Date"%>
 <%@ page import="no.npolar.util.*,
                  no.npolar.common.collectors.*,
+                 org.opencms.file.CmsFile,
                  org.opencms.file.CmsObject,
                  org.opencms.file.CmsResource,
+                 org.opencms.i18n.CmsLocaleManager,
                  org.opencms.main.OpenCms,
                  org.opencms.jsp.I_CmsXmlContentContainer,
                  org.opencms.relations.CmsCategory,
                  org.opencms.relations.CmsCategoryService,
                  org.opencms.file.collectors.CmsCategoryResourceCollector,
                  org.opencms.file.collectors.CmsTimeFrameCategoryCollector,
+                 org.opencms.xml.I_CmsXmlDocument,
+                 org.opencms.xml.content.CmsXmlContent,
+                 org.opencms.xml.content.CmsXmlContentFactory,
                  java.text.SimpleDateFormat,
                  java.util.Collections,
+                 java.util.Date,
                  java.util.ArrayList,
                  java.util.List,
                  java.util.Iterator,
                  java.util.Comparator,
                  java.util.TimeZone,
-                 java.util.Locale" session="false"
+                 java.util.Locale" session="false" pageEncoding="UTF-8"
 %><%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"
 %><%!
 public boolean isEmailAddress(String s) {
@@ -85,13 +90,39 @@ public boolean isEmailAddress(String s) {
     String title, ingress, published, author, authorLink, translator, translatorLink; // String variables
     // String shareLinksString;
     //boolean shareLinks = true;
-
+    
+    // Check if we are outputting in the actual language
+    // (if not, we need to set the lang attribute, for WCAG2.0 compliancy)
+    Locale contentLocale = new Locale(locale.getLanguage());
+    try {
+        
+        //contentLocale = newsBulletin.getXmlDocument().getBestMatchingLocale(locale);
+        //I_CmsXmlDocument contentXml = newsBulletin.getXmlDocument(); // Always returns NULL
+        CmsFile requestFile = cmso.readFile(requestFileUri);
+        // build up the xml content instance
+        CmsXmlContent xmlContent = CmsXmlContentFactory.unmarshal(cmso, requestFile);
+        //if (!xmlContent.hasLocale(loc)) {
+        
+        out.println("<!-- INFO: Missing content in requested language, attempting fallback -->");
+        if (!xmlContent.hasLocale(locale)) {
+            CmsLocaleManager lm = OpenCms.getLocaleManager();
+            out.println("<!-- This page has no content in " + locale.getDisplayLanguage(new Locale("en")) + " -->");
+            contentLocale = lm.getBestMatchingLocale(locale, lm.getDefaultLocales(), xmlContent.getLocales());
+            out.println("<!--   Available languages: " + xmlContent.getLocales().toString() + " -->");
+            out.println("<!--   Best fallback (using this one): " + contentLocale.getDisplayLanguage() + " -->");
+        }
+    } catch (Exception e) {
+        out.println("<!-- ERROR reading content locale: " + e.getMessage() + "  -->");
+    }
+    
     //out.println("<div class=\"twocol\">");
-    out.println("<article class=\"main-content\">");
+    out.println("<article"
+            + " class=\"main-content\"" 
+            + (contentLocale.getLanguage().equals(locale.getLanguage()) ? "" : " lang=\"".concat(contentLocale.getLanguage()).concat("\""))
+            + ">");
     
     try {
         newsBulletin = cms.contentload("singleFile", "%(opencms.uri)", EDITABLE);
-
         while (newsBulletin.hasMoreContent()) {
             title       = cms.contentshow(newsBulletin, "Title");
             if (!CmsAgent.elementExists(title)) {
@@ -104,19 +135,19 @@ public boolean isEmailAddress(String s) {
             author          = CmsAgent.removeUsername(cms.contentshow(newsBulletin, "Author"));
             authorLink      = cms.contentshow(newsBulletin, "AuthorMail");
             translator      = cms.contentshow(newsBulletin, "Translator");
-            
+
             translator      = cms.elementExists(translator) ? CmsAgent.removeUsername(translator) : "";
             translatorLink  = cms.contentshow(newsBulletin, "TranslatorMail");
-            
+
             if (isEmailAddress(authorLink))
                 authorLink = "mailto:" + authorLink;
             if (isEmailAddress(translatorLink))
                 translatorLink = "mailto:" + translatorLink;
-            
+
             /*shareLinksString= cms.contentshow(newsBulletin, "ShareLinks");
             if (!CmsAgent.elementExists(shareLinksString))
                 shareLinksString = "true"; // Default value if this element does not exist in the news bulletin file (backward compatibility)
-            
+
             try {
                 shareLinks      = Boolean.valueOf(shareLinksString).booleanValue();
             } catch (Exception e) {
@@ -149,9 +180,9 @@ public boolean isEmailAddress(String s) {
             /*if (shareLinks) {
                 byline += cms.getContent(SHARE_LINK_MIN);
             }*/
-            
+
             byline += "</div><!-- .byline -->";
-            
+
             if (CmsAgent.elementExists(authorLink) || CmsAgent.elementExists(translatorLink)) {
                 byline = CmsAgent.obfuscateEmailAddr(byline, false);
             }
@@ -165,7 +196,7 @@ public boolean isEmailAddress(String s) {
             // Paragraphs, handled by a separate file
             //
             cms.include(PARAGRAPH_HANDLER);
-            
+
             //
             // Categories
             //
@@ -188,12 +219,12 @@ public boolean isEmailAddress(String s) {
                 }
                 //categories += "</ul>";
             }
-                
+
             if (!categories.isEmpty()) {
                 // Print categories
                 out.println("<aside class=\"similar-articles\">" + categoriesLabel + categories + "</aside>");
             }
-            
+
             /*if (shareLinks) {
                 out.println(cms.getContent(SHARE_LINKS));
                 //request.setAttribute("share", "true");
@@ -201,19 +232,19 @@ public boolean isEmailAddress(String s) {
             }*/
         }
 
-          
+
         out.println("</article><!-- .main-content -->");
         out.println("<div id=\"rightside\" class=\"column small\">");
         //out.println("</div><!-- .twocol -->");
         //out.println("<div class=\"onecol\">");
 
-        
+
         //
         // Pre-defined and generic link lists, handled by a separate file
         //
         cms.include(LINKLIST_HANDLER);
 
-        
+
         out.println("</div><!-- #rightside -->");
         //out.println("<div class=\"description\">" + categories + "</div>");
     } catch (NullPointerException npe) {
