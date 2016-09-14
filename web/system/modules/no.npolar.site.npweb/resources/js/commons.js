@@ -294,6 +294,7 @@ function initToggleable(/*jQuery*/ el) {
 
 function initToggleables() {
     'use strict';
+    $('.toggletrigger').attr('tabindex', '0');
     $('.toggleable.collapsed > .toggletarget').slideUp(1); // Hide normally-closed ("collapsed") accordion content		
     $('.toggleable.collapsed > .toggletrigger').append(' <em class="icon-down-open-big"></em>'); // Append arrow icon to "show accordion content" triggers
     $('.toggleable.open > .toggletrigger').append(' <em class="icon-up-open-big"></em>'); // Append arrow icon to "hide accordion content" triggers
@@ -310,7 +311,10 @@ function initToggleables() {
     //      |- [.toggleable]
     var toggler = $('.toggler');
     toggler.next('.toggleable').attr('aria-hidden', 'true').slideUp(1); // Hide toggleable content
-    toggler.attr('aria-expanded', 'false'); // Add ARIA info
+    toggler.attr({ 
+        'aria-expanded' : 'false', 
+        'tabindex' : '0' 
+    }); // Add ARIA info and ensure trigger is keyboard accesssible
     toggler.click(function(e) {
         e.preventDefault();
         var target = $(this).next('.toggleable');
