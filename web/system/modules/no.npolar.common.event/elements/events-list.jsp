@@ -476,12 +476,20 @@ while (configuration.hasMoreResources()) {
     // Categories that should not be part of the navigation
     loop = cms.contentloop(configuration, "ExcludeNavCategory");
     while (loop.hasMoreResources()) {
-        excludedNavCategories.add(catService.getCategory(cmso, cms.contentshow(loop)));
+        try {
+            excludedNavCategories.add(catService.getCategory(cmso, cms.contentshow(loop)));
+        } catch (Exception e) {
+            // Should log this
+        }
     }
     // Categories that should be displayed as part of the event entry in the list of events
     loop = cms.contentloop(configuration, "DisplayCategory");
     while (loop.hasMoreResources()) {
-        displayCategories.add(catService.getCategory(cmso, cms.contentshow(loop)));
+        try {
+            displayCategories.add(catService.getCategory(cmso, cms.contentshow(loop)));
+        } catch (Exception e) {
+            // Should log this
+        }
     }
     // Custom label (to override the "Event" label
     loop = cms.contentloop(configuration, "EventLabel");
