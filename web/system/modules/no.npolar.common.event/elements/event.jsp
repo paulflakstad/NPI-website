@@ -109,6 +109,8 @@ String venueAddress                 = null;
 String venueWebsite                 = null;
 String venueGoogleMap               = null;
 
+String bannerUri                    = cmso.readPropertyObject(requestFileUri, "image.banner", false).getValue(null);
+
 // XML content containers
 I_CmsXmlContentContainer container, contactinfo, pdflink, venue;
 
@@ -149,7 +151,10 @@ while (container.hasMoreContent()) {
     String rRule = event.getRecurrenceRule();
     
     out.println("<div itemscope itemtype=\"http://schema.org/Event\">");
-    out.println("<h1 itemprop=\"name\">" + event.getTitle() + "</h1>");
+    out.println("<h1 itemprop=\"name\"" + (bannerUri == null ? "" : " class=\"bots-only\"") + ">" + event.getTitle() + "</h1>");
+    if (bannerUri != null) {
+        out.println(ImageUtil.getImage(cms, cmso.getRequestContext().removeSiteRoot(bannerUri), event.getTitle()));
+    }
     out.println("<div class=\"ingress\" itemprop=\"description\">" + event.getDescription() + "</div>");
     
     

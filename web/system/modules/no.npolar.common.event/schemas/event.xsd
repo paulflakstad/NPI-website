@@ -1,0 +1,80 @@
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+	
+    <xsd:include schemaLocation="opencms://opencms-xmlcontent.xsd"/>
+    <!--<xsd:include schemaLocation="opencms://system/modules/no.npolar.common.event/schemas/paragraph.xsd"/>-->
+    <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.pageelements/schemas/paragraph.xsd"/>
+    <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.event/schemas/contact.xsd"/>
+    <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.event/schemas/venue.xsd"/>
+    <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.event/schemas/resourcelink.xsd"/>
+    
+    <xsd:element name="Events" type="OpenCmsEvents"/>
+
+    <xsd:complexType name="OpenCmsEvents">
+        <xsd:sequence>
+            <xsd:element name="Event" type="OpenCmsEvent" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="OpenCmsEvent">
+        <xsd:sequence>
+            <xsd:element name="Title" type="OpenCmsString" />
+            <xsd:element name="Begin" type="OpenCmsDateTime" />
+            <xsd:element name="End" type="OpenCmsDateTime" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="Recurring" type="OpenCmsString" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="CalendarAdd" type="OpenCmsBoolean" default="true" />
+            <xsd:element name="RelatedResources" type="OpenCmsBoolean" default="true" />
+            <!--<xsd:element name="GroupRelatedResources" type="OpenCmsBoolean" default="false" />-->
+            <xsd:element name="TimeDisplay" type="OpenCmsString" />
+            <xsd:element name="OverviewLink" type="OpenCmsVfsFile" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="Category" type="OpenCmsString" minOccurs="0" maxOccurs="20" />
+            <xsd:element name="Link" type="OpenCmsString" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="PDF" type="OpenCmsResourceLink" minOccurs="0" maxOccurs="10" />
+            <xsd:element name="Banner" type="OpenCmsVfsFile" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="Venue" type="OpenCmsVenue" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="Contact" type="OpenCmsContact" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="Description" type="OpenCmsString" />
+            <xsd:element name="Paragraph" type="OpenCmsParagraph" minOccurs="1" maxOccurs="50" />
+        </xsd:sequence>
+        <xsd:attribute name="language" type="OpenCmsLocale" use="optional" />
+    </xsd:complexType>
+
+    <xsd:annotation>
+        <xsd:appinfo>
+            <resourcebundle name="no.npolar.common.event.workplace" />
+            <mappings>
+                <mapping element="Title" mapto="property:Title" />
+                <mapping element="Description" mapto="property:Description" />
+                <mapping element="Category" mapto="propertyList:collector.categories" />
+                <mapping element="Begin" mapto="property:collector.date" />
+                <mapping element="End" mapto="property:collector.time" />
+                <mapping element="Recurring" mapto="property:rrule" />
+                <mapping element="TimeDisplay" mapto="property:display" />
+                <mapping element="Link" mapto="property:uri.referenced" />
+                <mapping element="Banner" mapto="property:image.banner" />
+            </mappings>
+            <layouts>
+                <layout element="Category" widget="CategoryWidget" configuration="onlyleafs=true|property=category" />
+                <layout element="TimeDisplay" widget="SelectorWidget" configuration="datetime:Date and time|dateonly:Only date, disregard time" />
+                <layout element="Banner" widget="ImageGalleryWidget" configuration="{useformat:true}" />
+            </layouts>
+            <searchsettings>
+                <searchsetting element="Recurring" searchcontent="false" />
+                <searchsetting element="Category" searchcontent="false" />
+                <searchsetting element="TimeDisplay" searchcontent="false" />
+                <searchsetting element="OverviewLink" searchcontent="false" />
+                <searchsetting element="Link" searchcontent="false" />
+                <searchsetting element="PDF" searchcontent="false" />
+                <searchsetting element="Banner" searchcontent="false" />
+                <searchsetting element="RelatedResources" searchcontent="false" />
+                <searchsetting element="CalendarAdd" searchcontent="false" />
+                <!--<searchsetting element="GroupRelatedResources" searchcontent="false" />-->
+            </searchsettings>
+            <validationrules>
+                <rule element="Title" regex="!.*[Ee]rror.*" message="${key.editor.errormessage.Article.mustnotcontainerror|${validation.path}}" />
+                <rule element="Title" regex="!.*[Ww]arn.*" type="warning" message="${key.editor.warning.Article.mustnotcontainwarn|${validation.path}}"/>			
+            </validationrules>
+        </xsd:appinfo>
+    </xsd:annotation>
+    
+</xsd:schema>
+
