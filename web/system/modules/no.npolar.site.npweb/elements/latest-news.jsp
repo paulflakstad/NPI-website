@@ -26,7 +26,9 @@
         
         html += "<a href=\"" + cms.link(fileName) + "\"><h3 class=\"news-title\" style=\"font-size:1em; font-weight:bold;\">" + title + "</h3></a>";
         if (isFeatured) {
-            html += "<a class=\"tag\" href=\"" + cms.link(featuredFolderUri) + "\">" + (locale.toString().equalsIgnoreCase("no") ? "Kronikk" : "Featured").toUpperCase() + "</a> ";
+            html += "<a class=\"tag\" href=\"" + cms.link(featuredFolderUri) + "\" style=\"text-decoration: none;\">" 
+                    + (locale.toString().equalsIgnoreCase("no") ? "Kronikk" : "Featured").toUpperCase() 
+                    + "</a> ";
         }
         html += "<time class=\"timestamp\" datetime=\"" + DATE_FORMAT_ISO.format(new Date(Long.valueOf(published).longValue())) + "\">" 
                     + CmsAgent.formatDate(published, DATE_FORMAT, locale) 
