@@ -129,7 +129,7 @@ boolean portal              = Boolean.valueOf(cms.property("portalpage", request
 String canonical            = null;
 String featuredImage        = null;
 String includeFilePrefix    = "";
-String fs                   = null; // font size
+//String fs                   = null; // font size selector; deprecated
 HttpSession sess            = request.getSession();
 String siteName             = cms.property("sitename", "search", cms.label("label.np.sitename"));
 boolean pinnedNav           = false; 
@@ -241,7 +241,7 @@ if (request.getParameter("includeFilePrefix") != null) {
     includeFilePrefix = request.getParameter("includeFilePrefix");
 }
 
-if (request.getParameter("fs") != null) {
+/*if (request.getParameter("fs") != null) {
     fs = request.getParameter("fs");
     if (fs.isEmpty() || fs.length() > 2) {
         fs = null;
@@ -250,7 +250,7 @@ if (request.getParameter("fs") != null) {
         if (fs.equalsIgnoreCase("M") || fs.equalsIgnoreCase("L") || fs.equalsIgnoreCase("XL")) // Limit to these values
             sess.setAttribute("fs", fs);
     }
-}
+}*/
 
 if (!portal) {
     try {
@@ -292,7 +292,6 @@ if (request.getAttribute("title") != null) {
     } catch (Exception e) {
         // The title found as request attribute was not of type String
     }
-    
 }
 
 
@@ -390,10 +389,12 @@ if (!description.isEmpty()) {
         out.println("<meta name=\"og:image\" content=\"" + OpenCms.getLinkManager().getOnlineLink(cmso, featuredImage.concat("?__scale=w:400,h:400,t:3,q:100")) + "\" />");
     }
 }
+/*
 // If a font size parameter was set, add an additional safety measure to prevent this URL from being indexed.
 if (fs != null) {
     out.println("<meta name=\"robots\" content=\"noindex\" />");
 }
+*/
 if (canonical != null) {
     out.println("<!-- This page may exist at other URLs, but this is the one true URL: -->");
     out.println("<link rel=\"canonical\" href=\"" + canonical + "\" />");
@@ -866,7 +867,7 @@ if (!loggedInUser) {
         out.println("<script type=\"text/javascript\" src=\"http://s7.addthis.com/js/300/addthis_widget.js#username=xa-4c6ead601f06be40\"></script>"); 
     }
     */ 
-    if (dr != null && cmso.readResource(requestFileUri).getTypeId() != OpenCms.getResourceManager().getResourceType("newsbulletin").getTypeId()) { 
+    if (dr != null && cmso.readResource(requestFileUri).getTypeId() != OpenCms.getResourceManager().getResourceType("newsbulletin").getTypeId()) {
     %>
     <script type="text/javascript">
         //$('h1').first().css('color', 'red');
