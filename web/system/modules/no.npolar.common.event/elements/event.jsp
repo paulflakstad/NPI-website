@@ -60,6 +60,35 @@ public Long getBegin(CmsJspActionElement cms) {
     }
     return null;
 }
+/**
+* Gets a fitting class name for specifying the maximum number of items 
+* to allow in a layout-group container.
+* <p>
+* For a large number of items, the fallback is the class name for "maximum 
+* allowed items".
+* 
+* @param totalItems The actual items.
+* @return A fitting class name.
+*/
+public static String getLayoutClass(int totalItems) {
+   String[] layoutClasses = { "", "single", "double", "triple" };
+   while (true) {
+       try {
+           return layoutClasses[totalItems];
+       } catch (ArrayIndexOutOfBoundsException e) {
+           return layoutClasses[layoutClasses.length-1];
+       }
+   }
+}
+/*
+public static String getImageClass(String imgUri, CmsJspActionElement cms) {
+    String s ="";
+    try {
+        ImageUtil.get
+    } catch (Exception e) {}
+    return s;
+}
+//*/
 %><%
 CmsAgent cms                        = new CmsAgent(pageContext, request, response);
 CmsObject cmso                      = cms.getCmsObject();
@@ -112,7 +141,7 @@ String venueGoogleMap               = null;
 String bannerUri                    = cmso.readPropertyObject(requestFileUri, "image.banner", false).getValue(null);
 
 // XML content containers
-I_CmsXmlContentContainer container, contactinfo, pdflink, venue;
+I_CmsXmlContentContainer container, contactinfo, pdflink, venue, personlist, persons, partners;
 
 // Main template
 String template                     = cms.getTemplate();
@@ -159,7 +188,9 @@ while (container.hasMoreContent()) {
     
     
     // Time
-    out.println("<div class=\"event-links nofloat\">");
+    %>
+    <aside class="article-meta event-links nofloat">
+    <%
     
     //if (begins != null && !requestFolderUri.endsWith(UNDATED_FOLDER)) {
         if (calendarAdd) {
@@ -277,7 +308,9 @@ while (container.hasMoreContent()) {
         out.println("</div><!-- .event-metadata -->");
     }
     
-    out.println("</div>");
+    %>
+    </aside>
+    <%
     
     if (event.isAssignedCategory(cmso, CAT_PATH_NPI_SEMINAR)) {
         try {
@@ -293,6 +326,98 @@ while (container.hasMoreContent()) {
     cms.include(URI_PARAGRAPH_HANDLER);
     
     
+    
+    personlist = cms.contentloop(container, "People");
+    if (personlist.hasMoreResources()) {
+        String listTitle = cms.contentshow(personlist, "Title");
+        persons = cms.contentloop(personlist, "Person");
+        
+        
+        String layoutClass = getLayoutClass(persons.getCollectorResult().size());
+        %>
+        <aside class="article-related article-meta max-wide">
+        <!--<aside class="layout-group <%= layoutClass %> article-related article-meta max-wide">-->
+            <h2 class="article-meta__heading"><%= listTitle %></h2>
+            <div class="article-meta__content cards--people">
+        <%
+            
+            while (persons.hasMoreResources()) {
+                String name = cms.contentshow(persons, "Name");
+                String affiliation = cms.contentshow(persons, "Affiliation");
+                String text = cms.contentshow(persons, "Text");
+                String webpage = cms.contentshow(persons, "Webpage");
+                String imageUri = null;
+                I_CmsXmlContentContainer image = cms.contentloop(persons, "Image");
+                if (image.hasMoreResources()) {
+                    imageUri = cms.contentshow(image, "URI");
+                }
+                %>
+                <!--<div class="layout-box">-->
+                    <!-- card--h = horizontal layout -->
+                    <!-- card--alt = alternative version, with round, fix-width images -->
+                    <div class="card card--h card--alt">
+                        <%
+                            if (CmsAgent.elementExists(imageUri)) {
+                                %>
+                                <div class="card__media">
+                                        <!--<img src="content/blogg/n-ice2015/2015-03-17/2015-03-17-greenhouse-gases-research-3-crop.jpg" alt="">-->
+                                        <!--<img src="http://tromsoby.no/file/images/webbaner_ny.preview.jpg" alt="" class="image--landscape">-->
+                                        <!--<%= ImageUtil.getImage(cms, imageUri, name, ImageUtil.SIZE_S) %>-->
+                                        <%= ImageUtil.getImage(cms, imageUri, name, ImageUtil.CROP_RATIO_1_1, 200, 20, ImageUtil.SIZE_S, 90, null) %>
+                                </div>
+                                <%
+                            }
+                        %>
+                        <div class="card__content">
+                            <h3 class="card__title"><%= name %></h3>
+                            <% if (CmsAgent.elementExists(affiliation) || CmsAgent.elementExists(webpage)) { %>
+                            <div class="card__details">
+                                <% if (CmsAgent.elementExists(affiliation)) { %>
+                                <p><%= affiliation %></p>
+                                <% } if (CmsAgent.elementExists(webpage)) { %>
+                                <ul class="card__details-links">
+                                    <li class="card__details-link"><a href="<%= cms.link(webpage) %>">Mer&hellip;</a></li>
+                                </ul>
+                                <% } %>
+                            </div>
+                            <% } %>
+                            <%= text %>
+                        </div>
+                    </div>
+                <!--</div>-->
+                <%
+            }
+        
+        %>
+            </div>
+        </aside>
+        <%
+    }
+
+partners = cms.contentloop(container, "PartnerLogo");
+StringBuilder partnersHtml = new StringBuilder();
+while (partners.hasMoreResources()) {
+    String targetUri = cms.contentshow(partners, "TargetURI");
+    String imageUri = cms.contentshow(partners, "ImageURI");
+    String imageAlt = cms.contentshow(partners, "AltText");
+    int logoWidth = 200;
+
+    partnersHtml.append("<li>");
+    partnersHtml.append("<a href=\"" + targetUri + "\" data-tooltip=\"" + imageAlt + "\">");
+    partnersHtml.append(ImageUtil.getImage(cms, imageUri, imageAlt, ImageUtil.CROP_RATIO_NO_CROP, logoWidth, 100, ImageUtil.SIZE_M, 100, null));
+    partnersHtml.append("<span class=\"bots-only\">" + imageAlt + "</span>");
+    partnersHtml.append("</a>");
+    partnersHtml.append("</li>");
+}
+if (!partnersHtml.toString().isEmpty()) {
+    %>
+    <aside class="partners">
+        <ul class="list--h">
+            <%= partnersHtml.toString() %>
+        </ul>
+    </aside>
+    <%
+}
     
     // Contact info (host)
     contactinfo = cms.contentloop(container, "Contact");
@@ -310,7 +435,9 @@ while (container.hasMoreContent()) {
                 || CmsAgent.elementExists(email) 
                 || CmsAgent.elementExists(phone) 
                 || CmsAgent.elementExists(address)) {
-            out.println("<div class=\"event-links nofloat\">");
+            %>
+            <aside class="article-meta event-links nofloat">
+            <%
             if (CmsAgent.elementExists(host)) {
                 // Host logo
                 
@@ -377,8 +504,9 @@ while (container.hasMoreContent()) {
                 out.println("<div class=\"event-metadata-value\">" + address + "</div>");
                 out.println("</div><!-- .event-metadata -->");
             }
-            
-            out.println("</div>");
+            %>
+            </aside>
+            <%
         }
     }
     

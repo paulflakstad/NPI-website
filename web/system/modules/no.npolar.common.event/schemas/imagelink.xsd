@@ -1,0 +1,42 @@
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+
+    <xsd:include schemaLocation="opencms://opencms-xmlcontent.xsd"/>
+    
+    <xsd:element name="ImageLinks" type="OpenCmsImageLinks"/>
+
+    <xsd:complexType name="OpenCmsImageLinks">
+        <xsd:sequence>
+            <xsd:element name="ImageLink" type="OpenCmsImageLink" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="OpenCmsImageLink">
+        <xsd:sequence>
+            <xsd:element name="ImageURI" type="OpenCmsVfsFile" />
+            <xsd:element name="AltText" type="OpenCmsString" />
+            <xsd:element name="TargetURI" type="OpenCmsVarLink" />
+        </xsd:sequence>
+        <xsd:attribute name="language" type="OpenCmsLocale" use="optional"/>
+    </xsd:complexType>
+
+    <xsd:annotation>
+        <xsd:appinfo>
+            <resourcebundle name="no.npolar.common.event.workplace"/>
+            <layouts>
+                <layout element="ImageURI" widget="ImageGalleryWidget" configuration="{useformat:true}" />
+            </layouts>
+            <validationrules>
+                <rule element="TargetURI" regex="!(^$)|(^.*\s.*$)|(^(?!((http|https|ftp)://)|/|//).*$)|(^\s.*$)|(.*\s$)" type="warning" message="URLs must start with http(s)://, ftp://, or just /. It should not contain any spaces." />
+            </validationrules>
+            <relations>
+                <relation element="ImageURI" invalidate="false" type="strong" /><!-- make the image a strong link to whatever file it is used inside -->
+            </relations>
+            <searchsettings>
+                <searchsetting element="ImageURI" searchcontent="false" />
+                <searchsetting element="AltText" searchcontent="false" />
+                <searchsetting element="TargetURI" searchcontent="false" />
+            </searchsettings>
+        </xsd:appinfo>
+    </xsd:annotation>  
+    
+</xsd:schema>

@@ -1,0 +1,31 @@
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+	
+    <xsd:include schemaLocation="opencms://opencms-xmlcontent.xsd" />
+    <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.event/schemas/person.xsd" />
+    
+    <xsd:element name="PersonLists" type="OpenCmsPersonLists" />
+
+    <xsd:complexType name="OpenCmsPersonLists">
+        <xsd:sequence>
+            <xsd:element name="PersonList" type="OpenCmsPersonList" minOccurs="0" maxOccurs="unbounded" />
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="OpenCmsPersonList">
+        <xsd:sequence>
+            <xsd:element name="Title" type="OpenCmsString" />
+            <xsd:element name="Person" type="OpenCmsPerson" minOccurs="0" maxOccurs="10" />
+        </xsd:sequence>
+        <xsd:attribute name="language" type="OpenCmsLocale" use="optional" />
+    </xsd:complexType>
+
+    <xsd:annotation>
+        <xsd:appinfo>
+            <resourcebundle name="no.npolar.common.event.workplace" />
+            <searchsettings>
+                <searchsetting element="Title" searchcontent="false" />
+            </searchsettings>
+        </xsd:appinfo>
+    </xsd:annotation>
+    
+</xsd:schema>

@@ -3,6 +3,8 @@
     <xsd:include schemaLocation="opencms://opencms-xmlcontent.xsd"/>
     <!--<xsd:include schemaLocation="opencms://system/modules/no.npolar.common.event/schemas/paragraph.xsd"/>-->
     <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.pageelements/schemas/paragraph.xsd"/>
+    <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.event/schemas/imagelink.xsd"/>
+    <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.event/schemas/personlist.xsd"/>
     <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.event/schemas/contact.xsd"/>
     <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.event/schemas/venue.xsd"/>
     <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.event/schemas/resourcelink.xsd"/>
@@ -34,6 +36,8 @@
             <xsd:element name="Contact" type="OpenCmsContact" minOccurs="0" maxOccurs="1" />
             <xsd:element name="Description" type="OpenCmsString" />
             <xsd:element name="Paragraph" type="OpenCmsParagraph" minOccurs="1" maxOccurs="50" />
+            <xsd:element name="People" type="OpenCmsPersonList" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="PartnerLogo" type="OpenCmsImageLink" minOccurs="0" maxOccurs="20" />
         </xsd:sequence>
         <xsd:attribute name="language" type="OpenCmsLocale" use="optional" />
     </xsd:complexType>
@@ -67,6 +71,7 @@
                 <searchsetting element="Banner" searchcontent="false" />
                 <searchsetting element="RelatedResources" searchcontent="false" />
                 <searchsetting element="CalendarAdd" searchcontent="false" />
+                <searchsetting element="PartnerLogo" searchcontent="false" />
                 <!--<searchsetting element="GroupRelatedResources" searchcontent="false" />-->
             </searchsettings>
             <validationrules>
@@ -77,4 +82,3 @@
     </xsd:annotation>
     
 </xsd:schema>
-
