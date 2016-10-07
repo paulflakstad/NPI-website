@@ -93,6 +93,21 @@ if (!excluded) {
         Iterator itr = languageSiblings.iterator();
         while (itr.hasNext()) {
             CmsResource languageSibling = (CmsResource)itr.next();
+            
+            // We don't want to link to any URI that only redirects back to the 
+            // current page.
+            String languageSiblingRedir = cmso.readPropertyObject(languageSibling, "redirect.permanent", true).getValue("");
+            try {
+                if (!languageSiblingRedir.isEmpty() ) {
+                    String thisUri = cmso.getSitePath(cmso.readResource(requestFileUri)).replace("index.html", "");
+                    String thatUri = cmso.getSitePath(cmso.readResource(languageSiblingRedir)).replace("index.html", "");
+                    if (thatUri.equals(thisUri)) {
+                        // Sibling redirects to the current page => Ignore it
+                        continue;
+                    }
+                }
+            } catch (Exception ignore) {}
+                
             // Get the URI to the sibling
             String languageSiblingPath = cmso.getSitePath(languageSibling);
             // If necessary, modify the URI, so we don't link to any index.html-file
