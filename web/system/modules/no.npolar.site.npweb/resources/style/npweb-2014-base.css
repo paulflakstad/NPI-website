@@ -1612,6 +1612,17 @@ a.breadcrumb {
     margin: 0;
     font-size: 1em;
 }
+.caption__title {
+    font-size: 1em;
+    text-transform: uppercase;
+    font-weight: bold;
+    display: inline-block;
+    width: auto;
+    padding-right: 0.6em;
+}
+.caption__text {
+    display: inline;
+}
 .gallerythumb {
 	background:transparent;
 }
@@ -3327,6 +3338,7 @@ nav .pageNumWrap {
 a.cta {
 	display:inline-block;	
 	background-color:#1570b1;
+        background-color:#08d;
 	color:#fff;
 	text-decoration:none;
 	text-align:center;
@@ -3342,6 +3354,7 @@ a.cta {
 	box-shadow:0 0 1px #aaa;
 	box-shadow:0 0 1px rgba(0,0,0,0.15);
 	transition:background-color 0.3s;
+    border:1px solid rgba(0,0,0,0.2);
 }
 .cta:hover,
 a.cta:hover {
@@ -3363,7 +3376,6 @@ a.cta.alt,
     color:#000;
     background-color:rgba(0,0,0,0.1);
     color:rgba(0,0,0,0.9);
-    border:1px solid rgba(0,0,0,0.2);
 }
 .cta.alt:hover,
 a.cta.alt:hover,

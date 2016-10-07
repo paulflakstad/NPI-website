@@ -25,13 +25,14 @@ public String getImageContainer(CmsAgent cms,
                                 int imageWidth, 
                                 int imagePadding,
                                 String imageText, 
+                                String imageCaptionLede,
                                 String imageSource, 
                                 String imageType, 
                                 String imageSize, 
                                 String imageFloat) {
     
-    final String IMAGE_CONTAINER = "span";
-    final String TEXT_CONTAINER = "span";
+    final String IMAGE_CONTAINER = "figure";
+    final String TEXT_CONTAINER = "figcaption";
     // CSS class strings to append to the HTML, defined by the given image size
     final Map<String, String> sizeClasses = new HashMap<String, String>();
     sizeClasses.put("S", " thumb");
@@ -49,8 +50,11 @@ public String getImageContainer(CmsAgent cms,
     if (cms.elementExists(imageText) || cms.elementExists(imageSource)) {
         imageFrameHTML += 
                 "<" + TEXT_CONTAINER + " class=\"caption highslide-caption\">" +
+                    (cms.elementExists(imageCaptionLede) ? "<h3 class=\"caption__title\">".concat(imageCaptionLede).concat("</h3>") : "") +
+                    "<p class=\"caption__text\">" +
                     (cms.elementExists(imageText) ? cms.stripParagraph(imageText) : "") + 
                     (cms.elementExists(imageSource) ? ("<span class=\"credit\"> " + imageType + ": " + imageSource + "</span>") : "") +
+                    "</p>" +
                 "</" + TEXT_CONTAINER + ">";
     }
     imageFrameHTML += "</" + IMAGE_CONTAINER + ">";
@@ -170,6 +174,7 @@ String imagePath                    = null; // The image path
 String imageTag                     = null; // The <img> tag
 String imageSource                  = null; // The image's source or copyright proprietor
 String imageCaption                 = null; // The image caption
+String imageCaptionLede             = null; // The image caption's lede / short title
 String imageTitle                   = null; // The image title (the alt text)
 int    imageRescaleWidth            = -1;   // The width (in pixels) to rescale image to
 String imageFloatChoice             = null; // Left, right, none
@@ -288,6 +293,7 @@ while (container.hasMoreContent()) {
             while (imageContainer.hasMoreContent()) {
                 imagePath       = cms.contentshow(imageContainer, "URI");
                 imageCaption    = cms.contentshow(imageContainer, "Text");
+                imageCaptionLede= cms.contentshow(imageContainer, "TextHeading");
                 imageTitle      = cms.contentshow(imageContainer, "Title");
                 imageSource     = cms.contentshow(imageContainer, "Source");
                 imageTypeChoice = cms.labelUnicode("label.pageelements." + cms.contentshow(imageContainer, "ImageType").toLowerCase());
@@ -342,7 +348,7 @@ while (container.hasMoreContent()) {
                     throw new ServletException("The referred image '" + (imagePath == null ? "null" : imagePath) + "' does not exist.");
                 }
                 // Output the image container
-                String imageHtml = getImageContainer(cms, imageTag, imageWidth, IMAGE_PADDING, imageCaption, imageSource, imageTypeChoice, imageSizeChoice, imageFloatChoice);
+                String imageHtml = getImageContainer(cms, imageTag, imageWidth, IMAGE_PADDING, imageCaption, imageCaptionLede, imageSource, imageTypeChoice, imageSizeChoice, imageFloatChoice);
                 if ("after".equalsIgnoreCase(imageFloatChoice))
                     imagesFullWidthAfter.add(imageHtml);
                 else {
