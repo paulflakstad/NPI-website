@@ -1416,56 +1416,15 @@ a.breadcrumb {
 }
 
 #global-site-tools {
-	display:none;
-    float: none;
-	position:relative;
-	top:2px;
-	right:0;
-	width:auto;
-	margin-top:0;
-	margin-bottom: 45px;
-	line-height:32px;
-    text-align:right;
+    float: left;
 }
 .global-site-tool {
     float:right;
 	margin:0 0 0 1.4em;
 }
-
-.language-switch_en,
-.language-switch_no {
-	width:25px;
-	height:15px;
-	background-image:url("flags-sprite-2.png");
-	background-repeat:no-repeat;
-}
-.language-switch_no       { background-position:0 -15px; }
-.language-switch_en:hover,
-.language-switch_en:focus { background-position:-25px 0; border-radius:2px; }
-.language-switch_no:hover,
-.language-switch_no:focus { background-position:-25px -15px; border-radius:2px; }
-
-
-#lang-switch {
-	clear:right;
-}
-#lang-switch a {
-	text-decoration:none;
-	background:#fff; /* To fix a false positive in WCAG Contrast checker */
-}
-/*#fs-m {
-    font-size:12px;
-}
-#fs-l {
-    font-size:16px;
-}
-#fs-xl {
-    font-size:20px;
-}*/
 #global-site-tools a {
     display:inline-block;
-    height:15px;
-    line-height:15px;
+    padding: 0.5em;
 }
 /*#global-site-tools a.wai {
     color:#333;
@@ -3285,12 +3244,18 @@ nav .pageNumWrap {
  */
 
 #lang-switch {
-    clear: none;
+    margin: 1.4em 0 1.4em 0.5em;
+}
+#lang-switch a,
+#lang-switch a:hover, 
+#lang-switch a:focus {
+    text-decoration:none;
+    background: #fff;
+    border-radius: 2px;
 }
 .language-switch_de > .language-switch-flag, 
 .language-switch_en > .language-switch-flag,
 .language-switch_no > .language-switch-flag {
-    /*background-image: url("flags-sprite-2.png");*/
     background-image: url("flags.png");
     background-repeat: no-repeat;
     display: block;

@@ -58,7 +58,25 @@ body {
 }
 
 #global-site-tools {
-	line-height:36px;
+    line-height: 36px;
+    display: block;
+    float: none;
+    position: relative;
+    top: 2px;
+    right: 0;
+    width: auto;
+    margin-top:  0;
+    margin-bottom: 45px;
+    line-height: 32px;
+    text-align: right;
+}
+#global-site-tools a {
+    height:15px;
+    line-height:15px;
+    padding: 0;
+}
+#lang-switch {
+    margin: 0.25em 0;
 }
 .span2 {
 	width:47%;
@@ -440,10 +458,6 @@ body {
 }
 #search-tools-inner-wrap {
 	margin-top:-102px;
-}
-
-#global-site-tools {
-	display:block;
 }
 #navtitle {
     display:none;
