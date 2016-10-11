@@ -4032,6 +4032,10 @@ section > h2.bluebar-dark {
     max-height: 5rem;
     max-width: 5rem;
 }
+.partners .image--h {
+    max-height: 3rem;
+    max-width: 10rem;
+}
 
 /*******************************************************************************
 * Avatars

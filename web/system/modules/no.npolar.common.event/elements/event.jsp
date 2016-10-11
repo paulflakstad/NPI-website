@@ -400,11 +400,21 @@ while (partners.hasMoreResources()) {
     String targetUri = cms.contentshow(partners, "TargetURI");
     String imageUri = cms.contentshow(partners, "ImageURI");
     String imageAlt = cms.contentshow(partners, "AltText");
-    int logoWidth = 200;
+
+    // Decide the scale width based on the logo dimensions (ratio)
+    String[] imageDims = cmso.readPropertyObject(imageUri, "image.size", false).getValue("w:1,h:1").split(",");
+    // If the width is considerably larger than the height, call this a "landscape" image
+    boolean isLandscape = Double.valueOf(imageDims[0].substring(2)) / Double.valueOf(imageDims[1].substring(2)) > 1.4; 
+    int logoWidth = isLandscape ? 400: 200;
+    String logoImageHtml = ImageUtil.getImage(cms, imageUri, imageAlt, ImageUtil.CROP_RATIO_NO_CROP, logoWidth, 100, ImageUtil.SIZE_M, 100, null);
+    logoImageHtml = logoImageHtml.contains(" class=\"") ? 
+                        logoImageHtml.replace(" class=\"", " class=\"image--".concat(isLandscape ? "h " : "v ")) 
+                        :
+                        logoImageHtml.replace("<img ", "<img class=\"image--".concat(isLandscape ? "h " : "v ").concat("\" ")); 
 
     partnersHtml.append("<li>");
     partnersHtml.append("<a href=\"" + targetUri + "\" data-tooltip=\"" + imageAlt + "\">");
-    partnersHtml.append(ImageUtil.getImage(cms, imageUri, imageAlt, ImageUtil.CROP_RATIO_NO_CROP, logoWidth, 100, ImageUtil.SIZE_M, 100, null));
+    partnersHtml.append(logoImageHtml);
     partnersHtml.append("<span class=\"bots-only\">" + imageAlt + "</span>");
     partnersHtml.append("</a>");
     partnersHtml.append("</li>");
