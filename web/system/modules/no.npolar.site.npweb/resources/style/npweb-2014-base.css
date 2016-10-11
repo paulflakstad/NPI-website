@@ -299,6 +299,17 @@ th[scope="row"] {
 table .standout td {
     background-color:#eee;
 }
+
+/* .timetable tables are used for event programmes and alike */
+.timetable {
+    margin-bottom: 2em;
+}
+.timetable th[scope="row"] {
+    min-width:7em; /* keep the timespan on a single line */
+}
+.timetable td {
+    padding: 1em 0; /* this padding should maybe be standard, but not sure atm */
+}
 sub,
 sup {
     line-height:0.4em;
