@@ -301,7 +301,7 @@ body {
 	/*background:#f5f5f5;*/
 	/*padding:0 0.5%;*/
     /*width:99%;*/
-    padding-top: 1em;
+    /*padding-top: 1em;*/
 }
 #nav_breadcrumb li {
     margin-right: 0.5em;
@@ -311,9 +311,8 @@ body {
 }
 a.breadcrumb {
     padding: 0.25em 0.5em;
-    text-decoration: none;
-    background-color: transparent;
-    border: none;
+    /*background-color: transparent;*/
+    /*border: none;*/
 }
 #nav_breadcrumb a {
 	/*padding-right:1.4em;*/
