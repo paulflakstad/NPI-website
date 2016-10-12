@@ -27,15 +27,33 @@
  * Blue (#fff-#eee backgrounds) = #06d
  * Blue (alternative) 			= #005dff
  */
- 
- /** 
-  * Base styles (linear & minimal) 
-  */
+
+/* Reset stuff, and set the box-sizing property */
+body, 
+html,
+figure, 
+div,
+section,
+article, 
+aside, 
+header,
+footer,
+img,
+h1,h2,h3,h4,h5,h6,
+.cta-huge {
+    display: block;
+    padding: 0;
+    margin: 0;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    max-width: 100%;
+}
 
 html {
 	min-width:196px;
-    background-color:#eee;
-	background-color:#08d;
+    /*background-color:#eee;
+	background-color:#08d;*/
 	background-color:#007;
 	background:transparent;
 }

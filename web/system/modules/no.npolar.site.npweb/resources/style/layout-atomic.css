@@ -3,7 +3,8 @@ body {
 }
 
 /* Reset common elements */
-body, 
+/* MOVED to base stylesheet */
+/*body, 
 html,
 figure, 
 div,
@@ -22,7 +23,7 @@ h1,h2,h3,h4,h5,h6,
     -webkit-box-sizing:border-box;
     box-sizing:border-box;
     max-width:100%;
-}
+}*/
 /* clearfixer */
 .clearfix:after,
 .card:after,
