@@ -15,6 +15,7 @@
         <xsd:sequence>
             <xsd:element name="Start" type="OpenCmsString" />
             <xsd:element name="End" type="OpenCmsString" />
+            <xsd:element name="Type" type="OpenCmsString" default="default" />
             <xsd:element name="Detail" type="OpenCmsHtml" minOccurs="1" maxOccurs="10" />
         </xsd:sequence>
         <xsd:attribute name="language" type="OpenCmsLocale" use="optional" />
@@ -26,10 +27,13 @@
             <searchsettings>
                 <searchsetting element="Start" searchcontent="false" />
                 <searchsetting element="End" searchcontent="false" />
+                <searchsetting element="Type" searchcontent="false" />
                 <searchsetting element="Detail" searchcontent="true" />
             </searchsettings>
             <layouts>
-                <layout element="Detail" widget="HtmlWidget" configuration="height:100px,source,link" />
+                <layout element="Detail" widget="TextareaWidget" configuration="2" />
+                <layout element="Type" widget="SelectorWidget" configuration="default:Default|break:Break|highlight_a:Highlight (A)|highlight_b:Highligh (B)" />
+                <!--<layout element="Detail" widget="HtmlWidget" configuration="height:100px,source,link" />-->
             </layouts>
         </xsd:appinfo>
     </xsd:annotation>
