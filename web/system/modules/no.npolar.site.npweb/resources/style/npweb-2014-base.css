@@ -241,21 +241,21 @@ h4,
 h5,
 h6,
 table caption {
-    color:#333;
+    color:#333b4a;
     margin-bottom:0.2em;
 	font-weight:normal;
 }
 h1 {
-	font-size:2.8em;
-    font-weight:normal;
-    text-shadow:1px 1px 1px #ddd;
-    text-transform:none;
-    padding:0;
-	/*border-bottom:1px solid #525F65;*/
+    font-size: 2.2em;
+    font-weight: bold;
+    /*text-shadow:1px 1px 1px #ddd;*/
+    /*text-transform:none;*/
+    /*padding:0;*/
+    /*border-bottom:1px solid #525F65;*/
     /*border-bottom: 0.2rem solid #c6d2e7;*/
     border-bottom: 0.2rem solid #c4cad5;
-    border-top:none;
-    margin-top:0;
+    /*border-top:none;*/
+    /*margin-top:0;*/
 }
 
 h2,
