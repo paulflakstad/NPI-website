@@ -117,7 +117,18 @@ table.events td { padding:0.25em; }
 table.events td.event-time { display:table-cell; width:20%; float:none; }
 table.events td.event-cat { width:10%; }
 
-
+.timetable {
+    font-size: small;
+}
+.timetable .highlight_b {
+    background-color: #e1ffe1;
+}
+.timetable .highlight_a {
+    background-color: #fee0d0;
+}
+.timetable .break {
+    background-color: #ffffb3;
+}
 
 
 

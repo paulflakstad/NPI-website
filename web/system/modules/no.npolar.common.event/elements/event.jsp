@@ -326,6 +326,109 @@ while (container.hasMoreContent()) {
     %>
     </aside>
     <%
+        
+        I_CmsXmlContentContainer timetableEl = cms.contentloop(container, "TimeTable");
+        int groupNo = 0;
+        String ttEntryStart = "";
+        String ttEntryEnd = "";
+        if (timetableEl.hasMoreResources()) {
+            String ttCaption = cms.contentshow(timetableEl, "Title");
+            
+            %>
+            <div class="toggleable collapsed" style="margin-top: 2em; margin-bottom: 2em;">
+            <h2 tabindex="0" class="toggletrigger" style="margin-bot"><%= ttCaption %></h2>
+            <div class="toggletarget">
+                <%
+                    String ttDownloadable = cms.contentshow(timetableEl, "Downloadable");
+                    if (CmsAgent.elementExists(ttDownloadable)) {
+                        %>
+                        <p><a class="cta cta--download alt download" href="<%= cms.link(ttDownloadable) %>" style="margin:2.5em 0 2em 0;" target="_blank">Download as PDF</a></p>
+                        <%
+                    }
+                %>
+            <table class="timetable">
+            <%
+            
+            I_CmsXmlContentContainer headingsEl = cms.contentloop(timetableEl, "TimeTableDetailHeading");
+            List<String> ttHeadings = new ArrayList<String>();
+            //ttHeadings.add("Time");
+            while (headingsEl.hasMoreResources()) {
+                ttHeadings.add(cms.contentshow(headingsEl));
+            }
+            if (ttHeadings.size() > 1) {
+                out.println("<td></td>"); // Don't use a header for the "Time" column
+                int headingNo = 1;
+                for (String ttHeading : ttHeadings) {
+                    out.println("<th scope=\"col\" id=\"timetable-heading-" + (++headingNo) + "\">" + ttHeading + "</th>");
+                }
+            }
+            
+            I_CmsXmlContentContainer groupEl = cms.contentloop(timetableEl, "TimeTableGroup");
+            while (groupEl.hasMoreResources()) {
+                String ttGroupHeading = cms.contentshow(groupEl, "Heading");
+                if (CmsAgent.elementExists(ttGroupHeading)) {
+                    %>
+                    <tr>
+                        <th scope="row" class="table__heading table__heading--subsection" colspan="<%= ttHeadings.size() == 0 ? 2 : ttHeadings.size()+1 %>" id="timetable-group-<%= ++groupNo %>">
+                            <%= ttGroupHeading %>
+                        </th>
+                    </tr>
+                    <%
+                }
+                I_CmsXmlContentContainer entryEl = cms.contentloop(groupEl, "Entry");
+                int entryNo = 0;
+                while (entryEl.hasMoreResources()) {
+                    String ttEntryStartTmp = cms.contentshow(entryEl, "Start");
+                    if (CmsAgent.elementExists(ttEntryStartTmp) && !ttEntryStartTmp.trim().isEmpty()) {
+                        ttEntryStart = ttEntryStartTmp;
+                    } else {
+                        ttEntryStart = ttEntryEnd; // Set start time to previous entry's end time
+                    }
+                    // End time is required
+                    ttEntryEnd = cms.contentshow(entryEl, "End");
+                    
+                    String ttEntryTime = "<th scope=\"row\" id=\"timetable-time-" + groupNo + "-" + (++entryNo) + "\">"
+                                            + ttEntryStart + "&ndash;" + ttEntryEnd
+                                        + "</th>";
+                    
+                    String ttEntryType = cms.contentshow(entryEl, "Type");
+                    out.println("<tr class=\"" + ttEntryType + "\">");
+                    out.println(ttEntryTime);
+                    
+                    I_CmsXmlContentContainer detailsEl = cms.contentloop(entryEl, "Detail");
+                    String ttEntryDetails = "";
+                    int detailsHeadingNo = 1; // 1 is always "Time"
+                    while (detailsEl.hasMoreResources()) {
+                        detailsHeadingNo++;
+                        ttEntryDetails += "<td headers=\""
+                                                + "timetable-group-" + groupNo 
+                                                + " timetable-time-" + groupNo + "-" + entryNo
+                                                + " timetable-heading-" + detailsHeadingNo
+                                                //+ (detailsHeadingNo > 2 ? (" timetable-heading-"+detailsHeadingNo) : "")
+                                        + "\">"
+                                            + cms.contentshow(detailsEl)
+                                        + "</td>";
+                    }
+                    if (detailsHeadingNo <= ttHeadings.size()) {
+                        if (detailsHeadingNo == 2) {
+                            ttEntryDetails = "<td colspan=\"" + ttHeadings.size() + "\"" + ttEntryDetails.substring(3);
+                        } else {
+                            while (detailsHeadingNo <= ttHeadings.size()) {
+                                ttEntryDetails += "<td></td>";
+                                detailsHeadingNo++;
+                            }
+                        }
+                    }
+                    out.println(ttEntryDetails);
+                    out.println("</tr>");
+                }
+            }
+            %>
+            </table>
+            </div>
+            </div>
+            <%
+        }
     /*
     if (event.isAssignedCategory(cmso, CAT_PATH_NPI_SEMINAR)) {
         try {
