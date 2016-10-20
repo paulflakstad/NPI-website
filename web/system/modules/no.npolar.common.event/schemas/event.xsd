@@ -8,6 +8,7 @@
     <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.event/schemas/contact.xsd"/>
     <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.event/schemas/venue.xsd"/>
     <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.event/schemas/resourcelink.xsd"/>
+    <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.event/schemas/timetable.xsd"/>
     
     <xsd:element name="Events" type="OpenCmsEvents"/>
 
@@ -38,6 +39,7 @@
             <xsd:element name="Paragraph" type="OpenCmsParagraph" minOccurs="1" maxOccurs="50" />
             <xsd:element name="People" type="OpenCmsPersonList" minOccurs="0" maxOccurs="1" />
             <xsd:element name="PartnerLogo" type="OpenCmsImageLink" minOccurs="0" maxOccurs="20" />
+            <xsd:element name="TimeTable" type="OpenCmsEventTimeTable" minOccurs="0" maxOccurs="1" />
         </xsd:sequence>
         <xsd:attribute name="language" type="OpenCmsLocale" use="optional" />
     </xsd:complexType>
@@ -45,6 +47,11 @@
     <xsd:annotation>
         <xsd:appinfo>
             <resourcebundle name="no.npolar.common.event.workplace" />
+            <tabs>
+                <tab element="Title" collapse="false" name="General" />
+                <tab element="People" name="People and logos" />
+                <tab element="TimeTable" name="Programme" />
+            </tabs>
             <mappings>
                 <mapping element="Title" mapto="property:Title" />
                 <mapping element="Description" mapto="property:Description" />
