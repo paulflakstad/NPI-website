@@ -125,6 +125,8 @@ final String URI_ICAL_EXPORT        = "/system/modules/no.npolar.common.event/el
 final String URI_PARAGRAPH_HANDLER  = "/system/modules/no.npolar.common.pageelements/elements/paragraphhandler.jsp";
 
 final String CAT_PATH_NPI_SEMINAR   = "event/npi-seminar/";
+final String CAT_PATH_BOOK_CAFE     = "event/book-cafe/";
+
 final int IMG_LOGO_MAX_HEIGHT       = 120;
 
 String imageTag                     = null;
@@ -308,10 +310,23 @@ while (container.hasMoreContent()) {
         out.println("</div><!-- .event-metadata -->");
     }
     
+    if (event.isAssignedCategory(cmso, CAT_PATH_BOOK_CAFE)) {
+        try {
+            out.println(cms.getContent("/".concat(loc).concat("/html/om-polar-bokkafe.html")));
+        } catch (Exception e) {
+            out.println("<!-- ERROR: " + e.getMessage() + " -->");
+        }
+    } else if (event.isAssignedCategory(cmso, CAT_PATH_NPI_SEMINAR)) {
+        try {
+            out.println(cms.getContent("/".concat(loc).concat("/html/om-np-seminarserie.html")));
+        } catch (Exception e) {
+            out.println("<!-- ERROR: " + e.getMessage() + " -->");
+        }
+    }
     %>
     </aside>
     <%
-    
+    /*
     if (event.isAssignedCategory(cmso, CAT_PATH_NPI_SEMINAR)) {
         try {
             out.println(cms.getContent("/".concat(loc).concat("/html/npi-seminar-series-header.html"), "body", locale));
@@ -319,7 +334,7 @@ while (container.hasMoreContent()) {
             out.println("<h4>Error:</h4><p>" + e.getMessage() + "</p>");
         }
     }
-    
+    //*/
     //
     // The "Paragraph" elements is a common page element, with its own designated handler
     //

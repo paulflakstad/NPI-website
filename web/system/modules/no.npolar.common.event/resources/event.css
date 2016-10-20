@@ -28,6 +28,8 @@ a.event-pastevent { color:#888; }
 .event-venue h3 { margin-top:0; }
 .event-venue h4 { margin-top:0; }
 
+.event-series { font-style: italic; } /* info about the event series, if any */
+
 .day-info .event-time { float:none; width:auto; } /* override event-info for overlib boxes */
 .detail.event-time { font-weight:bold; margin-bottom:1em; float:none; width:auto; }
 ul.blocklist { list-style:none; margin:0; padding:0; }
