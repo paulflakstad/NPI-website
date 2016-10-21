@@ -489,15 +489,15 @@ while (container.hasMoreContent()) {
                             }
                         %>
                         <div class="card__content">
-                            <h3 class="card__title"><%= name %></h3>
+                            <h3 class="card__title"><%= CmsAgent.elementExists(webpage) ? ("<a href=\""+webpage+"\">"+name+"</a>") : name %></h3>
                             <% if (CmsAgent.elementExists(affiliation) || CmsAgent.elementExists(webpage)) { %>
                             <div class="card__details">
                                 <% if (CmsAgent.elementExists(affiliation)) { %>
                                 <p><%= affiliation %></p>
                                 <% } if (CmsAgent.elementExists(webpage)) { %>
-                                <ul class="card__details-links">
-                                    <li class="card__details-link"><a href="<%= cms.link(webpage) %>">Mer&hellip;</a></li>
-                                </ul>
+                                <!--<ul class="card__details-links">-->
+                                    <!--<li class="card__details-link"><a href="<%= cms.link(webpage) %>">Mer&hellip;</a></li>-->
+                                <!--</ul>-->
                                 <% } %>
                             </div>
                             <% } %>
