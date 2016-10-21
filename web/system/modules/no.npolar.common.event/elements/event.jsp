@@ -386,9 +386,11 @@ while (container.hasMoreContent()) {
                     }
                     // End time is required
                     ttEntryEnd = cms.contentshow(entryEl, "End");
+                    boolean isSingleTime = ttEntryEnd.equals(".") || ttEntryEnd.equals(ttEntryStart);
                     
                     String ttEntryTime = "<th scope=\"row\" id=\"timetable-time-" + groupNo + "-" + (++entryNo) + "\">"
-                                            + ttEntryStart + "&ndash;" + ttEntryEnd
+                                            + ttEntryStart 
+                                            + (isSingleTime ? "" : ("&ndash;" + ttEntryEnd))
                                         + "</th>";
                     
                     String ttEntryType = cms.contentshow(entryEl, "Type");
