@@ -550,7 +550,7 @@ if (!pinnedNav) {
 });
 </script>
 </head>
-<body<%= homePage ? " id=\"homepage\"" : " id=\"sitepage\"" %>>
+<body<%= homePage ? " id=\"homepage\"" : " id=\"sitepage\"" %> class="intranet">
     <%
     //if (false) { 
     if (!loggedInUser) { 
