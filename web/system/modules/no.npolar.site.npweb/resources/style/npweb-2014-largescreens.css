@@ -764,6 +764,25 @@ orange  |  red  |  lightblue  |  green
     /*float:none;*/
     position: static;
 }
+
+/* 
+ * Content related to the main article, or "meta info" about it, presented 
+ * "inline" as an integrated part the main content. 
+ * Typically used on <aside> elements which are text/fact boxes, e.g. on events 
+ * in a series, where it is used to show info about the series.
+ */
+/* not used 
+.article-meta--inline {
+    float: right;
+    width: 40%;
+    clear: right;
+    margin: 0 0 1em 1em;
+}*/
+
+/* Used (event speakers), but unnecessary 
+.max-wide {
+    clear: both;
+}*/
 }
 
 /* HUGE */
