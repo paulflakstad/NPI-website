@@ -4068,19 +4068,23 @@ section > h2.bluebar-dark {
 * Avatars
 */
 .avatar-list .avatar {
-    box-shadow: 0 2px 4px rgba(0,0,0,0.6);
+    box-shadow: 0 -1px 1px rgba(0,0,0,0.1);
     padding: 1em;
     display: inline-block;
     margin-top: 0.75rem;
+}
+.avatar-list .avatar:hover {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.6);
 }
 .avatar {
     /*width: 8em;*/
     width: 7.5rem;
     /*height: 8em;*/
     height: 7.5rem;
+    transition: all 0.25s;
 }
 .avatar.avatar--with-text {
-    width: 15rem;
+    width: 14rem;
     height: auto;
 }
 .avatar a {
@@ -4166,6 +4170,86 @@ section > h2.bluebar-dark {
     flex-basis: 49%;
 }
 
+/*******************************************************************************
+* Intranet home page special rules
+*/
+#homepage.intranet #search-tools,
+#homepage.intranet #nav_topmenu, 
+#homepage.intranet #nav_quicklinks,
+#homepage.intranet .fullwidth-centered,
+#homepage.intranet #docwrap,
+#homepage.intranet #footer-content {
+    max-width: 1200px;
+}
+#homepage.intranet .box-text {
+    padding: 0;
+}
+#homepage.intranet .main-content__secondary ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+#homepage.intranet .main-content__secondary li {
+    border-left: 1em solid #ffd420;
+    padding: 0.5em;
+    margin: 0 0 1px 0;
+    border-bottom: none;
+}
+#homepage.intranet .main-content__secondary li:nth-child(2n+2) {
+    border-color: #00bae5;
+}
+#homepage.intranet .main-content__secondary li:nth-child(3n+3) {
+    border-color: #de3c3f;
+}
+#homepage.intranet .main-content__secondary li:nth-child(4n+4) {
+    border-color: #434447;
+}
+#homepage.intranet .main-content__secondary li h3, 
+#homepage.intranet .main-content__secondary li strong, 
+#homepage.intranet .main-content__secondary li a {
+    font-weight: normal;
+    font-size: 1rem;
+    text-decoration: none;
+    padding: 0;
+    margin: 0;
+}
+#homepage.intranet #feed-fram2 li p {
+    font-size: smaller;
+    color: #666;
+}
+#homepage.intranet .cta.more,
+.button {
+    border-radius: 3px;
+    padding: 0.6em 1em;
+    text-decoration: none;
+    background-color: #f5f5f5;
+    display: inline-block;
+    border: 1px solid #ddd;
+    border-bottom-width: 3px;
+    box-sizing: border-box;
+    color: rgba(0,0,0,0.6);
+}
+#homepage.intranet .cta.more:hover,
+.button:hover {
+    background-color: #eee;
+    color: rgba(0,0,0,1);
+    border-color: #bbb;
+}
+#homepage.intranet .cta.more:hover {
+    box-shadow: none;
+}
+#homepage.intranet .button.button--more {
+    width: 100%;
+}
+#homepage.intranet .timestamp {
+    font-size: smaller;
+}
+#homepage.intranet #service-list {
+    margin-top: 1rem;
+}
+#homepage.intranet .search-panel {
+    margin: 1px 1px 2rem 1px;
+}
 /* END temp.css */
 
 

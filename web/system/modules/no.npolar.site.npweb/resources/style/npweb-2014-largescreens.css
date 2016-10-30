@@ -504,16 +504,36 @@ a.breadcrumb {
 	margin-left:0;
 }
 
-.quadruple .boxes > .span1 { width:23.5%; }
-.quadruple .boxes > .span2 { width:49%; }
-.quadruple .boxes > .span3 { width:74.5%; }
+.quadruple .boxes > .span1 {
+    width:23.5%;
+    flex-basis: 23.5%; /* needed if parent has display: flex; */
+}
+.quadruple .boxes > .span2 {
+    width:49%;
+    flex-basis: 49%; /* needed if parent has display: flex; */
+}
+.quadruple .boxes > .span3 {
+    width:74.5%;
+    flex-basis: 74.5%; /* needed if parent has display: flex; */
+}
 
-.triple .boxes > .span1 { width:32%; }
-.triple .boxes > .span2 { width:65.16665%; }
+.triple .boxes > .span1 {
+    width:32%;
+    flex-basis: 32%; /* needed if parent has display: flex; */
+}
+.triple .boxes > .span2 {
+    width:65.16665%;
+    flex-basis: 65.16665%; /* needed if parent has display: flex; */
+}
 
 .single .boxes > .span1,
 .double .boxes > .span2,
-.triple .boxes > .span3 { width:100%; margin-left:0; margin-right:0; }
+.triple .boxes > .span3 { 
+    width:100%;
+    flex-basis: 100%; /* needed if parent has display: flex; */
+    margin-left:0;
+    margin-right:0;
+}
 
 /*
 orange  |  red  |  green
@@ -656,6 +676,7 @@ orange  |  red  |  lightblue  |  green
 .quadruple .boxes > .span1,
 .portal .news-list .news {
     width:25%;
+    flex-basis: 25%;
 }
 .quadruple .boxes > div:nth-child(4n+1), 
 .triple .boxes > div:nth-child(3n+1),
@@ -752,8 +773,7 @@ orange  |  red  |  lightblue  |  green
 	padding:0.3em;
 }
 .postit li {
-	padding-top:3%;
-	width:30%;
+        padding-top:3%;
 }
 
 .filters--active li {
@@ -763,6 +783,37 @@ orange  |  red  |  lightblue  |  green
 .filters--active .filter:after {
     /*float:none;*/
     position: static;
+}
+
+/*******************************************************************************
+* Intranet home page special rules
+*/
+#homepage.intranet .main-content {
+    display: flex;
+}
+
+#homepage.intranet .main-content__primary {
+    flex: 2 1 0%;
+    padding-right: 1em;
+}
+#homepage.intranet .main-content__secondary {
+    flex: 1 1 0%;
+    padding-left: 1em;
+    border-left: 1px solid rgba(0, 0, 0, 0.1);
+}
+#homepage.intranet #service-list.six li {
+    width: 33.333%;
+}
+
+#homepage.intranet .layout-group .boxes {
+    display: flex;
+    flex-flow: row wrap;
+}
+#homepage.intranet .layout-group .boxes > * {
+    flex: auto;
+}
+#homepage.intranet .main-content__secondary .span1 {
+    margin-bottom: 1rem;
 }
 
 /* 

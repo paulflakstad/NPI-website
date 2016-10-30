@@ -84,35 +84,55 @@ CmsJspActionElement cms = new CmsJspActionElement(pageContext, request, response
                 //out.println("Unable to parse date string '" + pubDateNode.getText() + "'<br/>");
             }
             
-            sb.append("<li class=\"span1 featured-box\">");
+            if (styleNewsList) {
+                sb.append("<li class=\"span1 featured-box\">");
 
-                sb.append("<a class=\"featured-link\" href=\"" + linkNode.getText() + "\" target=\"_blank\">");
-                
-                    sb.append("<div class=\"card\">");
-                    
-                        sb.append("<h3 class=\"card-heading\">" + titleNode.getText() + "</h3>");
-                        if (timestamp) {
-                            sb.append("<time class=\"timestamp\">" 
+                    sb.append("<a class=\"featured-link\" href=\"" + linkNode.getText() + "\" target=\"_blank\">");
+
+                        sb.append("<div class=\"card\">");
+
+                            sb.append("<h3 class=\"card-heading\">" + titleNode.getText() + "</h3>");
+                            if (timestamp) {
+                                sb.append("<time class=\"timestamp\">" 
                                             + (itemDate != null ? listFormat.format(itemDate) : "NO DATE") 
                                         + "</time>");
-                        }
-                        if (summary) {
-                            sb.append("<p itemprop=\"description\">" 
+                            }
+                            if (summary) {
+                                sb.append("<p itemprop=\"description\">" 
                                             + descrNode.getText() 
                                         + "</p>");
-                        }
+                            }
 
-                    sb.append("</div>");
-                sb.append("</a>");
-            sb.append("</li>");
-                
+                        sb.append("</div>");
+                    sb.append("</a>");
+                sb.append("</li>");
+            } else {
+		sb.append("<li>");
+                    sb.append("<a href=\"" + linkNode.getText() + "\">");
+                        sb.append("<h3>" + titleNode.getText() + "</h3>");
+                    sb.append("</a>");
+                    if (timestamp) {
+                        sb.append("<time class=\"timestamp\">" 
+                                    + (itemDate != null ? listFormat.format(itemDate) : "NO DATE") 
+                                + "</time>");
+                    }
+                    if (summary) {
+                        sb.append("<p itemprop=\"description\">" 
+                                    + descrNode.getText() 
+                                + "</p>");
+                    }
+                sb.append("</li>");
+            }
+            
             oddEven++;
         }
         
         //sb.append("</ul>");
         
     }
-    out.println("<ul class=\"boxes clearfix blocklist\" style=\"padding:0; margin:0;\" id=\"feed-fram2\"><li>Laster ...</li></ul>");
+    
+    out.println("<ul class=\"boxes clearfix blocklist\" id=\"feed-fram2\"><li>Laster ...</li></ul>");
+    
     %>
     <script type="text/javascript">
         $('#feed-fram2').html('<%= CmsStringUtil.escapeJavaScript(sb.toString()) %>');
