@@ -264,8 +264,17 @@ table caption/*,
     padding:0.2em 0 0 0;
 	font-size:2.2em;
 }
+.intranet h2,
+.intranet table caption {
+    font-size: 1.6em;
+    font-weight: bold;
+}
 h3 {
 	font-size:1.5em;
+}
+.intranet h3 {
+    font-size: 1.2em;
+    font-weight: bold;
 }
 .portal h3 {
 	padding:0.5em 0 0 0;
@@ -280,7 +289,8 @@ h6 {
 	font-size:0.8em;
 }
 h4, 
-h5 {
+h5,
+h6 {
     font-weight:bold;
 }
 
@@ -1609,7 +1619,7 @@ a.quicklink {
     font-size: 1em;
 }
 .caption__title {
-    font-size: 1em;
+    font-size: 1em !important; /* necessary due to the .intranet h3 rule */
     text-transform: uppercase;
     font-weight: bold;
     display: inline-block;
