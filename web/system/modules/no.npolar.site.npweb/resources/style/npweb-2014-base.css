@@ -4077,6 +4077,11 @@ section > h2.bluebar-dark {
 /*******************************************************************************
 * Avatars
 */
+.avatar {
+    width: 7.5rem;
+    height: 7.5rem;
+    transition: all 0.25s;
+}
 .avatar-list .avatar {
     box-shadow: 0 -1px 1px rgba(0,0,0,0.1);
     padding: 1em;
@@ -4086,14 +4091,7 @@ section > h2.bluebar-dark {
 .avatar-list .avatar:hover {
     box-shadow: 0 2px 4px rgba(0,0,0,0.6);
 }
-.avatar {
-    /*width: 8em;*/
-    width: 7.5rem;
-    /*height: 8em;*/
-    height: 7.5rem;
-    transition: all 0.25s;
-}
-.avatar.avatar--with-text {
+.avatar-list .avatar.avatar--with-text {
     width: 14rem;
     height: auto;
 }
@@ -4112,7 +4110,7 @@ section > h2.bluebar-dark {
     float: none;
     margin: 0.5rem 0 0 0;
     /* padding-bottom: 5rem; */
-    height: 5.3em; /* set so as to clip the bottom line in half horizontally */
+    height: 5.2em; /* set so as to clip the bottom line in half horizontally */
     overflow-y: hidden;
 }
 .avatar__text:after {
