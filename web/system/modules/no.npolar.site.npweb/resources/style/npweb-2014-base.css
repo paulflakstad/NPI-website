@@ -4094,6 +4094,10 @@ section > h2.bluebar-dark {
 .avatar-list .avatar.avatar--with-text {
     width: 14rem;
     height: auto;
+    margin-bottom: 4rem !important; /* because the next avatar's image has neg. top margin. IE needs the !important modifier for some odd reason... */
+}
+.avatar-list .avatar.avatar--with-text:last-child {
+    margin-bottom: 0; /* NOT followed by an avatar with neg. top margin on image */
 }
 .avatar a {
     display: block;
@@ -4128,16 +4132,6 @@ section > h2.bluebar-dark {
     border: 0.5em solid #fff;
     /*box-shadow: 0 1px 3px rgba(0,0,0,0.5);*/
 }
-
-/* "stick-up" option: pull avatar up halfway out of the parent box */
-/*.avatar--stick-up {*/
-.avatar.avatar--with-text {
-    margin-bottom: 5rem; /* because the next avatar's image has neg. top margin */
-}
-.avatar.avatar--with-text:last-child {
-    margin-bottom: 0;
-}
-/*.avatar--stick-up img {*/
 .avatar--with-text img {
     width:60%;
     margin:-30% auto 0 auto;
