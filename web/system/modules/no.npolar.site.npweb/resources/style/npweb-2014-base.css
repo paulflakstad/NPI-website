@@ -4206,6 +4206,7 @@ section > h2.bluebar-dark {
 #homepage.intranet .main-content__secondary li:nth-child(4n+4) {
     border-color: #434447;
 }
+#homepage.intranet .main-content__primary .card-heading,
 #homepage.intranet .main-content__secondary li h3, 
 #homepage.intranet .main-content__secondary li strong, 
 #homepage.intranet .main-content__secondary li a {
