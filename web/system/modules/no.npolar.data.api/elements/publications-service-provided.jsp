@@ -47,6 +47,41 @@
             pageEncoding="UTF-8" 
             session="true" 
  %><%!
+     
+public static String getContributorsShort(List<PublicationContributor> contribs, String suffixSingular, String suffixPlural) {
+    String s = "";
+
+    
+    
+    if (!contribs.isEmpty()) {
+        
+        boolean trimmed = false;
+        int numContribs = contribs.size();
+        String suffix = numContribs > 1 ? suffixPlural : suffixSingular;
+        if (numContribs > 3) {
+            contribs = contribs.subList(0, 1);
+            trimmed = true;
+            numContribs = contribs.size();
+        }
+
+        Iterator<PublicationContributor> iContribs = contribs.iterator();
+        int contribNo = 0;
+        while (iContribs.hasNext()) {
+            PublicationContributor contrib = iContribs.next();
+            s += contrib.getLastName();
+            if (numContribs == 1 && trimmed) {
+                s += " et al.";
+            } else if (iContribs.hasNext()) { 
+                s += ++contribNo == (numContribs-1) ? " &amp; " : ", ";
+            }
+        }
+        if (suffix != null) {
+            s += " " + suffix;
+        }
+    }
+    return s;
+}
+
 public static boolean isInteger(String s) {
     if (s == null || s.isEmpty())
         return false;
@@ -387,15 +422,51 @@ try {
         <div id="admin-msg" style="margin:1em 0; background: #eee; color: #444; padding:1em; font-family: monospace; font-size:1.2em;"></div>
         <% } %>
 
-        <ul class="fullwidth line-items blocklist">
+        <ul class="list--serp">
         
             <%
             Iterator<Publication> iPubs = pubList.iterator();
             while (iPubs.hasNext()) {
+                
                 Publication pub = iPubs.next();
-                out.println("<li>"
-                                + "<span class=\"tag\">" + pub.getType() + "</span> " 
-                                + pub.toString()
+                List<PublicationContributor> auth = pub.getPeopleByRole(Publication.Val.ROLE_AUTHOR);
+                
+                String peopleStr = auth.isEmpty() ?
+                        getContributorsShort(pub.getPeopleByRole(Publication.Val.ROLE_EDITOR), "(ed.)", "(eds.)") :
+                        getContributorsShort(auth, null, null);
+                
+                String pubType = pub.getType().toString(); 
+                try { 
+                    pubType = labels.getString(Labels.PUB_TYPE_PREFIX_0.concat((pub.isPartContribution() && !pubType.startsWith("in-") ? "in-" : "").concat(pub.getType().toString())));
+                } catch (Exception e) {
+                    out.println("<!-- ERROR translating publication type '" + pubType + "': " + e.getMessage() + " -->");
+                }
+                
+                String publishedIn = "";
+                if (pub.hasParent() || !pub.getJournalName().isEmpty()) {
+                    if (pub.hasParent()) {
+                        publishedIn = pubService.get(pub.getParentId()).getTitle();
+                    } else {
+                        publishedIn = pub.getJournalName();                                
+                    }
+                            
+                }
+                
+                out.println("<li class=\"serp-item\">"
+                                + "<a class=\"serp-item__title\" href=\"" 
+                                    + pub.getURL(pubService).replace(
+                                            PublicationService.SERVICE_DOMAIN_NAME, 
+                                            PublicationService.SERVICE_DOMAIN_NAME_HUMAN
+                                    ) 
+                                + "\">"
+                                    + "<h4>" + pub.getTitle() + "</h4>"
+                                + "</a>"
+                                + "<span class=\"serp-item__meta\">"
+                                    + "<span class=\"tag\">" + pubType + "</span>" 
+                                    + " " + peopleStr
+                                    + " " + pub.getPubYear()
+                                    + (publishedIn.isEmpty() ? "" : " &ndash; <em>".concat(publishedIn).concat("</em>"))
+                                + "</span>"
                             + "</li>");
             }  
             %>
