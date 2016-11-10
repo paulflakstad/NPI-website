@@ -85,6 +85,7 @@
             /*try {
                 teaser = CmsStringUtil.trimToSize(teaser, 175, "&hellip;");
             } catch (Exception e) {}*/
+            //*
             html += "<div class=\"span1 featured-box\">";
                 html += "<a class=\"featured-link\" href=\"" + cms.link(fileName) + "\">";
                     html += "<div class=\"card\">";
@@ -106,6 +107,33 @@
                     html += "</div>";
                 html += "</a>";
             html += "</div>";
+            //*/
+            /*
+            // Future mod, better for flexbox: an <a> that is a card
+            //html += "<div class=\"span1 featured-box\">";
+                html += "<a class=\"span1 featured-box featured-link card\" href=\"" + cms.link(fileName) + "\">";
+                    //html += "<div class=\"card\">";
+                        if (imageLink != null) {
+                            html += imageLink.replace("<img ", "<img class=\"card__media\" ");
+                        }
+                        html += "<div class=\"card__content\">";
+                        html += "<h3 class=\"card-heading card__heading\">" + title + "</h3>";
+                        if (displayTimestamp)
+                            html += TIMESTAMP;
+                        if (displayDescription)
+                            html += "<p itemprop=\"description\">" + teaser + "</p>";
+                        if (displayLabel) {
+                            String label = "";
+                            try {
+                                label = cms.getCmsObject().readPropertyObject(fileName, "Title.addon", true).getValue("");
+                            } catch (Exception ignore) {}
+                            html += "<span class=\"card-label tag\">" + label + "</span>";
+                        }
+                        html += "</div>";
+                    //html += "</div>";
+                html += "</a>";
+            //html += "</div>";
+            //*/
         }
         return html;
         
@@ -231,7 +259,7 @@
             
         } // if (newsbulletin should have image)
 
-        // HTML OUTPUT            
+        // HTML OUTPUT
         out.println(getItemHtml(cms, fileName, title, teaser, imageLink, published, dateFormat, displayDescription, displayTimestamp, displayLabel, asPortalPageCard, locale));
     }
     
