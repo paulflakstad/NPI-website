@@ -476,6 +476,7 @@ ul.line-items li {
 }
 
 /*******************************************************************************
+ * Search results lists - used in various SERPs, e.g. for publications search
  */
 .list--serp,
 .list--serp .serp-item__title,
