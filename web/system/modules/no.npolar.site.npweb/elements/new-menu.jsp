@@ -297,6 +297,78 @@ public String normalizeBreadCrumb(String navigationText) throws java.io.Unsuppor
     }
     return navText;
 }
+
+public String getMenuTreeAsHtml(MenuItem mi) {
+    //*
+    try {
+        if (mi.isParent()) {
+            List subItems = mi.getSubItems();
+            Iterator itr = subItems.iterator();
+
+            m += "<ul>";
+            
+            // make the first menu item the language switch
+            
+            
+            while (itr.hasNext()) {
+                MenuItem subItem = (MenuItem)itr.next();
+                
+                m += "<li class=\"" 
+                                    + getMenuItemClass(subItem)
+                                    //+ (subItem.isParent() ? "has_sub subitems " : "") 
+                                    //+ "level"+subItem.getLevel() + (subItem.isInPath() ? " inpath" : "") 
+                                    //+ (subItem.isCurrent() ? " current" : "") 
+                                + "\">" 
+                                    + getMenuItemLink(subItem);
+                                    //+ "<a href=\"" + subItem.getUrl() + "\">"
+                                    //    + "<span class=\"navtext\">" + subItem.getNavigationText() + "</span>"
+                                    //+ "</a>";
+                if (subItem.isParent()) {
+                    getMenuTreeAsHtml(subItem);
+                }
+                 
+                m += "</li>";
+            }
+            m += "</ul>";
+        }
+        else {
+            if (mi.getLevel() > 1) { // Do this _only_ for menu items below top level
+                m += "<li class=\"" 
+                                        + getMenuItemClass(mi)
+                                        //+ "level"+mi.getLevel() 
+                                        //+ (mi.isInPath() ? " inpath" : "") 
+                                        //+ (mi.isCurrent() ? " current" : "") 
+                                    + "\">"
+                                + getMenuItemLink(mi)
+                                //+ "<a href=\"" + mi.getUrl() + "\">"
+                                //    + "<span class=\"navtext\">" + mi.getNavigationText() + "</span>"
+                                //"+ </a>"
+                            + "</li>";
+            }
+        }
+    } 
+    catch (Exception e) {
+        m = e.getMessage();
+    }
+    return m;
+}
+public static String getMenuItemClass(MenuItem mi) {
+    String s = "level"+mi.getLevel();
+    if (mi.isParent())
+        s += " has_sub subitems";
+    if (mi.isInPath())
+        s += " inpath";
+    if (mi.isCurrent()) 
+        s += " current";
+    return s;
+}
+public static String getMenuItemLink(MenuItem mi) {
+    return "<a href=\"" + mi.getUrl() + "\">" 
+                + "<span class=\"navtext\">" 
+                    + mi.getNavigationText().trim()
+                + "</span>" 
+            + "</a>";
+}
 %><%
 // Create a JSP action element, and get the URI of the requesting file (the one that includes this menu)
 CmsAgent                cms         = new CmsAgent(pageContext, request, response);
@@ -814,5 +886,21 @@ if (cms.template("sitemap")) {
     
     // Reset static variable
     m = "";
+}
+
+if (cms.template("full")) {
+    // Reset static variable
+    m = "";
+    try {
+        String fullMenu = getMenuTreeAsHtml(menu.getRoot());
+        if (!fullMenu.isEmpty()) {
+            
+            out.println(fullMenu.replaceFirst("ul", "ul id=\"nav_topmenu\""));
+            //String languageSwitchLink = 
+            //fullMenu.replaceFirst("<li ", "<li class=\"level1\" id=\"\">".concat(languageSwitchLink).concat("</li><li "));
+        }
+    } catch (Exception e) {
+        out.println("<!-- ERROR at menu.jsp[full]: " + e.getMessage() + " -->");
+    }
 }
 %>
