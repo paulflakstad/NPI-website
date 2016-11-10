@@ -474,6 +474,33 @@ ul.line-items li {
 	border-bottom:1px solid #eee;
 	padding:0.5em 0;
 }
+
+/*******************************************************************************
+ */
+.list--serp,
+.list--serp .serp-item__title,
+.list--serp .serp-item__meta {
+    display: block;
+} 
+.list--serp {
+    list-style: none;
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: 0;
+    margin-right: 0;
+}
+.list--serp .serp-item {
+    margin: 0;
+    padding: 1em 0;
+}
+.list--serp .serp-item + .serp-item {
+    border-top: 1px solid #eee;
+}
+.list--serp .serp-item__meta {
+    font-size: small;
+    color: #666;
+}
+
 .toggletrigger,
 .toggletarget {
     padding:0 1%;
