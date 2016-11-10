@@ -6,6 +6,7 @@
     <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.project/schemas/sub-project.xsd"/>
     <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.project/schemas/optionallink.xsd"/>
     <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.project/schemas/person.xsd"/>
+    <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.project/schemas/mentions.xsd"/>
     
     <xsd:element name="Projects" type="OpenCmsProjects"/>
 
@@ -42,6 +43,7 @@
             <xsd:element name="Image"           type="OpenCmsImage" minOccurs="0" maxOccurs="1" />
             <xsd:element name="Description"     type="OpenCmsHtml" />
             <xsd:element name="Paragraph"       type="OpenCmsParagraph" minOccurs="1" maxOccurs="50" />
+            <xsd:element name="Cooperation"     type="OpenCmsProjectMention" minOccurs="0" maxOccurs="1" />
         </xsd:sequence>
         <xsd:attribute name="language" type="OpenCmsLocale" use="optional" />
     </xsd:complexType>

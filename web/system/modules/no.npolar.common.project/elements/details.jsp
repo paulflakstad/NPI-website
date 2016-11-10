@@ -9,8 +9,7 @@
                  java.util.Collections,
                  java.util.SortedSet,
                  java.util.TreeSet,
-                 no.npolar.util.CmsAgent,
-                 no.npolar.util.CmsImageProcessor,
+                 no.npolar.util.*,
                  no.npolar.data.api.*,
                  no.npolar.data.api.util.*,
                  java.net.*,
@@ -515,11 +514,11 @@ if (pid == null || pid.isEmpty()) {
 }
 
 try {
+    //out.println("<!-- request uri is " + requestFileUri + ", JSP is " + cms.info("opencms.uri") + " -->");
+    //out.println("<!-- " + OpenCms.getSystemInfo().getOpenCmsContext() + " -->");
     CmsResource projectResource = cmso.readResourcesWithProperty(PROJECTS_FOLDER, "api-id", pid, CmsResourceFilter.DEFAULT_FILES.addRequireType(TYPE_ID_PROJECT)).get(0);
     projectFilePath = cmso.getSitePath(projectResource);
     
-    //out.println("<!-- request uri is " + requestFileUri + ", JSP is " + cms.info("opencms.uri") + " -->");
-    //out.println("<!-- " + OpenCms.getSystemInfo().getOpenCmsContext() + " -->");
     
     // Ensure canonical URL for projects that have files in the CMS:
     // If the requested resource's URI is this JSP (e.g. /en/projects/details?pid=...)
@@ -1330,6 +1329,61 @@ if (cmso.existsResource(moreUri)) {
     
     request.setAttribute("paragraphContainer", container);
     cms.include(PARAGRAPH_HANDLER);
+    
+    
+    I_CmsXmlContentContainer coop = cms.contentloop(container, "Cooperation");
+    if (coop.hasMoreResources()) {
+        String coopTitle = cms.contentshow(coop, "Title");
+        String coopText = cms.contentshow(coop, "Text");
+        coopTitle = CmsAgent.elementExists(coopTitle) ? ("<h2>".concat(coopTitle).concat("</h2>")) : "";
+        coopText = CmsAgent.elementExists(coopText) ? ("<p>".concat(coopText).concat("</p>")) : "";
+        
+        I_CmsXmlContentContainer logos = cms.contentloop(coop, "Logo");
+        StringBuilder logosHtml = new StringBuilder();
+        while (logos.hasMoreResources()) {
+            String logoImageUri = cms.contentshow(logos, "ImageURI");
+            String logoImageAlt = cms.contentshow(logos, "AltText");
+            String logoTargetUri = cms.contentshow(logos, "TargetURI");
+            if (CmsAgent.elementExists(logoImageUri)) {
+            // Decide the scale width based on the logo dimensions (ratio)
+            String[] imageDims = cmso.readPropertyObject(logoImageUri, "image.size", false).getValue("w:1,h:1").split(",");
+            // If the width is considerably larger than the height, call this a "landscape" image
+            boolean isLandscape = Double.valueOf(imageDims[0].substring(2)) / Double.valueOf(imageDims[1].substring(2)) > 1.4; 
+            int logoWidth = isLandscape ? 140 : 90; // same as the css max-widths => sharp images
+            String logoImageHtml = ImageUtil.getImage(cms, logoImageUri, logoImageAlt, ImageUtil.CROP_RATIO_NO_CROP, logoWidth, 100, ImageUtil.SIZE_M, 100, null);
+            logoImageHtml = logoImageHtml.contains(" class=\"") ? 
+                                logoImageHtml.replace(" class=\"", " class=\"image--".concat(isLandscape ? "h " : "v ")) 
+                                :
+                                logoImageHtml.replace("<img ", "<img class=\"image--".concat(isLandscape ? "h" : "v").concat("\" ")); 
+
+            logosHtml.append("<li>");
+            logosHtml.append("<a href=\"" + logoTargetUri + "\" data-tooltip=\"" + logoImageAlt + "\">");
+            logosHtml.append(logoImageHtml);
+            logosHtml.append("<span class=\"bots-only\">" + logoImageAlt + "</span>");
+            logosHtml.append("</a>");
+            logosHtml.append("</li>");
+            } else {
+                out.println("<!-- ERROR: logo image missing: " + logoImageUri + " -->");
+            }
+        }
+        if (!coopTitle.isEmpty() || !coopText.isEmpty() || !logosHtml.toString().isEmpty()) {
+        %>
+            <aside class="partners">
+                    <%= coopTitle %>
+                    <%= coopText %>
+        <%
+        if (!logosHtml.toString().isEmpty()) {
+        %>
+                <ul class="list--h">
+                    <%= logosHtml.toString() %>
+                </ul>
+        <%
+        }
+        %>
+            </aside>
+        <%
+        }
+    }
 }
 
 

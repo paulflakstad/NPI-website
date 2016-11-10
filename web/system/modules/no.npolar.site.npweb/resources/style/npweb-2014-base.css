@@ -4051,8 +4051,17 @@ section > h2.bluebar-dark {
 }
 
 /*******************************************************************************
-* Links to partners, using their logos:
+* Links to partners (collaborators, funders etc.) with logo links:
 */
+.partners {
+    font-size: smaller;
+    text-align: center;
+    color: #666;
+    padding: 2em;
+    margin-top: 2em;
+    margin-bottom: 2em;
+    border-top: 0.5em solid #f5f5f5;
+}
 .partners ul {
     margin: 1em 0;
     text-align: center;
@@ -4068,6 +4077,11 @@ section > h2.bluebar-dark {
 .partners img {
     max-height: 90px;
     max-width: 90px;
+    opacity: 0.8;
+    transition: opacity 0.3s ease-in-out;
+}
+.partners img:hover {
+    opacity: 1;
 }
 .partners .image--h {
     max-height: 60px;
