@@ -28,6 +28,19 @@ a.event-pastevent { color:#888; }
 .event-venue h3 { margin-top:0; }
 .event-venue h4 { margin-top:0; }
 
+.event__signup {
+    padding: 2em;
+    text-align: center;
+    font-size: larger;
+}
+.event__signup .button__caption {
+    font-style: italic;
+    font-weight: bold;
+}
+.event__signup button[disabled] + .button__caption {
+    color: #666;
+}
+
 .event-series { font-style: italic; } /* info about the event series, if any */
 
 .day-info .event-time { float:none; width:auto; } /* override event-info for overlib boxes */

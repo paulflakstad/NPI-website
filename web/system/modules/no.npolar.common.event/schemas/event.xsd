@@ -9,6 +9,7 @@
     <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.event/schemas/venue.xsd"/>
     <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.event/schemas/resourcelink.xsd"/>
     <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.event/schemas/timetable.xsd"/>
+    <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.event/schemas/signupform.xsd"/>
     
     <xsd:element name="Events" type="OpenCmsEvents"/>
 
@@ -40,6 +41,7 @@
             <xsd:element name="People" type="OpenCmsPersonList" minOccurs="0" maxOccurs="1" />
             <xsd:element name="PartnerLogo" type="OpenCmsImageLink" minOccurs="0" maxOccurs="20" />
             <xsd:element name="TimeTable" type="OpenCmsEventTimeTable" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="SignupForm" type="OpenCmsEventSignupForm" minOccurs="0" maxOccurs="1" />
         </xsd:sequence>
         <xsd:attribute name="language" type="OpenCmsLocale" use="optional" />
     </xsd:complexType>
@@ -51,6 +53,7 @@
                 <tab element="Title" collapse="false" name="General" />
                 <tab element="People" name="People and logos" />
                 <tab element="TimeTable" name="Programme" />
+                <tab element="SignupForm" name="Signup form" />
             </tabs>
             <mappings>
                 <mapping element="Title" mapto="property:Title" />

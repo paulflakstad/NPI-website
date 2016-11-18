@@ -431,6 +431,60 @@ while (container.hasMoreContent()) {
             </div>
             <%
         }
+
+        // If we're using a local form to handle signups, we can evaluate the 
+        // deadline from that form.
+        I_CmsXmlContentContainer signupEl = cms.contentloop(container, "SignupForm");
+        if (signupEl.hasMoreResources()) {
+            %>
+            <div class="event__signup">
+            <%
+            String signupUri = cms.contentshow(signupEl, "URI");
+            String signupLabel = cms.contentshow(signupEl, "SignupLabel");
+            String signupButtonText = cms.contentshow(signupEl, "ButtonText");
+            String signupDeadline = "";
+            boolean signupIsExpired = false;
+            
+            if (cmso.existsResource(signupUri) 
+                    && (cmso.readResource(signupUri).getTypeId() == OpenCms.getResourceManager().getResourceType("np_form").getTypeId())) {
+                signupDeadline = cmso.readPropertyObject(signupUri, "expires", false).getValue("");
+                if (!signupDeadline.isEmpty()) {
+                    Date signupDeadlineDate = new Date(Long.valueOf(signupDeadline));
+                    // Create a calendar representing the day before the deadline.
+                    // We'll use it when displaying the deadline to the user.
+                    // We do this because most deadlines are actually set to 
+                    // sometime the day after the "real" deadline, in order to 
+                    // mitigate issues with last-minute-signups and people in 
+                    // different time zones.
+                    Calendar signupDeadlineCal = new GregorianCalendar();
+                    signupDeadlineCal.setTime(signupDeadlineDate);
+                    signupDeadlineCal.add(Calendar.DATE, -1);
+                    
+                    signupIsExpired = signupDeadlineDate.before(NOW);
+                    signupDeadline = CmsAgent.formatDate(String.valueOf(signupDeadlineCal.getTimeInMillis()), cms.label("label.event.dateformat.dm"), locale);
+                }
+            }
+            if (signupIsExpired) {
+                %>
+                <button class="cta button button--cta" disabled="disabled"><%= signupButtonText %></button>
+                <p class="button__caption"><%= signupLabel + " " + cms.label("label.event.signup.expired").toLowerCase() + signupDeadline %></p>
+                <%
+            } else {
+                %>
+                <a class="cta button button--cta" href="<%= cms.link(signupUri) %>"><%= signupButtonText %></a>
+                <%
+                if (!signupDeadline.isEmpty()) {
+                    %>
+                    <p class="button__caption"><%= signupLabel + " " + cms.label("label.event.signup.deadline").toLowerCase() + signupDeadline %></p>
+                    <%    
+                }
+            }
+            %>
+            </div>
+            <%
+        }
+        
+        
     /*
     if (event.isAssignedCategory(cmso, CAT_PATH_NPI_SEMINAR)) {
         try {

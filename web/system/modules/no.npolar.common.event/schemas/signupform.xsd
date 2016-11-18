@@ -1,0 +1,33 @@
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+	
+    <xsd:include schemaLocation="opencms://opencms-xmlcontent.xsd"/>
+    
+    <xsd:element name="EventSignupForms" type="OpenCmsEventSignupForms"/>
+
+    <xsd:complexType name="OpenCmsEventSignupForms">
+        <xsd:sequence>
+            <xsd:element name="EventSignupForm" type="OpenCmsEventSignupForm" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="OpenCmsEventSignupForm">
+        <xsd:sequence>
+            <xsd:element name="URI" type="OpenCmsVarLink" />
+            <xsd:element name="SignupLabel" type="OpenCmsString" default="Signup" />
+            <xsd:element name="ButtonText" type="OpenCmsString" default="I want to attend" />
+        </xsd:sequence>
+        <xsd:attribute name="language" type="OpenCmsLocale" use="optional" />
+    </xsd:complexType>
+
+    <xsd:annotation>
+        <xsd:appinfo>
+            <resourcebundle name="no.npolar.common.event.workplace" />
+            <searchsettings>
+                <searchsetting element="URI" searchcontent="false" />
+                <searchsetting element="SignupLabel" searchcontent="false" />
+                <searchsetting element="ButtonText" searchcontent="false" />
+            </searchsettings>
+        </xsd:appinfo>
+    </xsd:annotation>
+    
+</xsd:schema>
