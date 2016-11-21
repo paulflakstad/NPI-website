@@ -9,6 +9,62 @@
 @-webkit-keyframes shake{0%{-webkit-transform:rotate(4deg);-ms-transform:rotate(4deg);transform:rotate(4deg)}5%{-webkit-transform:rotate(-4deg);-ms-transform:rotate(-4deg);transform:rotate(-4deg)}10%{-webkit-transform:rotate(4deg);-ms-transform:rotate(4deg);transform:rotate(4deg)}15%{-webkit-transform:rotate(-4deg);-ms-transform:rotate(-4deg);transform:rotate(-4deg)}20%{-webkit-transform:rotate(4deg);-ms-transform:rotate(4deg);transform:rotate(4deg)}25%{-webkit-transform:rotate(-4deg);-ms-transform:rotate(-4deg);transform:rotate(-4deg)}30%{-webkit-transform:rotate(0);-ms-transform:rotate(0);transform:rotate(0)}}
 @keyframes shake{0%{-webkit-transform:rotate(4deg);-ms-transform:rotate(4deg);transform:rotate(4deg)}5%{-webkit-transform:rotate(-4deg);-ms-transform:rotate(-4deg);transform:rotate(-4deg)}10%{-webkit-transform:rotate(4deg);-ms-transform:rotate(4deg);transform:rotate(4deg)}15%{-webkit-transform:rotate(-4deg);-ms-transform:rotate(-4deg);transform:rotate(-4deg)}20%{-webkit-transform:rotate(4deg);-ms-transform:rotate(4deg);transform:rotate(4deg)}25%{-webkit-transform:rotate(-4deg);-ms-transform:rotate(-4deg);transform:rotate(-4deg)}30%{-webkit-transform:rotate(0);-ms-transform:rotate(0);transform:rotate(0)}}
  
+@-moz-keyframes load8 {
+  from {
+    -moz-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  to {
+    -moz-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@-webkit-keyframes load8 {
+  from {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  to {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@-ms-keyframes load8 {
+  from {
+    -ms-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  to {
+    -ms-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@-o-keyframes load8 {
+  from {
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  to {
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@keyframes load8 {
+  from {
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  to {
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
  /**
  * Styles for the responive NPI website
  * ====================================
@@ -1900,8 +1956,49 @@ h4.news-title {
 	padding-top:5%;
 }
 
-#homepage .overlay
-
+.overlay.overlay--fullscreen {
+    position: absolute;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 9999;
+    padding:0;
+    text-align: center;
+}
+/* CSS load/wait visual cue */
+.overlay--loading:before,
+.overlay--loading:after {
+  content: " ";
+  display: block;
+}
+.overlay--loading:before,
+.loader {
+  margin: 8em auto;
+  margin: 40vh auto;
+  font-size: 10px;
+  position: relative;
+  text-indent: -9999em;
+  border-top: 1.1em solid rgba(255, 255, 255, 0.2);
+  border-right: 1.1em solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1.1em solid rgba(255, 255, 255, 0.2);
+  border-left: 1.1em solid #ffffff;
+  -webkit-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-animation: load8 1.1s infinite linear;
+  animation: load8 1.1s infinite linear;
+}
+.overlay--loading:before,
+.overlay--loading:after,
+.loader,
+.loader:after {
+  border-radius: 50%;
+  width: 10em;
+  height: 10em;
+}
 
 
 
