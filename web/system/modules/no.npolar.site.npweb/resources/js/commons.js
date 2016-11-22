@@ -1,5 +1,6 @@
 /**
- * Common javascript funtions, used throughout the site.
+ * Common javascript functions, used throughout the site.
+ * 
  * Dependency: jQuery (must be loaded before this script)
  * Dependency: Highslide (assets must be available at the provided locations)
  */
@@ -153,12 +154,12 @@ else { // event not supported:
 /**
  * Helper function for browser sniffing
  */
-navigator.sayswho= (function(){
+navigator.sayswho = (function(){
+    'use strict';
     var N= navigator.appName, ua= navigator.userAgent, tem;
     var M= ua.match(/(opera|chrome|safari|firefox|msie)\/?\s*(\.?\d+(\.\d+)*)/i);
-    if(M && (tem= ua.match(/version\/([\.\d]+)/i))!= null) M[2]= tem[1];
+    if(M && (tem=ua.match(/version\/([\.\d]+)/i))!== null) M[2]= tem[1];
     M= M? [M[1], M[2]]: [N, navigator.appVersion, '-?'];
-
     return M;
 })();
 
@@ -189,18 +190,20 @@ function nonResIE() {
 
 /**
  * Checks if an element, identified by the given ID, contains any real content.
- * @param id The ID that identifies the element to check
- * @return True if the element is non-existing or the element doesn't contain any real content, false if not
+ * 
+ * @param {String} id  The ID that identifies the element to check
+ * @returns {Boolean}  True if the element is non-existing or the element doesn't contain any real content, false if not
  */
 function emptyOrNonExistingElement(id) {
     var el = document.getElementById(id); // Get the element
-    if (!(el == null || el == undefined)) { // Check for non-exising element first
+    if (!(el === null || el === undefined)) { // Check for non-exising element first
         var html = el.innerHTML; // Get the content inside the element
-        if (html != null) {
+        if (html !== null) {
             html = html.replace(/(\r\n|\n|\r)/gm, ''); // Remove any and all linebreaks
             html = html.replace(/^\s+|\s+$/g, ''); // Remove empty spaces at front and end
-            if (html == '')
+            if (html === '') {
                 return true; // The element didn't contain anything (except maybe whitespace and linebreaks)
+            }
             return false; // The element contained something
         }
     }
@@ -270,6 +273,9 @@ function getHighslideLabels(/*String*/lang) {
     return HS_LABELS[lang];
 }
 
+/**
+ * Deprecated, should be safely removed (after usage check).
+ */
 function initToggleable(/*jQuery*/ el) {
     var trigger = el.find('.toggletrigger').first();
     var target = el.find('.toggletarget').first();
@@ -292,8 +298,20 @@ function initToggleable(/*jQuery*/ el) {
     }
 }
 
+/**
+ * Initializes "toggleables" - that is, accordion content - on the page.
+ * 
+ * @returns {undefined}  Nothing.
+ */
 function initToggleables() {
     'use strict';
+    
+    // Older toggler:
+    //  .toggleable[.collapsed|.open]
+    //      |- .toggletrigger
+    //      |- .toggletarget
+    // Apply the .open class to indicate that the toggleable content should 
+    // initially be shown. Otherwise, it will initially be hidden.
     $('.toggletrigger').attr('tabindex', '0');
     $('.toggleable.collapsed > .toggletarget').slideUp(1); // Hide normally-closed ("collapsed") accordion content		
     $('.toggleable.collapsed > .toggletrigger').append(' <em class="icon-down-open-big"></em>'); // Append arrow icon to "show accordion content" triggers
@@ -306,16 +324,24 @@ function initToggleables() {
         });
         
     // Newer toggler:
-    //  [container]
-    //      |- [.toggler]
-    //      |- [.toggleable]
+    //  container[.expanded]
+    //      |- .toggler
+    //      |- .toggleable[.expanded]
+    // The .expanded class can be set either on the parent container or on the 
+    // .toggleable element, to indicate that the toggleable content should 
+    // initially be shown. Otherwise, it will initially be hidden.
+    initToggleablesInside( $('body') );
+    /*
     var toggler = $('.toggler');
     toggler.next('.toggleable').attr('aria-hidden', 'true').slideUp(1); // Hide toggleable content
     toggler.attr({ 
         'aria-expanded' : 'false', 
         'tabindex' : '0' 
     }); // Add ARIA info and ensure trigger is keyboard accesssible
-    toggler.click(function(e) {
+    //*/
+    
+    $('body').on('click', '.toggler', function(e) {
+    //toggler.click(function(e) {
         e.preventDefault();
         var target = $(this).next('.toggleable');
         target.toggleClass('expanded');
@@ -328,6 +354,44 @@ function initToggleables() {
         } else {
             $(this).attr('aria-expanded', 'false');
             target.attr('aria-hidden', 'true');
+        }
+    });
+}
+
+/**
+ * Initializes "toggleables" - that is, accordion content - inside the given 
+ * container.
+ * 
+ * @param {type} container  The container elmenent, which may or may not contain any "toggleables".
+ * @returns {undefined}  Nothing.
+ */
+function initToggleablesInside(/*jQuery*/container) {
+    'use strict';
+    // works only with new toggler:
+    //  [container]
+    //      |- [.toggler]       <-- the trigger, clicked to show/hide stuff
+    //      |- [.toggleable]    <-- the target, actual stuff to show/hide
+    
+    var expandedClass = 'expanded';
+    
+    var toggler = container.add('.toggler');
+    
+    toggler.each(function() {
+        var target = $(this).next('.toggleable');
+        var parent = target.parent();
+        var isExpanded = target.hasClass(expandedClass) || parent.hasClass(expandedClass);
+        target.attr('aria-hidden', isExpanded ? 'false' : 'true');
+        // Add ARIA info + make trigger keyboard accesssible
+        $(this).attr({ 
+            'aria-expanded' : isExpanded ? 'true' : 'false',
+            'tabindex' : '0'
+        });
+        
+        if (!isExpanded) {
+            target.slideUp(1); // Hide toggleable content
+        } else {
+            target.addClass(expandedClass);
+            parent.addClass(expandedClass);
         }
     });
 }
@@ -389,6 +453,115 @@ function initCarousel(/*int*/slideWidth, /*int*/slideHeight) {
 	$("#featured .pagination, #featured-prev, #featured-next").click(function() {
             $("#slides").trigger("configuration", { auto: false });
 	});
+}
+
+/**
+ * Initializes the "standard" search filters.
+ * 
+ * This function sets class names on filtering elements, in order to normalize 
+ * between various versions. (For example, all filter links are given a class
+ * "filter", and all filter headings are given a class "filter-set__heading".)
+ * 
+ * Also, the show/hide controller is appended "hints" that reveal (some of) the
+ * filtering options available.
+ * 
+ * If filtering is currently active, a separate panel showing the active filters
+ * is created. This panel is used to emphasize to the user that filters are 
+ * active (and which ones).
+ * 
+ * NOTE: This function attempts to handle both past and current approaches. Once
+ * all filtered searches have been normalized (= converted to the current 
+ * approach), this function should be cleaned up.
+ * 
+ * @returns {undefined}
+ */
+function initSearchFilters() {
+    'use strict';
+    
+    // the "show/hide filters" controller(s)
+    var filterTogglers = $(".cta--filters-toggle, .toggler--filters-toggle"); //= $("#filters-toggler");
+    // the element that contains all filtering options
+    var filters = $(".filters-wrapper"); //= $("#filters");
+    // headings for filter sets (e.g. "Topic")
+    var filterHeadings = $(".filter-set__heading"); //= $("#filters h3");
+    // the actual filter links (click to add/remove this filter)
+    var filterLinks = $(".filter-set .filter"); //= $("#filters li a");
+
+
+    // begin weird part
+    filters.hide(); // should be handled by applying .toggleable on the filters wrapper
+    filterHeadings.addClass("filters-heading"); // do we really need this???
+    filterLinks.addClass("filter"); // didn't we already use .filter as selector???
+    // end weird part
+
+    // add hints to "show/hide filters" controller
+    // AND remove number of matches from filter set headings
+    filterTogglers.each(function() {
+        var toggler = $(this);
+        var headings = toggler.next(".filters-wrapper, .toggleable").find(".filter-set__heading");
+        if (headings.length > 0) {
+            toggler.append("<div class=\"filter-hints\"></div>");
+
+            headings.each(function(i) {
+                var filterHeading = $(this).clone();
+                filterHeading.find(".filter__num-matches").remove();
+
+                var filterHints = (i > 0 ? ( ", " + (i === 2 ? "..." : filterHeading.text().toLowerCase()) ) : filterHeading.text() );
+                //console.log("Adding '" + filterHints + "' to hints...");
+                toggler.find(".filter-hints").append(filterHints);
+                //$("#filters-toggler .filter-hints").append(filterHints);
+
+                if (i === 2) {
+                    return false;
+                }
+            });
+        }
+    });
+
+    // handle clicks on "show/hide filters" controller
+    filterTogglers.removeAttr("onclick"); // safety measure
+    filterTogglers.click(function(e) {
+        e.preventDefault();
+        $(this).next(".filters-wrapper").slideToggle();
+        $(this).closest(".search-widget--filters").toggleClass("expanded");
+        $(this).closest(".filters-wrapper").toggleClass("expanded");
+    });
+
+    // create the panel of active filters
+    createActiveFiltersPanel();
+}
+
+/**
+ * Creates a panel showing currently active filters, as deactivate links.
+ * 
+ * If no existing element has id=filters-details, a div with this id will be 
+ * created and injected as the succeeding sibling of the closest
+ * .search-widget--filterable element.
+ * 
+ * All active filters must already exist on the page, and have class
+ * "filter--active".
+ * 
+ * @returns {undefined}  Nothing.
+ */
+function createActiveFiltersPanel() {
+    'use strict';
+    
+    var panelWrapper = $("#filters-details");
+    var filters = $('.filters-wrapper, .filter-set');
+    var activeFilters = filters.find(".filter--active");
+    
+    if (activeFilters.length > 0) {
+        //console.log("Found " + activeFilters.length + " active filters.");
+
+        if ( panelWrapper.length === 0 ) {
+            filters.closest(".search-widget--filterable").after("<div id=\"filters-details\"></div>");
+        }
+        panelWrapper.append("<ul class=\"filters--active blocklist\">");
+        activeFilters.each(function() {
+            $(this).closest("li").prependTo( $(this).closest("ul") );
+            $(".filters--active").append( $("<li>").append( $(this).clone() ) );
+        });
+    }
 }
 
 /**
@@ -639,6 +812,8 @@ $(document).ready( function() {
 	// Initialize toggleable content
         initToggleables();
         
+        initSearchFilters();
+        /*
         ////////////////////////////////////////////////////////////////////////
         // BEGIN search filters
         //
@@ -707,6 +882,7 @@ $(document).ready( function() {
         // 
         // END search filters
         ////////////////////////////////////////////////////////////////////////
+        //*/
         
         $(".searchbox-big form").find("input[type=submit]").addClass("cta cta--search-submit");
 	
