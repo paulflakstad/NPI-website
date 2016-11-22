@@ -2694,7 +2694,11 @@ svg.icon {
  */
 .toggler {
     display: block;
+    cursor: pointer;
     padding: 2px 0.75em;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
     text-align: left;
     text-shadow: none;
     text-decoration: none;
@@ -2703,6 +2707,7 @@ svg.icon {
     border-radius: 0;
     margin: 0 auto;
     line-height: 2.5em;
+    border: none;
     border-bottom: 2px solid transparent;
     transition: all 0.25s;
     background-color: #e7e7e7;
@@ -3062,13 +3067,15 @@ svg.icon {
 }
 /*.search-panel__filters .toggler,
 .toggler,*/
-.cta.cta--filters-toggle {
+.cta.cta--filters-toggle,
+.toggler--filters-toggle {
     /*background-color: rgba(150, 40, 50, 1);*/
     /*background-color: rgba(197, 54, 23, 1);*/ /* reddish orange */
     /*background-color: rgba(132, 28, 5, 1);*/ /* darker brownish red */
     
     background-color: #e7e7e7;
     background-color: rgba(0,0,0,0.1);
+    width: 100%;
     /*color:#fdd;*/
 }
 /*.toggler:hover,
@@ -4415,6 +4422,7 @@ section > h2.bluebar-dark {
 html,
 body,
 h1, h2, h3, h4, h5, h6,
+button,
 .ingress,
 aside h4, .column.small h4, /* Rightside headings */
 #service-list li a, /* Icons */
