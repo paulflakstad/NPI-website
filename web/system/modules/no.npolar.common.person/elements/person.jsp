@@ -538,7 +538,8 @@ try {
     final String LABEL_BIBLIOGRAPHY         = cms.labelUnicode("label.Person.Bibliography");
     final String LABEL_EMPLOYMENT_TYPE      = cms.labelUnicode("label.Person.EmploymentType");
     final String LABEL_ON_LEAVE             = cms.labelUnicode("label.Person.OnLeave");
-    final String LABEL_CURRENTLY_EMPLOYED   = cms.labelUnicode("lable.Person.CurrentlyEmployed");
+    final String LABEL_CURRENTLY_EMPLOYED   = cms.labelUnicode("label.Person.CurrentlyEmployed");
+    final String LABEL_NO_LONGER_EMPLOYED   = cms.labelUnicode("label.Person.NoLongerEmployed");
 
     final String LABEL_ORG_COMM                 = loc.equalsIgnoreCase("no") ? "Kommunikasjon" : "Communications";
     final String LABEL_ORG_COMM_INFO            = loc.equalsIgnoreCase("no") ? "Informasjon" : "Information";
@@ -840,7 +841,15 @@ if (!position.isEmpty()) {
         out.print(" (" + LABEL_ON_LEAVE.toLowerCase() + ")");
     out.println("</div>");
 }
-
+if (!currEmployed) {
+    %>
+    <aside class="msg msg--alert">
+        <p class="msg__content">
+           <%= fname %> <%= LABEL_NO_LONGER_EMPLOYED %>
+        </p>
+    </aside>
+    <%
+}
 %>
 <div class="contact-info clearfix">
 <%
