@@ -28,11 +28,12 @@
             java.util.Iterator,
             java.text.SimpleDateFormat,
             no.npolar.util.CmsAgent,
+            no.npolar.data.api.util.APIUtil,
             org.opencms.json.JSONObject,
             org.opencms.json.JSONException,
             org.opencms.flex.CmsFlexController,
             org.opencms.file.CmsObject"
-            contentType="text/html" 
+            contentType="text/html; charset=UTF-8" 
             pageEncoding="UTF-8" 
             session="true" 
  %><%!
@@ -46,7 +47,7 @@ public String getResponseContent(String requestURL) {
     try {
         URLConnection connection = new URL(requestURL).openConnection();
         StringBuffer buffer = new StringBuffer();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
         String inputLine;
         while ((inputLine = reader.readLine()) != null) {
             buffer.append(inputLine);
@@ -120,7 +121,7 @@ String queryURL = SERVICE_BASE_URL + "?" + defaultParameters;// + (!dynamicParam
 JSONObject json = null;
 try {
     // Read the JSON string
-    String jsonStr = getResponseContent(queryURL);
+    String jsonStr = APIUtil.httpResponseAsString(queryURL);//getResponseContent(queryURL);
 
     try {
         // Create the JSON object from the JSON string
@@ -179,7 +180,11 @@ try {
             
             resultsPrinted++;
         }  
-        entries = entries.substring(0, entries.length()-1);
+        try {
+            if (entries.endsWith(",")) {
+                entries = entries.substring(0, entries.length()-1);
+            }
+        } catch (Exception e) { }
         out.print(entries);
         out.print("]");
         //out.print("}");

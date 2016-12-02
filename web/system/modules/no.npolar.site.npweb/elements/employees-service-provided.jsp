@@ -3,7 +3,9 @@
     Description: Lists employees using the data.npolar.no API and cross-checking with OpenCms.
     Created on : Oct 11, 2013, 10:19:24 AM
     Author     : flakstad
---%><%@page import="java.text.Collator,
+--%>
+<%@page import="no.npolar.data.api.util.APIUtil"%>
+<%@page import="java.text.Collator,
             java.util.Collections,
             org.apache.commons.lang.StringUtils,
             java.util.Set,
@@ -38,10 +40,12 @@
             org.opencms.json.JSONException,
             org.opencms.file.CmsObject,
             org.opencms.file.CmsResource"
-            contentType="text/html" 
+            contentType="text/html; charset=UTF-8" 
             pageEncoding="UTF-8" 
             session="true" 
- %><%!
+ %>
+<%@page trimDirectiveWhitespaces="true" %>
+<%!
 /* Map storage for default parameters. */
 static Map<String, String> dp = new HashMap<String, String>();
 /* Stop words. */
@@ -352,7 +356,7 @@ public String getResponseContent(String requestURL) {
     try {
         URLConnection connection = new URL(requestURL).openConnection();
         StringBuffer buffer = new StringBuffer();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
         String inputLine;
         while ((inputLine = reader.readLine()) != null) {
             buffer.append(inputLine);
@@ -872,7 +876,7 @@ String mismatches = "";
 JSONObject json = null;
 try {
     // Read the JSON string
-    String jsonStr = getResponseContent(queryURL);
+    String jsonStr = APIUtil.httpResponseAsString(queryURL);//getResponseContent(queryURL);
     
     out.println("<!-- API URL: " + queryURL + " -->");
 
