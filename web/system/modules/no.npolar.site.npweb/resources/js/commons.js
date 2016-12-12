@@ -387,6 +387,7 @@ function initToggleablesInside(/*jQuery*/container) {
             target.attr('id', targetId);
         }        
         target.attr('aria-hidden', isExpanded ? 'false' : 'true');
+        console.log('Set ' + $(this).prop('tagName') + ' as trigger in loop iteration ' + index);
         // Add ARIA info + make trigger keyboard accesssible
         $(this).attr({ 
             'aria-controls' : targetId,
