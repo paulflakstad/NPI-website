@@ -65,6 +65,10 @@
     transform: rotate(360deg);
   }
 }
+@keyframes color-change-results-updated {
+    0% { color: #f00; }
+    100% { color: #862029; }
+}
  /**
  * Styles for the responive NPI website
  * ====================================
@@ -2899,6 +2903,16 @@ svg.icon {
     /*background-color: #fafafa;
     background-color: rgba(255,255,255,0.8);
     box-shadow: 0 0 1em rgba(0,0,0,0.8);*/
+}
+.filter-widget .num-results {
+    float: left;
+    font-size: 1.6em;
+    color: #862029;
+    text-shadow: 1px 1px 1px #fff;
+    margin: 0.75rem;
+    margin-left: 0;
+    font-weight: bold;
+    animation: color-change-results-updated 3s;
 }
 /*#filters .filters-heading .filter__num-matches,*/
 .filters-container .filters-heading .filter__num-matches,
