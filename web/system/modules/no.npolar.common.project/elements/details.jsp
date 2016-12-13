@@ -491,6 +491,7 @@ String projectFilePath  = null;
 // Common page element handlers
 final String PARAGRAPH_HANDLER = "/system/modules/no.npolar.common.pageelements/elements/paragraphhandler.jsp";
 final String PUB_LIST = "/system/modules/no.npolar.common.project/elements/project-publications-full-list.jsp";
+final String DATASETS_LIST = "/system/modules/no.npolar.common.project/elements/project-datasets.jsp";
 final String PROJECTS_FOLDER = loc.equalsIgnoreCase("no") ? "/no/prosjekter/" : "/en/projects/";
 final int TYPE_ID_PROJECT = OpenCms.getResourceManager().getResourceType("np_project").getTypeId();
 
@@ -619,7 +620,7 @@ try {
     // Important: Set the title before calling the template
     request.setAttribute("title", "Error");
     
-    cms.include(T, T_ELEM[0], T_EDIT);
+    cms.include(T, T_ELEM[0], T_EDIT);    
     //out.println("<article class=\"main-content\">");
     //out.println(error("An unexpected error occured while constructing the project details."));
     out.println("<div class=\"paragraph\">");
@@ -648,8 +649,10 @@ String ocmsTitle = null;
 String ocmsTitleAbbrev = null;
 String ocmsDescr = null;
 String ocmsLogo = null;
+String ocmsImage = null;
 String autoPubsStr = null;
 boolean autoPubs = false;
+String datasetsUri = null;
 
 String moreUri = projectFilePath;//requestFolderUri + "" + pid + ".html";
 if (cmso.existsResource(moreUri)) {
@@ -671,6 +674,7 @@ if (cmso.existsResource(moreUri)) {
         //
         autoPubsStr = cms.contentshow(container, "AutoPubs");
         autoPubs    = Boolean.valueOf(autoPubsStr).booleanValue(); // Default is false
+        datasetsUri = cms.contentshow(container, "DatasetsURI");
     }
 }
 
@@ -1100,6 +1104,7 @@ request.setAttribute("title", title);
 cms.include(T, T_ELEM[0], T_EDIT);
 
 out.println("<!-- API URL: " + serviceUrl + " -->");
+out.println("<!-- Project file URL: " + moreUri + " -->");
 
 out.println("<article class=\"main-content\">");
 out.println("<h1>" + title + (!titleAbbrev.isEmpty() ? " (" + titleAbbrev + ")" : "") + "</h1>");
@@ -1109,7 +1114,10 @@ if (description == null || description.isEmpty())
 out.println("<div class=\"ingress\">" + description + "</div>");
 //out.println("<div class=\"ingress\" style=\"margin-bottom:1em;\">" + description + "</div>");
 
-out.println("<div class=\"event-links nofloat\" style=\"padding-bottom:0.6em; margin:0 0 1rem 0; box-shadow:none; border:none;\">");
+//out.println("<div class=\"event-links nofloat\" style=\"padding-bottom:0.6em; margin:0 0 1rem 0; box-shadow:none; border:none;\">");
+%>
+<aside class="article-meta article-meta--padded clearfix">
+<%
 
 if (ocmsLogo != null) {
     out.println("<span class=\"media pull-right thumb\">"
@@ -1234,8 +1242,10 @@ out.println("</div>");
 out.println("<a href=\"" + humanUrl + "\">" 
                 + (loc.equalsIgnoreCase("no") ? "Se alle detaljer og metadata for prosjektet" : "View all project details and metadata") 
             + "</a>");
-out.println("</div>");
-
+//out.println("</div>");
+%>
+</aside>
+<%
 //
 // Sub-projects?
 //
@@ -1250,6 +1260,53 @@ if (!suppressApiText) {
     }
 }
 //out.print(projectJson.toString(4));
+
+
+    
+if (autoPubs || CmsAgent.elementExists(datasetsUri)) {
+    %>
+    <div id="auto-pubs-datasets" class="async-content" style="margin-bottom: 1em;">
+    <%
+    Map params = new HashMap();
+    params.put("locale", loc);
+    
+    if (autoPubs) {
+        params.put("id", pid);
+        
+        out.println("<h2 class=\"toggler\">" + cms.labelUnicode("label.np.list.publications.heading") + "</h2>");
+        out.println("<div class=\"toggleable\" id=\"publications-loader\"></div>");
+        //out.println("<div id=\"publications-loader\"></div>");
+    }
+    if (CmsAgent.elementExists(datasetsUri)) {
+        params.put("uri", datasetsUri);
+        out.println("<h2 class=\"toggler\">" + cms.labelUnicode("label.np.list.datasets.heading") + "</h2>");
+        out.println("<div class=\"toggleable\" id=\"datasets-loader\"></div>");
+        //out.println("<div id=\"datasets-loader\"></div>");
+    }
+    
+
+    %>
+    <script type="text/javascript">
+        $('#publications-loader').load('<%= cms.link(CmsRequestUtil.appendParameters(PUB_LIST, params, true)) %>', function( response, status, xhr ) {
+            if ( status === "error" ) {
+                var msg = "<%= cms.labelUnicode("label.np.list.publications.error") %>";//"Sorry, an error occurred while looking for publications: ";
+                $( "#publications-loader" ).html( msg + " (" + xhr.status + " " + xhr.statusText + ")" );
+            } else {
+                //initToggleable( $('#project__publications') );
+                //initToggleablesInside( $('#auto-pubs-datasets') );
+            }
+        });
+        $('#datasets-loader').load('<%= cms.link(CmsRequestUtil.appendParameters(DATASETS_LIST, params, true)) %>', function( response, status, xhr ) {
+            if ( status === "error" ) {
+                var msg = "<%= cms.labelUnicode("label.np.list.datasets.error") %>";
+                $( "#datasets-loader" ).html( msg + " (" + xhr.status + " " + xhr.statusText + ")" );
+            }
+        });
+        //initToggleablesInside( $('#auto-pubs-datasets') );
+    </script>
+    </div>
+    <%
+}   // ToDo: Add <noscript> with link to full list of pubs (in the NPDC)
 
 
 //
@@ -1323,7 +1380,7 @@ if (cmso.existsResource(moreUri)) {
         }
     } catch (Exception e) {
         out.println("<!-- error listing sub-projects: " + e.getMessage() + " -->");
-    }
+    }    
     
     container = cms.contentload("singleFile", moreUri, EDITABLE);
     
@@ -1384,51 +1441,6 @@ if (cmso.existsResource(moreUri)) {
         <%
         }
     }
-}
-
-
-if (autoPubs) {
-    Map params = new HashMap();
-    String emailId = "";
-    //params.put("email", email);
-    params.put("id", pid);
-    params.put("locale", loc);
-    //params.put("pubtypes", autoPubsTypes);
-    //params.put("projecttypes", autoProjectTypes);
-
-    out.println("<div id=\"employee-pubs-full\" class=\"toggleable collapsed\">");
-    /*out.println("<div class=\"\" style=\"color:#aaa;\">"
-                    + cms.labelUnicode("label.np.publist.heading") + " <img src=\"/system/modules/no.npolar.site.npweb/resources/style/loader.gif\" alt=\"\" style=\"width:0.7em;\">"
-                + "</div>");*/
-    out.println("<div id=\"pub-list-working\" style=\"text-align:center; padding:0.4em 1%; line-height:2em; height:2em; background-color:#f5f5f5; color:#666; margin-bottom:0.2rem;\">"
-                    + "<div style=\"text-align:left; font-size:2em; color:#aaa;\">"
-                        + cms.labelUnicode("label.np.publist.heading") + " <img src=\"/system/modules/no.npolar.site.npweb/resources/style/loader.gif\" alt=\"\" style=\"width:0.7em;\">"
-                    + "</div>"
-                + "</div>");
-    /*out.println("<p id=\"pub-list-working\" style=\"text-align:center; padding:0.4em 1%; line-height:2em; height:2em; background-color:#f5f5f5; color:#666;\">"
-            + "<img src=\"" + cms.link("/system/modules/no.npolar.site.npweb/resources/style/loader.gif") + "\" style=\"width:1.5em; vertical-align:middle;\" alt=\"\" />"
-            + " " + cms.labelUnicode("label.np.publist.loading") + " &hellip;</p>");*/
-    try { 
-        //cms.include(PUB_LIST, null, params);
-    } catch (Exception e) {
-        if (LOGGED_IN_USER) {
-            out.println("<p>Auto-listing publications failed! Error was: " + e.getMessage() + "</p>");
-        }
-    }
-    out.println("</div>");
-
-    %>
-    <script type="text/javascript">
-        $('#employee-pubs-full').load('<%= cms.link(CmsRequestUtil.appendParameters(PUB_LIST, params, true)) %>', function( response, status, xhr ) {
-            if ( status === "error" ) {
-                var msg = "<%= cms.labelUnicode("label.np.publist.error") %>";//"Sorry, an error occurred while looking for publications: ";
-                $( "#pub-list-working" ).html( msg + " (" + xhr.status + " " + xhr.statusText + ")" );
-            } else {
-                initToggleable( $('#employee-pubs-full') );
-            }
-        });
-    </script>
-    <%
 }
 
 } catch (Exception e) {

@@ -100,7 +100,7 @@ Map<String, String[]> defaultParams = new HashMap<String, String[]>();
 defaultParams.put("filter-state",           new String[]{ "published|accepted|submitted" }); // Limit publications by state
 defaultParams.put("facets",                 new String[]{ "false" }); // No facets
 defaultParams.put("sort",                   new String[]{ "-published_sort" }); // Sort by publish time, descending
-defaultParams.put("fields",                 new String[]{ "id,_id,title,publication_type,state,published_helper,published_sort,volume,issue,suppl,art_no,page_count,journal,conference,pages,people,organisations,isbn,issn,links,comment" }); // Don't include unnecessary fields (currently no syntax to exlude fields, so we need an exhaustive list of the ones we want)
+//defaultParams.put("fields",                 new String[]{ "id,_id,title,publication_type,state,published_helper,published_sort,volume,issue,suppl,art_no,page_count,journal,conference,pages,people,organisations,isbn,issn,links,comment" }); // Don't include unnecessary fields (currently no syntax to exlude fields, so we need an exhaustive list of the ones we want)
 //defaultParams.put("sort",                   new String[]{ "-published-year,-published-date" }); // Sort by publish date, descending (and this is the sort parameter for that)
 //defaultParams.put("q",                      new String[]{ "" }); // Catch-all query (this is set in regular params)
 //defaultParams.put("limit",                  new String[]{ "all" }); // Fetch everything (this is set in regular params)
@@ -141,8 +141,10 @@ if (publications != null && !publications.isEmpty()) {
     ResourceBundle labels = ResourceBundle.getBundle(Labels.getBundleName(), locale);
     //out.println("<h2 class=\"toggletrigger\">" + cms.labelUnicode("label.np.publist.heading") + "</h2>");
     %>
-    <a class="toggletrigger" href="javascript:void(0);"><%= cms.labelUnicode("label.np.publist.heading") %></a>
-    <div class="toggletarget" style="display:none;">
+    <!--<a class="toggletrigger" href="javascript:void(0);"><%= cms.labelUnicode("label.np.publist.heading") %></a>-->
+    <!--<div class="toggletarget" style="display:none;">-->
+    <!--<h2 class="toggler"><%= cms.labelUnicode("label.np.publist.heading") %></h2>-->
+    <!--<div class="toggleable" id="project__publications">-->
     <%
     // Get types of publications
     Iterator<String> iTypes = publications.getTypesContained().iterator();
@@ -191,26 +193,28 @@ if (publications != null && !publications.isEmpty()) {
             %>
             <h3><%= labels.getString("publication.type." + listType + (listSize > 1 ? ".plural" : "")) + " (" + listSize + ")" %></h3>
             <!--<h3><%= cms.labelUnicode("label.np.pubtype." + listType) + " (" + publications.getListGroup(listType).size() + ")" %></h3>-->
-            <ul class="fullwidth indent line-items">
-            <%
-            while (iPubs.hasNext()) {
-                %>
-                <li><%= iPubs.next().toString() %></li>
+            <div class="indent">
+                <ul class="list--serp">
                 <%
-            }
-            %>
-            </ul>
+                while (iPubs.hasNext()) {
+                    %>
+                    <li class="serp-item"><%= iPubs.next().toString() %></li>
+                    <%
+                }
+                %>
+                </ul>
+            </div>
             <%
         }
     }
     %>
-    </div>
+    <!--</div>-->
     <%
 }
 else {
     // No publications found on serviceUrl 
     %>
-    <div class="toggletrigger inactive" style="color:#aaa; cursor:initial;"><%= cms.labelUnicode("label.np.publist.heading.none") %></div>
+    <p><em><%= cms.labelUnicode("label.np.list.publications.none") %></em></p>
     <%
     if (DEBUG) { out.println("No publications. Publications = " + (publications == null ? "null" : publications.size()) + "."); }
 }
