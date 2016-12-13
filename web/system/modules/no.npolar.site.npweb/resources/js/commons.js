@@ -374,9 +374,9 @@ function initToggleablesInside(/*jQuery*/container) {
     
     var expandedClass = 'expanded';
     
-    var toggler = container.add('.toggler');
+    var togglers = container.find('.toggler');
     
-    toggler.each(function(index) {
+    togglers.each( function(index) {
         var target = $(this).next('.toggleable');
         var parent = target.parent();
         var isExpanded = target.hasClass(expandedClass) || parent.hasClass(expandedClass);
@@ -387,7 +387,8 @@ function initToggleablesInside(/*jQuery*/container) {
             target.attr('id', targetId);
         }        
         target.attr('aria-hidden', isExpanded ? 'false' : 'true');
-        console.log('Set ' + $(this).prop('tagName') + ' as trigger in loop iteration ' + index);
+        
+        //console.log('Set ' + $(this).prop('tagName') + ' as trigger in loop iteration ' + index);
         // Add ARIA info + make trigger keyboard accesssible
         $(this).attr({ 
             'aria-controls' : targetId,
