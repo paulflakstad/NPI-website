@@ -4326,7 +4326,11 @@ section > h2.bluebar-dark {
     background-color: #f5f5f5;
     background-color: rgba(0,0,0,0.05);
     box-shadow: 0 0 0.2rem rgba(0,0,0,0.7);
+    box-shadow: none;
     font-size: small;
+}
+.article-meta--padded {
+    padding: 1em;
 }
 /*  */
 .article-meta__heading {
