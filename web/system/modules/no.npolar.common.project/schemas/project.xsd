@@ -23,6 +23,7 @@
             <xsd:element name="Featured"        type="OpenCmsBoolean" default="false" />
             <xsd:element name="SuppressAPIText" type="OpenCmsBoolean" default="false" />
             <xsd:element name="AutoPubs"        type="OpenCmsBoolean" default="false" />
+            <xsd:element name="DatasetsURI"     type="OpenCmsVarLink" minOccurs="0" maxOccurs="1" />
             <xsd:element name="NpiIdentifier"   type="OpenCmsString" />
             <xsd:element name="RisIdentifier"   type="OpenCmsString" />
             <xsd:element name="Keywords"        type="OpenCmsString" />
@@ -75,6 +76,9 @@
                 <searchsetting element="Image"          searchcontent="false" />
                 <searchsetting element="Logo"           searchcontent="false" />
                 <searchsetting element="Featured"       searchcontent="false" />
+                <searchsetting element="SuppressAPIText" searchcontent="false" />
+                <searchsetting element="AutoPubs" searchcontent="false" />
+                <searchsetting element="DatasetsURI" searchcontent="false" />
             </searchsettings>
             <validationrules>
                 <rule element="Title" regex="!.*[Ee]rror.*" message="${key.editor.errormessage.Article.mustnotcontainerror|${validation.path}}" />
