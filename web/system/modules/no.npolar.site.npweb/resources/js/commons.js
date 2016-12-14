@@ -371,18 +371,29 @@ function initToggleablesInside(/*jQuery*/container) {
     //  [container]
     //      |- [.toggler]       <-- the trigger, clicked to show/hide stuff
     //      |- [.toggleable]    <-- the target, actual stuff to show/hide
-    
+    // 
+    // NOTE: The .toggler element should always be an <a>, and ideally with the 
+    // following attributes set:
+    //      - aria-controls     <-- e.g. "#the-toggleable-ID"
+    //      - href              <-- e.g. "#the-toggleable-ID"
+    //      
+    // Conversely, the .toggleable should have its ID attribute set:
+    //      - id                <-- e.g. "the-toggleable-ID"
+    //      
+    // Using an <a> element makes keyboard navigation work well, and the href 
+    // is necessary to trigger "clicks" via the enter key. It is also needed for 
+    // stuff to work without javascript, e.g. using the :target rule in CSS.
     var expandedClass = 'expanded';
     
-    var togglers = container.find('.toggler');
+    var toggleTriggers = container.find('.toggler');
     
-    togglers.each( function(index) {
+    toggleTriggers.each( function(index) {
         var target = $(this).next('.toggleable');
         var parent = target.parent();
         var isExpanded = target.hasClass(expandedClass) || parent.hasClass(expandedClass);
         
         var targetId = target.attr('id');
-        if (typeof targetId === 'undefined') {
+        if (typeof targetId === 'undefined' || targetId === false) {
             targetId = 'toggleable-'+index;
             target.attr('id', targetId);
         }        
@@ -393,8 +404,17 @@ function initToggleablesInside(/*jQuery*/container) {
         $(this).attr({ 
             'aria-controls' : targetId,
             'aria-expanded' : isExpanded ? 'true' : 'false',
-            'tabindex' : '0'
+            'tabindex' : '0' // in case the trigger is not natively focusable
         });
+        // If the trigger is an <a> element, make sure a href attribute exists
+        if ($(this).prop('tagName').toUpperCase() === 'A') {
+            var href = $(this).attr('href');
+            if (typeof href === 'undefined' || href === false) {
+                $(this).attr({
+                    'href' : '#'+targetId
+                });
+            }
+        }
         
         if (!isExpanded) {
             target.slideUp(1); // Hide toggleable content
