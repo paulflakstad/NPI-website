@@ -210,7 +210,7 @@ if (ylow > -1) {
             <div id="range-slider" style="margin: 2em 40px 0;"></div> 
             <br />
             <!--<input type="submit" value="<%= LABEL_RANGE_UPDATE %>" style="margin-top:1em;" />-->
-            <input type="button" class="cta cta--filters-toggle" value="<%= LABEL_RANGE_UPDATE %>" style="margin-top:1em;" onclick="submit()" />
+            <button type="submit" class="cta cta--button" style="margin-top:1em; margin-bottom:1em;"><%= LABEL_RANGE_UPDATE %></button>
         </form>
     </div>
 </div>
