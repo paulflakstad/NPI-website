@@ -517,6 +517,9 @@ html[lang="no"] q.dashed:after {
     font-size:small;
     color:#666;
 }
+.tag--time:before {
+    content: "\E85F";
+}
 ul.blocklist {
 	list-style:none !important;
 	padding-left:0 !important;
