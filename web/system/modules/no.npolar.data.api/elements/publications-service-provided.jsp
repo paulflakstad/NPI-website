@@ -47,7 +47,8 @@
             pageEncoding="UTF-8" 
             session="true" 
  %><%!
-     
+/*
+// Moved to Publications class
 public static String getContributorsShort(List<PublicationContributor> contribs, String suffixSingular, String suffixPlural) {
     String s = "";
 
@@ -81,7 +82,7 @@ public static String getContributorsShort(List<PublicationContributor> contribs,
     }
     return s;
 }
-
+//*/
 public static boolean isInteger(String s) {
     if (s == null || s.isEmpty())
         return false;
@@ -429,6 +430,8 @@ try {
             while (iPubs.hasNext()) {
                 
                 Publication pub = iPubs.next();
+                out.println(pub.toHtmlShort());
+                /*
                 List<PublicationContributor> auth = pub.getPeopleByRole(Publication.Val.ROLE_AUTHOR);
                 
                 String peopleStr = auth.isEmpty() ?
@@ -468,7 +471,8 @@ try {
                                     + (publishedIn.isEmpty() ? "" : " &ndash; <em>".concat(publishedIn).concat("</em>"))
                                 + "</span>"
                             + "</li>");
-            }  
+                //*/
+            }
             %>
             
         </ul>
