@@ -21,6 +21,7 @@
                 no.npolar.common.menu.*,
                 no.npolar.util.CmsAgent,
                 no.npolar.util.contentnotation.*"
+%><%@page pageEncoding="UTF-8" 
 %><%@taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"
 %><%!
 /**
