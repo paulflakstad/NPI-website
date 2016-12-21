@@ -158,7 +158,7 @@ String loc                          = locale.toString();
 int galleryCounter                  = 0;
 
 // IMPORTANT: Embedded gallery version requires the gallery module installed!!!
-final String GALLERY_HANDLER        = "/system/modules/no.npolar.common.gallery/elements/gallery-standalone.jsp";
+final String GALLERY_HANDLER        = "/system/modules/no.npolar.common.gallery/elements/gallery.jsp";
 
 final boolean EDITABLE              = false;
 // boolean EDITABLE_TEMPLATE     = false; // Don't want this here, it's in the template already (i.e. "ivorypage.jsp" or "newsbulletin.jsp")
