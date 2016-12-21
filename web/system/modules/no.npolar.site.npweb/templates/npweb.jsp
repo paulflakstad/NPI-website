@@ -196,7 +196,8 @@ homePage = requestFileUri.equals("/" + loc + "/")
 
 // Handle case: canonicalization
 // - Priority 1: a canonical URI is specified in the "canonical" property
-// - Priority 2: the current request URI is an index file
+// - Priority 2: A canonical URI is specified in the "canonical_uri" request attribute
+// - Priority 3: the current request URI is an index file
 CmsProperty propCanonical = cmso.readPropertyObject(requestFileUri, "canonical", false);
 // First examine the "canonical" property
 if (!propCanonical.isNullProperty()) {
@@ -207,7 +208,13 @@ if (!propCanonical.isNullProperty()) {
         }
     }
 }
-// If no "canonical" property was found, and we're displaying an index file,
+
+// Check request attribute
+if (canonical == null) {
+    try { canonical = (String)request.getAttribute("canonical_uri"); } catch (Exception e) {}
+}
+
+// If no "canonical" URL has been set, AND we're displaying an index file:
 // set the canonical URL to the folder (remove the "index.html" part).
 if (canonical == null && CmsRequestUtil.getRequestLink(requestFileUri).endsWith("/index.html")) {
     canonical = cms.link(requestFolderUri);
