@@ -208,7 +208,6 @@ if (!propCanonical.isNullProperty()) {
         }
     }
 }
-
 // Check request attribute
 if (canonical == null) {
     try { canonical = (String)request.getAttribute("canonical_uri"); } catch (Exception e) {}
@@ -370,6 +369,18 @@ HashMap quickLinksParams = null;
 
 String menuFile = cms.property("menu-file", "search");
 
+boolean pageHasImageGallery = false;
+try { 
+    List<String> elNames = CmsXmlContentFactory.unmarshal(cmso, cmso.readFile(requestFileUri)).getNames(loc);
+    for (String elName : elNames) {
+        //out.println("<!-- " + elName + " : " + elName.matches("(^|((.*)/))EmbeddedGallery\\[\\d\\](.*)$") + " -->");
+        if (elName.matches("(^|((.*)/))EmbeddedGallery\\[\\d\\](.*)$")) {
+            pageHasImageGallery = true;
+            break;
+        }
+    }
+} catch (Exception e) {}
+
 cms.editable(false);
 //
 // TODO: ADD NEWS RSS TO TEMPLATE!! USE A PROPERTY TO DO THIS.
@@ -413,6 +424,17 @@ if (!feedUri.isEmpty()) {
 // Include css files from property dynamically. Start on the request page and look at all ancestor folders.
 out.println(cms.getHeaderElement(CmsAgent.PROPERTY_CSS, requestFileUri));
 out.println(cms.getHeaderElement(CmsAgent.PROPERTY_HEAD_SNIPPET, requestFileUri));
+
+
+if (pageHasImageGallery) {
+    if (!cmso.readPropertyObject(requestFileUri, "head.snippet", false).getValue("").contains("/system/modules/no.npolar.common.gallery/resources/head-snippet.jsp")) {
+        out.println("<!-- Page has embedded image gallery - including assets: -->");
+        cms.includeAny("/system/modules/no.npolar.common.gallery/resources/head-snippet.jsp");
+        out.println("<!-- Done including image gallery gallery assets -->");
+    } else {
+        out.println("<!-- Page has embedded image gallery, and includes assets itself -->");
+    }
+}
 /*
 List<String> css = new ArrayList<String>();
 //css.add("//cdnjs.cloudflare.com/ajax/libs/qtip2/2.1.1/jquery.qtip.min.css");
