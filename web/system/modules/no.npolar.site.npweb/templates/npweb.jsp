@@ -598,33 +598,20 @@ if (!loggedInUser) {
                         <!--<a id="nav_pin"<%= pinnedNav ? " class=\"pinned\"" : "" %>></a>-->
                     </div>
                     <div id="searchbox" class="global-site-tool">
-                        <% cms.include(SEARCHBOX); %>
-                    </div>
-                    
-                    
-                    <!-- Small screen quicklinks: -->
-                    <!--<form action="<cms:link>../elements/navigate.jsp</cms:link>" method="get" id="mob_nav_quicklinks">
                         <%
-                        // Include the "quicklinks" menu (again, sadly), by calling its own template file and passing the URI to the menu file as a parameter
-                        /*try {
-                            quickLinksTemplate = cms.getCmsObject().readPropertyObject(QUICKLINKS_MENU_URI, "template-elements", false).getValue();
-                            quickLinksParams = new HashMap();
-                            quickLinksParams.put("resourceUri", QUICKLINKS_MENU_URI);
-                            //out.println("<!-- Smallscreen quicklinks (dropdown instead of list), using '" + quickLinksTemplate +"' -->");
-                            cms.include(quickLinksTemplate, "dropdown", EDITABLE_MENU, quickLinksParams);
+                        try {
+                            cms.include(SEARCHBOX);
                         } catch (Exception e) {
-                            out.println("<!-- An error occured while trying to include the quicklinks menu (using template '" + quickLinksTemplate + "'): " + e.getMessage() + " -->");
+                            out.println("<!-- An error occured while trying to include the site search -->");
                         }
-                        out.flush();*/
                         %>
-                    </form>-->
+                    </div>
                 </div>
             </div>
             <!-- Top-level navigation: -->
             <nav id="nav_top_wrap" class="clearfix"><!-- Main navigation wrapper -->
-            <!--<nav id="nav_top_wrap" class="clearfix"<%= sess.getAttribute("pinned_nav") != null ? (Boolean.valueOf((String)sess.getAttribute("pinned_nav")) ? "" : " style=\"display:none;\"") : "" %>>--><!-- Main navigation wrapper -->
                 <%
-                
+                    
                 //
                 // TOP-LEVEL NAVIGATION: 
                 //                
@@ -761,7 +748,7 @@ if (!loggedInUser) {
             </nav>
             <!-- Done with breadcrumb navigation -->
             <a id="contentstart"></a>
-            <% } 
+            <% }
             
             if (titleAddOn != null && !titleAddOn.equalsIgnoreCase("none") && !titleAddOn.isEmpty()) {
                 // Print add-on title
