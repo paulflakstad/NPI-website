@@ -303,11 +303,11 @@ h6,
 table caption {
     color:#333b4a;
     margin-bottom:0.2em;
-	font-weight:normal;
+    font-weight: bold;
 }
 h1 {
     font-size: 2.2em;
-    font-weight: bold;
+    /*font-weight: bold;*/
     /*text-shadow:1px 1px 1px #ddd;*/
     /*text-transform:none;*/
     /*padding:0;*/
@@ -322,22 +322,23 @@ h2,
 table caption/*,
 .portal h3*/ {
     padding:0.2em 0 0 0;
-	font-size:2.2em;
+/*    font-size:2.2em;
 }
 .intranet h2,
-.intranet table caption {
+.intranet table caption {*/
     font-size: 1.6em;
-    font-weight: bold;
+    /*font-weight: bold;*/
 }
 h3 {
-	font-size:1.5em;
+    /*font-size:1.5em;
 }
-.intranet h3 {
+.intranet h3 {*/
     font-size: 1.2em;
-    font-weight: bold;
+    /*font-weight: bold;*/
 }
 .portal h3 {
 	padding:0.5em 0 0 0;
+        font-weight: normal;
 }
 h4 {
 	font-size:1em;
@@ -348,11 +349,11 @@ h5 {
 h6 {
 	font-size:0.8em;
 }
-h4, 
+/*h4, 
 h5,
 h6 {
     font-weight:bold;
-}
+}*/
 
 p,
 .paragraph > table {
@@ -368,7 +369,7 @@ table caption {
     margin-top:1em;
     margin-bottom:0.25em;
     text-align:left;	
-    font-weight:normal;
+    /*font-weight:normal;*/
 }
 th {
     background-color:#eee;
@@ -412,7 +413,6 @@ section {
 .nbsp {
     white-space:nowrap;
 }
-
 /*******************************************************************************
  * Stuff presented as tables, but are not tables
  */
@@ -3757,6 +3757,10 @@ nav.pagination a {
 .portal-box {
 	/*margin-bottom:2rem;*/ /* moved to h2 (portal box heading) */
 	overflow:auto;
+}
+
+.portal-box-heading {
+    font-weight: normal;
 }
 
 .portal .boxes h1,
