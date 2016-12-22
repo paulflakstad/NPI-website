@@ -413,6 +413,22 @@ section {
 .nbsp {
     white-space:nowrap;
 }
+
+/*******************************************************************************
+ * Reference lists - typically located at the very bottom of the page
+ * ToDo: Use a class, not ID!
+ */
+#reflist {
+    border-top: 0.2rem solid #c4cad5;
+    margin-top: 5em;
+}
+#reflist ol {
+    padding-left: 2em;
+}
+#reflist li + li {
+    margin-top: 1em;
+}
+
 /*******************************************************************************
  * Stuff presented as tables, but are not tables
  */

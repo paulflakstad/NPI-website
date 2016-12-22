@@ -258,14 +258,13 @@ while (container.hasMoreContent()) {
 
         // Print the paragraph title
         if (CmsAgent.elementExists(title)) {
+            %>
+            <h2 class="heading--section-title<%= accordion ? " toggler-wrapper" : "" %>">
+            <%
             if (accordion) {
                 %> 
-                <a class="toggletrigger" href="javascript:void(0);">
+                <a class="toggler">
                 <%
-            } else {
-            %>
-                <h2>
-            <%
             }
             try {
                 out.print(cnr.resolve(title));
@@ -273,13 +272,18 @@ while (container.hasMoreContent()) {
                 out.print("<!--\nERROR trying to resolve content notation for the title '" + title + "'\n-->");
                 out.print(title);
             }
-            if (!accordion) {
-                %> 
-                </h2>
-                <%
-            } else {
+            if (accordion) {
                 %>
-                </a><div class="toggletarget">
+                </a>
+                <%
+            }
+            %>
+            </h2>
+            <%
+
+            if (accordion) {
+                %>
+                <div class="toggleable">
                 <%
             }
         }
