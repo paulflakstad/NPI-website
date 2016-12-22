@@ -996,7 +996,7 @@ article > .descr {
     margin:0;
 }
 .paragraph {
-    overflow:auto;
+    overflow: visible; /* Allow box-shadows on buttons etc. to spill outside */
 	display:table; /* Needed in order to successfully re-arrange order of child elements */
 	margin-top:1em; 
 	width:100%;
