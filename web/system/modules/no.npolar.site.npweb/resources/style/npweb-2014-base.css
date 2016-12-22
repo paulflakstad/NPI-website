@@ -2731,7 +2731,7 @@ svg.icon {
     font-weight: bold;
     font-size: larger;
     border-radius: 0;
-    margin: 0 auto;
+    margin: 1px auto 0 auto;
     line-height: 2.5em;
     border: none;
     /*border-bottom: 2px solid transparent;*/
@@ -2812,8 +2812,9 @@ svg.icon {
     position: absolute;
     left: 0;
 }
-/* The element that toggles: Any .toggleable that follows directly after a .toggler (sibling level) */
-.toggler + .toggleable {
+/* The element that toggles: Any .toggleable that follows directly after a .toggler[-wrapper] */
+.toggler + .toggleable,
+.toggler-wrapper + .toggleable {
     padding: 2em 1em;
     background-color: rgba(0,0,0,0.05);
     background-color: transparent;
@@ -2840,7 +2841,7 @@ svg.icon {
 .search-panel__filters {
     font-size:0.85em;
     position:relative; 
-    border-top: 1px solid rgba(0,0,0,0.2);
+    /*border-top: 1px solid rgba(0,0,0,0.2);*/
 }
 
 .filters-wrapper,
