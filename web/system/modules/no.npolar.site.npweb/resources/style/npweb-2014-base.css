@@ -2734,7 +2734,7 @@ svg.icon {
     margin: 0 auto;
     line-height: 2.5em;
     border: none;
-    border-bottom: 2px solid transparent;
+    /*border-bottom: 2px solid transparent;*/
     transition: all 0.25s;
     background-color: #e7e7e7;
     background-color: rgba(0,0,0,0.1);
@@ -2766,7 +2766,7 @@ svg.icon {
     /*background-color: rgba(0,0,0,0.075);
     border-bottom-color: rgba(255,0,0,0.5);*/
     background-color: rgba(0,0,0,0.05);
-    border-bottom-color: rgba(0,0,0,0.15);
+    /*border-bottom-color: rgba(0,0,0,0.15);*/
     box-shadow: 0 1em 1em rgba(0,0,0,0.075) inset;
 }
 .toggler[aria-expanded="true"],
