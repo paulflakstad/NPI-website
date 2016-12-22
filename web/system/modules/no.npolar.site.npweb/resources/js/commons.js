@@ -330,6 +330,23 @@ function initToggleables() {
     // The .expanded class can be set either on the parent container or on the 
     // .toggleable element, to indicate that the toggleable content should 
     // initially be shown. Otherwise, it will initially be hidden.
+    
+    var handleToggle = function(e, toggler) {
+        e.preventDefault();
+        var target = getToggleable(toggler);
+        target.toggleClass('expanded');
+        target.parent().toggleClass('expanded');
+        target.slideToggle(400);
+        
+        if (target.hasClass('expanded')) {
+            toggler.attr('aria-expanded', 'true');
+            target.attr('aria-hidden', 'false');
+        } else {
+            toggler.attr('aria-expanded', 'false');
+            target.attr('aria-hidden', 'true');
+        }
+    };
+    
     initToggleablesInside( $('body') );
     /*
     var toggler = $('.toggler');
@@ -342,8 +359,10 @@ function initToggleables() {
     
     $('body').on('click', '.toggler', function(e) {
     //toggler.click(function(e) {
+        handleToggle(e, $(this));
+        /*
         e.preventDefault();
-        var target = $(this).next('.toggleable');
+        var target = getToggleable($(this));
         target.toggleClass('expanded');
         target.parent().toggleClass('expanded');
         target.slideToggle(400);
@@ -355,7 +374,25 @@ function initToggleables() {
             $(this).attr('aria-expanded', 'false');
             target.attr('aria-hidden', 'true');
         }
+        //*/
     });
+}
+
+/**
+ * Gets the .toggleable that immediately follows the given toggler, or its 
+ * parent (if no .toggleable followed the toggler direcly).
+ * 
+ * @param {jQuery} toggler The toggler.
+ * @returns {jQuery|getToggleable.target} The toggler's .toggleable.
+ */
+function getToggleable(toggler) {
+    var target = toggler.next('.toggleable');
+    // Handle case: target was inside a wrapper (e.g. a heading tag)
+    if (target.length === 0) {
+        target = toggler.parent().next('.toggleable');
+    }
+    console.log(".toggleable: (" + target.prop("tagName") + ") " + target);
+    return target;
 }
 
 /**
@@ -371,6 +408,12 @@ function initToggleablesInside(/*jQuery*/container) {
     //  [container]
     //      |- [.toggler]       <-- the trigger, clicked to show/hide stuff
     //      |- [.toggleable]    <-- the target, actual stuff to show/hide
+    //      
+    //      OR:
+    //  [container]
+    //      |- <x>[.toggler]</x>    <-- max 1 wrapper
+    //      |- [.toggleable]        <-- immediately after the wrapper
+    //      
     // 
     // NOTE: The .toggler element should always be an <a>, and ideally with the 
     // following attributes set:
@@ -388,7 +431,7 @@ function initToggleablesInside(/*jQuery*/container) {
     var toggleTriggers = container.find('.toggler');
     
     toggleTriggers.each( function(index) {
-        var target = $(this).next('.toggleable');
+        var target = getToggleable($(this));
         var parent = target.parent();
         var isExpanded = target.hasClass(expandedClass) || parent.hasClass(expandedClass);
         

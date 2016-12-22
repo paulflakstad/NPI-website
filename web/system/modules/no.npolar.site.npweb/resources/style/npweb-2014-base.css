@@ -2739,6 +2739,18 @@ svg.icon {
     background-color: #e7e7e7;
     background-color: rgba(0,0,0,0.1);
 }
+/* Enforce styles for e.g. a h2 child inside an a.toggler */
+.toggler > * {
+    display: inline-block;
+    font-size: 1rem;
+    font-weight: bold;
+}
+/* E.g.: <h2 class="toggler-wrapper"><a class="toggler" ...> */
+.toggler-wrapper {
+    font-size: 1em;
+    margin: 0;
+    padding: 0;
+}
 /* This is the icon/symbol for the .toggler (see also .toggler__icon below) */
 .toggler:before {
     content: "\E811"; /* = arrow down */
