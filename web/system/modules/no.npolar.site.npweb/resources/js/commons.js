@@ -389,9 +389,11 @@ function getToggleable(toggler) {
     var target = toggler.next('.toggleable');
     // Handle case: target was inside a wrapper (e.g. a heading tag)
     if (target.length === 0) {
-        target = toggler.parent().next('.toggleable');
+        var togglerWrapper = toggler.parent();
+        togglerWrapper.addClass("toggler-wrapper");
+        target = togglerWrapper.next('.toggleable');
     }
-    console.log(".toggleable: (" + target.prop("tagName") + ") " + target);
+    //console.log(".toggleable: (" + target.prop("tagName") + ") " + target);
     return target;
 }
 
@@ -411,7 +413,7 @@ function initToggleablesInside(/*jQuery*/container) {
     //      
     //      OR:
     //  [container]
-    //      |- <x>[.toggler]</x>    <-- max 1 wrapper
+    //      |- <x>[.toggler]</x>    <-- (max 1 wrapper, pref. w/class "toggler-wrapper")
     //      |- [.toggleable]        <-- immediately after the wrapper
     //      
     // 
