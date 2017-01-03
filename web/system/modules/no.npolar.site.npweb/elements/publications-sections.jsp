@@ -2,18 +2,20 @@
     Document   : publications-sections, based on publications-ice
     Created on : Aug 13, 2014, 2:13:00 PM
     Author     : Paul-Inge Flakstad, NPI
---%><%@page import="no.npolar.data.api.*,
-                 no.npolar.util.CmsAgent,
-                 java.net.URLEncoder,
-                 java.util.Calendar,
-                 java.util.GregorianCalendar,
-                 java.util.Map,
-                 java.util.HashMap,
-                 java.util.Locale,
-                 java.util.Iterator,
-                 org.opencms.main.OpenCms,
-                 org.opencms.security.CmsRole" session="true"
-%><%!
+--%>
+<%@page import="no.npolar.data.api.*" %>
+<%@page import="no.npolar.util.CmsAgent" %>
+<%@page import="java.net.URLEncoder" %>
+<%@page import="java.util.Calendar" %>
+<%@page import="java.util.GregorianCalendar" %>
+<%@page import="java.util.Map" %>
+<%@page import="java.util.HashMap" %>
+<%@page import="java.util.Locale" %>
+<%@page import="java.util.Iterator" %>
+<%@page import="org.opencms.main.OpenCms" %>
+<%@page import="org.opencms.security.CmsRole" %>
+<%@page session="true" pageEncoding="UTF-8" trimDirectiveWhitespaces="true" %>
+<%!
 public static Map<String, String> translations = new HashMap<String, String>();
 
 /**
@@ -113,23 +115,23 @@ String requestFileUri   = cms.getRequestContext().getUri();
 Locale locale           = cms.getRequestContext().getLocale();
 String loc              = locale.toString();
 
-
+final boolean LOGGED_IN_USER = OpenCms.getRoleManager().hasRole(cms.getCmsObject(), CmsRole.WORKPLACE_USER);
 final boolean COMMENTS  = false;
 
 final String LABEL_YEAR_SELECT_HEADING = loc.equalsIgnoreCase("no") ? "Velg tidsperiode" : "Select time range";
-final String LABEL_YEAR_SELECT = loc.equalsIgnoreCase("no") ? "År" : "Year";
-final String LABEL_YEAR_SELECT_OPT_ALL = loc.equalsIgnoreCase("no") ? "Alle år" : "All years";
+final String LABEL_YEAR_SELECT = loc.equalsIgnoreCase("no") ? "Ã…r" : "Year";
+final String LABEL_YEAR_SELECT_OPT_ALL = loc.equalsIgnoreCase("no") ? "Alle Ã¥r" : "All years";
 final String LABEL_RANGE_FROM = loc.equalsIgnoreCase("no") ? "Fra " : "From ";
 final String LABEL_RANGE_TO = loc.equalsIgnoreCase("no") ? " til " : " to ";
 final String LABEL_RANGE_UPDATE = loc.equalsIgnoreCase("no") ? "Oppdater" : "Update";
-final String LABEL_RANGE_INFO_START = loc.equalsIgnoreCase("no") ? "Lister nå alt" : "Currently listing everything";
+final String LABEL_RANGE_INFO_START = loc.equalsIgnoreCase("no") ? "Lister nÃ¥ alt" : "Currently listing everything";
 
 translations.put("N-ICE", "N-ICE");
 translations.put("ICE Fluxes", loc.equalsIgnoreCase("no") ? "ICE-havis" : "ICE Fluxes");
 translations.put("ICE Antarctica", loc.equalsIgnoreCase("no") ? "ICE-Antarktis" : "ICE Antarctica");
-translations.put("ICE Ecosystems", loc.equalsIgnoreCase("no") ? "ICE-økosystemer" : "ICE Ecosystems");
+translations.put("ICE Ecosystems", loc.equalsIgnoreCase("no") ? "ICE-Ã¸kosystemer" : "ICE Ecosystems");
 translations.put("Biodiversity", loc.equalsIgnoreCase("no") ? "Biodiversitet" : "Biodiversity");
-translations.put("Environmental pollutants", loc.equalsIgnoreCase("no") ? "Miljøgifter" : "Environmental pollutants");
+translations.put("Environmental pollutants", loc.equalsIgnoreCase("no") ? "MiljÃ¸gifter" : "Environmental pollutants");
 translations.put("Geology and geophysics", loc.equalsIgnoreCase("no") ? "Geologi og geofysikk" : "Geology and geophysics");
 translations.put("Oceans and sea ice", loc.equalsIgnoreCase("no") ? "Hav og havis" : "Oceans and sea ice");
 //translations.put("", loc.equalsIgnoreCase("no") ? "" : "");
@@ -178,28 +180,7 @@ if (ylow > -1) {
     }
 }
 
-%>
-<!--
-<div class="searchbox-big">
-    <h2><%= LABEL_YEAR_SELECT_HEADING %></h2>
-    <form action="<%= cms.link(requestFileUri) %>" method="get">
-        <label for="pubyear"><%= LABEL_YEAR_SELECT %>: </label>
-        <select name="year" onchange="submit()" id="pubyear">
-            <option value=""><%= LABEL_YEAR_SELECT_OPT_ALL %></option>
-            <%
-            for (int yOpt = LIMIT_YHIGH; yOpt >= LIMIT_YLOW; yOpt--) {
-                String paramYearValue = createYearParameter(yOpt);
-                out.println("<option value=\"" + yOpt + "\"" 
-                            + (paramYearValue.equals(year) ? " selected=\"selected\"" : "") + ">" // Selected?
-                                + yOpt
-                            + "</option>");
-            }
-            %>
-        </select>
-    </form>
-</div>
--->
-            
+%>            
 <div class="searchbox-big" id="range-tools" style="">
     <div class="filter-widget">
         <h2 class="filters-heading filter-widget-heading"><%= LABEL_YEAR_SELECT_HEADING %></h2>
@@ -209,19 +190,19 @@ if (ylow > -1) {
             <%= LABEL_RANGE_TO %><input type="number" value="<%= yhigh > -1 ? yhigh : "" %>" name="<%= PARAM_NAME_YHIGH %>" id="range-year-high" style="padding:0.5em; border:1px solid #ddd; width:4em; font-size:1.25em;" />
             <div id="range-slider" style="margin: 2em 40px 0;"></div> 
             <br />
-            <!--<input type="submit" value="<%= LABEL_RANGE_UPDATE %>" style="margin-top:1em;" />-->
             <button type="submit" class="cta cta--button" style="margin-top:1em; margin-bottom:1em;"><%= LABEL_RANGE_UPDATE %></button>
         </form>
     </div>
 </div>
-<p style="font-weight:bold; text-align:center;"><%= LABEL_RANGE_INFO_START %><%= ylow > -1 ? (" "+LABEL_RANGE_FROM.toLowerCase()+" "+ylow) : "" %><%= yhigh > ylow ? (LABEL_RANGE_TO+yhigh) : "" %>:</p>
+<p style="font-weight:bold; text-align:center;">
+    <%= LABEL_RANGE_INFO_START %><%= ylow > -1 ? (" "+LABEL_RANGE_FROM.toLowerCase()+" "+ylow) : "" %><%= yhigh > ylow ? (LABEL_RANGE_TO+yhigh) : "" %>:
+</p>
+<div class="toggle-panel">
 <%
 
-final boolean LOGGED_IN_USER = OpenCms.getRoleManager().hasRole(cms.getCmsObject(), CmsRole.WORKPLACE_USER);
-final int LIMIT = 9999;
 
 // Available programmes
-String[] programmes = new String[] { 
+String[] programmeNames = new String[] { 
                                     "N-ICE2015"
                                     ,"ICE Antarctica"
                                     ,"ICE Fluxes"
@@ -232,26 +213,49 @@ String[] programmes = new String[] {
                                     ,"Oceans and sea ice"
                                 };
 // Loop the programmes
-for (int j = 0; j < programmes.length; j++) {
-    
-    // Parameters used to specify a particular results list
-    Map<String, String[]> params = new HashMap<String, String[]>();
-    params.put(APIService.PARAM_QUERY, new String[]{ "" }); // Catch-all search term
-    params.put(APIService.PARAM_SORT_BY, new String[]{ "-published_sort" }); // Sort by publish time
-    params.put(APIService.PARAM_RESULTS_COUNT, new String[]{ Integer.toString(LIMIT) }); // Limit results
-    params.put(APIService.PARAM_MODIFIER_NOT.concat(Publication.JSON_KEY_DRAFT), new String[]{ Publication.JSON_VAL_DRAFT_TRUE }); // Don't include drafts
-    params.put(SearchFilter.PARAM_NAME_PREFIX.concat(Publication.JSON_KEY_STATE), new String[]{ Publication.JSON_VAL_STATE_PUBLISHED + "|" + Publication.JSON_VAL_STATE_ACCEPTED }); // Require state: published or accepted
-    params.put(SearchFilter.PARAM_NAME_PREFIX.concat(Publication.JSON_KEY_PROGRAMMES), new String[] { URLEncoder.encode(programmes[j], "utf-8") }); // Require the particular programme currently in the loop
-    
-    if (year != null) { params.put(SearchFilter.PARAM_NAME_PREFIX.concat(Publication.JSON_KEY_PUB_TIME), new String[] { year }); } // If a year was selected by the user, limit results to that year
-    
+for (int j = 0; j < programmeNames.length; j++) {
     // Collection to hold matching publications
     GroupedCollection<Publication> publications = null;
-    PublicationService pubService = null;
+    PublicationService ps = null;
     try {
-        pubService = new PublicationService(cms.getRequestContext().getLocale());
-        publications = pubService.getPublications(params);
-        if (COMMENTS) { out.println("Read " + (publications == null ? "null" : publications.size()) + " publications from service URL <a href=\"" + pubService.getLastServiceURL() + "\" target=\"_blank\">" + pubService.getLastServiceURL() + "</a>."); }
+        ps = new PublicationService(cms.getRequestContext().getLocale());
+        // Exclude drafts
+        ps.setAllowDrafts(false);
+        // Catch-all search term
+        ps.setFreetextQuery("");
+        
+        ps.addDefaultParameter(
+                // Sort by publish time, newest first
+                APIService.Param.SORT_BY,
+                APIService.modReverse(Publication.Key.PUB_TIME)
+        ).addDefaultParameter(
+                // Limit results
+                APIService.Param.RESULTS_LIMIT,
+                APIService.ParamVal.RESULTS_LIMIT_NO_LIMIT
+        ).addDefaultParameter(
+                // Require specific state(s)
+                APIService.modFilter(Publication.Key.STATE),
+                APIService.combine(
+                        APIService.Delimiter.OR,
+                        Publication.Val.STATE_PUBLISHED,
+                        Publication.Val.STATE_ACCEPTED
+                )
+        );
+        // Require the particular programme currently in the loop
+        ps.addFilter(
+                Publication.Key.PROGRAMMES, 
+                URLEncoder.encode(programmeNames[j], "utf-8")
+        );
+        // If a year was selected by the user, limit results to that year
+        if (year != null) {
+            ps.addFilter(
+                    Publication.Key.PUB_TIME,
+                    year
+            );
+        }
+        
+        publications = ps.getPublications();
+        if (COMMENTS) { out.println("Read " + (publications == null ? "null" : publications.size()) + " publications from service URL <a href=\"" + ps.getLastServiceURL() + "\" target=\"_blank\">" + ps.getLastServiceURL() + "</a>."); }
     } catch (Exception e) {
         out.println("An unexpected error occured while constructing the publications list.");
         if (LOGGED_IN_USER) {
@@ -268,57 +272,59 @@ for (int j = 0; j < programmes.length; j++) {
     // -------------------------------------------------------------------------
     // HTML output
     //--------------------------------------------------------------------------
-    out.println("<!--\nAPI URL:\n" + pubService.getLastServiceURL() + "\n-->");
+    out.println("<!--\nAPI URL:\n" + ps.getLastServiceURL() + "\n-->");
     if (COMMENTS) out.println("<!-- Ready to output HTML, " + publications.size() + " publication(s) in this set. -->");
+    
     if (!publications.isEmpty()) {
+        String targetIdOuter = "publist-" + j;
         %>
-        <div class="toggleable collapsed">
-        <h2 class="toggletrigger" style="margin-top:2px;"><%= translate(programmes[j]) %> (<%= publications.size() %>)</h2>
-        <div class="toggletarget">
+        <h2 class="toggler-wrapper">
+            <a class="toggler" href="#<%= targetIdOuter %>" aria-controls="<%= targetIdOuter %>">
+                <%= translate(programmeNames[j]) %> (<%= publications.size() %>)
+            </a>
+        </h2>
+        <div class="toggleable" id="<%= targetIdOuter %>">
         <%
         // Get types of publications
         Iterator<String> iTypes = publications.getTypesContained().iterator();
+        int k = 0;
         while (iTypes.hasNext()) {
             String listType = iTypes.next();
             Iterator<Publication> iPubs = publications.getListGroup(listType).iterator();
             if (iPubs.hasNext()) {
+                String targetIdInner = "publist-" + j +"-" + (k++);
                 %>
-                <div class="toggleable collapsed">
-                <h3 class="toggletrigger" style="margin:0 0 2px 1em; font-size:1.25em;"><%= cms.labelUnicode("label.np.pubtype." + listType) %> (<%= publications.getListGroup(listType).size() %>)</h3>
-                <div class="toggletarget" style="margin:-2px 0 2px 1.25em;">
-                <ul class="fullwidth indent line-items">
-                <%
-                while (iPubs.hasNext()) {
-                    %>
-                    <li><%= iPubs.next().toString() %></li>
+                <h3 class="toggler-wrapper">
+                    <a class="toggler" href="#<%= targetIdInner %>" aria-controls="<%= targetIdInner %>">
+                        <%= cms.labelUnicode("label.np.pubtype." + listType) %> (<%= publications.getListGroup(listType).size() %>)
+                    </a>
+                </h3>
+                <div class="toggleable" id="<%= targetIdInner %>">
+                    <ul class="fullwidth indent line-items">
                     <%
-                }
-                %>
-                </ul>
-                </div>
+                    while (iPubs.hasNext()) {
+                        %>
+                        <li><%= iPubs.next().toString() %></li>
+                        <%
+                    }
+                    %>
+                    </ul>
                 </div>
                 <%
             }
         }
         %>
         </div>
-        </div>
         <%
     }
     else {
         %>
-        <h2 class="toggletrigger" style="color:#bbb; margin-top:2px;"><%= translate(programmes[j]) %> (0)</h2>
+        <h2 class="toggler-wrapper"><a class="toggler" style="color:#bbb;"><%= translate(programmeNames[j]) %> (0)</a></h2>
         <%
     }
 }
-
-/*<script type="text/javascript">
-    $('.toggleable.collapsed > .toggletarget').slideUp(1);
-    $('.toggleable.open > .toggletrigger').append(' <em class="icon-up-open-big"></em>');
-    $('.toggleable.collapsed > .toggletrigger').append(' <em class="icon-down-open-big"></em>');
-    $('.toggleable > .toggletrigger').click(function() { $(this).next('.toggletarget').slideToggle(500); $(this).children().first().toggleClass('icon-up-open-big icon-down-open-big'); });
-</script>*/
 %>
+</div>
 <script type="text/javascript">
 $('#range-slider').noUiSlider({
     range: {
