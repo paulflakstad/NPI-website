@@ -1273,13 +1273,13 @@ if (autoPubs || CmsAgent.elementExists(datasetsUri)) {
     if (autoPubs) {
         params.put("id", pid);
         
-        out.println("<h2 class=\"toggler\">" + cms.labelUnicode("label.np.list.publications.heading") + "</h2>");
+        out.println("<h2 class=\"toggler-wrapper\"><a class=\"toggler\" href=\"#publications-loader\">" + cms.labelUnicode("label.np.list.publications.heading") + "</a></h2>");
         out.println("<div class=\"toggleable\" id=\"publications-loader\"></div>");
         //out.println("<div id=\"publications-loader\"></div>");
     }
     if (CmsAgent.elementExists(datasetsUri)) {
         params.put("uri", datasetsUri);
-        out.println("<h2 class=\"toggler\">" + cms.labelUnicode("label.np.list.datasets.heading") + "</h2>");
+        out.println("<h2 class=\"toggler-wrapper\"><a class=\"toggler\" href=\"#datasets-loader\">" + cms.labelUnicode("label.np.list.datasets.heading") + "</a></h2>");
         out.println("<div class=\"toggleable\" id=\"datasets-loader\"></div>");
         //out.println("<div id=\"datasets-loader\"></div>");
     }
