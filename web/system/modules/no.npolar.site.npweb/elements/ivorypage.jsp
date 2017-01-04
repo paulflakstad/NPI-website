@@ -73,8 +73,7 @@ boolean wrapInclude                 = cms.property("template-include-file-wrap")
                                             (cms.property("template-include-file-wrap").equalsIgnoreCase("outside") ? false : true) : true;
 // Template ("outer" or "master" template)
 String template                     = cms.getTemplate();
-String[] elements                   = null;
-try { cms.getTemplateIncludeElements(); } catch (Exception e) { elements = new String[] { "head", "foot" }; } // Should move this to CmsAgent
+String[] elements                   = cms.getTemplateIncludeElements();
 
 
 /*
@@ -228,7 +227,13 @@ while (container.hasMoreContent()) {
         out.println("<!-- Extension found (wrap inside): '" + includeFile + "' -->");
         cms.includeAny(includeFile, "resourceUri");
     }
-    
+
+    //
+    // Pre-defined and generic link lists, handled by a separate file
+    //
+    //request.setAttribute("autoRelatedPages", "true"); // Must be set to let the linklist handler know we want to list the fact pages
+    sess.setAttribute("autoRelatedPages", "true"); // Must be set to let the linklist handler know we want to list the fact pages
+    cms.include(LINKLIST_HANDLER);
     
     cms.include("/system/modules/no.npolar.common.pageelements/elements/cn-reflist.jsp");
     
@@ -251,14 +256,15 @@ while (container.hasMoreContent()) {
         cms.includeAny(navAddPath, "resourceUri");
     }
     
+    /* // Moved link list output from ".rightside" to end of ".main-content"
     //
     // Pre-defined and generic link lists, handled by a separate file
     //
     //request.setAttribute("autoRelatedPages", "true"); // Must be set to let the linklist handler know we want to list the fact pages
     sess.setAttribute("autoRelatedPages", "true"); // Must be set to let the linklist handler know we want to list the fact pages
     cms.include(LINKLIST_HANDLER);
+    //*/
     out.println("</div><!-- #rightside -->");
-    
     
     
     

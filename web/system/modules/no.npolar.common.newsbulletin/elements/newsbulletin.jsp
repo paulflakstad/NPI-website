@@ -233,17 +233,22 @@ public boolean isEmailAddress(String s) {
         }
 
 
+        //
+        // Pre-defined and generic link lists, handled by a separate file
+        //
+        cms.include(LINKLIST_HANDLER);
+        
         out.println("</article><!-- .main-content -->");
         out.println("<div id=\"rightside\" class=\"column small\">");
         //out.println("</div><!-- .twocol -->");
         //out.println("<div class=\"onecol\">");
 
-
+        /*
         //
         // Pre-defined and generic link lists, handled by a separate file
         //
         cms.include(LINKLIST_HANDLER);
-
+        //*/
 
         out.println("</div><!-- #rightside -->");
         //out.println("<div class=\"description\">" + categories + "</div>");
