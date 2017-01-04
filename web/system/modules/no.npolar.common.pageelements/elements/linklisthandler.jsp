@@ -29,10 +29,8 @@ public String getTitleValue(String url) throws java.io.IOException {
     String enc = conn.getHeaderField("Content-Type"); // e.g.: 'text/html; charset=UTF-8'
     if (enc.indexOf("=") > -1) {
         enc = enc.substring(enc.indexOf("=") + 1); // extract the substring 'UTF-8'
-        //out.println("<!-- Encoding determined as: '" + enc + "' -->");
     } else {
         enc = "utf-8";
-        //out.println("<!-- Encoding could not be determined, fallback to '" + enc + "' -->");
     }
 
     StringBuffer contentBuffer = new StringBuffer(1024);
@@ -40,7 +38,6 @@ public String getTitleValue(String url) throws java.io.IOException {
     BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), enc.toLowerCase())); // Particular encoding
     String inputLine;
     while ((inputLine = in.readLine()) != null) {
-        //System.out.println(inputLine);
         contentBuffer.append(inputLine);
         if (inputLine.contains("</title>"))
             break;
@@ -162,7 +159,6 @@ public String getListItems(CmsAgent cms, I_CmsXmlContentContainer linkList, Stri
 
     // If the mapping is not empty, it means we're sorting alphabetically, and no links have been printed yet
     if (!mapping.isEmpty()) {
-        //out.println("<li><em>Sorted alphabetically:</em></li>");
         // Get an iterator and iterate the entire map
         Iterator itr = mapping.keySet().iterator();
         while (itr.hasNext()) {
@@ -216,19 +212,14 @@ public List getAutoRelatedResources(CmsObject cmso, String relatedToUri) throws 
 
     Iterator itr = list.iterator();
     if (itr.hasNext()) {
-        //out.println("<h5>Contending resources:</h5>");
-        //out.println("<ul>");
         while (itr.hasNext()) {
             CmsResource r = (CmsResource)itr.next();
-            //out.println("<li>" + cmso.getSitePath(r) + "</li>");
             String[] propStr = cmso.readPropertyObject(r, "uri.related", false).getValue("").split("\\|");
             for (int i = 0; i < propStr.length; i++) {
-                //out.println("<!--\nChecking for match:\n" + propStr[i] + "\n" + lookupUri + "\n -->");
                 if (propStr[i].equals(cmso.getRequestContext().getSiteRoot().concat(relatedToUri)))
                     matches.add(r);
             }
         }
-        //out.println("</ul>");
     }
     return matches;
 }
@@ -257,6 +248,7 @@ CmsObject cmso                      = cms.getCmsObject();
 String loc                          = cms.getRequestContext().getLocale().toString();
 HttpSession sess                    = cms.getRequest().getSession(true);
 final boolean EDITABLE              = false;
+StringBuilder html                  = new StringBuilder(512);
 
 // Get the URI for the current page
 String currentPageUri = cms.getRequestContext().getUri();
@@ -283,7 +275,7 @@ while (container.hasMoreContent()) {
         // Get the list title and order
         linkListTitle = cms.contentshow(linkList, "Title").replaceAll(" & ", " &amp; ");
         listOrder = cms.contentshow(linkList, "ListOrder");
-        out.println(getLinkListHtml(linkListTitle, getListItems(cms, linkList, listOrder), null, null));
+        html.append(getLinkListHtml(linkListTitle, getListItems(cms, linkList, listOrder), null, null));
     }
     
     //
@@ -344,19 +336,19 @@ while (container.hasMoreContent()) {
                         }
                         // Handle case: Element "RelatedPages" does not exist, but auto-related pages exist
                         if (!linkList.getXmlDocument().hasValue(preDefinedLinkList, cms.getRequestContext().getLocale())) { // Check if any "RelatedPages" links are present
-                            //out.println("<!-- 'RelatedPages' did not exist, displaying only auto-related pages -->");
+                            //html.append("<!-- 'RelatedPages' did not exist, displaying only auto-related pages -->");
                             moreLinkText = (loc.equalsIgnoreCase("no") ? "Vis alle" : "View all") + " (" + autoRelated.size() + ")";
                             int maxItems = 4; // List this many auto-related pages directly
                             if (autoRelated.size() > maxItems) {
                                 // Print a list of the N first auto-related pages + a link to the full list
-                                out.println(getLinkListHtml(linkListTitle, getAutoRelatedResourcesHtml(cmso, currentPageUri, maxItems), moreLinkUri, moreLinkText));
+                                html.append(getLinkListHtml(linkListTitle, getAutoRelatedResourcesHtml(cmso, currentPageUri, maxItems), moreLinkUri, moreLinkText));
                             }
                             else {
                                 // Print all the auto-related pages (no need to link to the list itself)
-                                out.println(getLinkListHtml(linkListTitle, getAutoRelatedResourcesHtml(cmso, currentPageUri, maxItems), null, null));
+                                html.append(getLinkListHtml(linkListTitle, getAutoRelatedResourcesHtml(cmso, currentPageUri, maxItems), null, null));
                             }
                         } else {
-                            //out.println("<!-- 'RelatedPages' existed -->");
+                            //html.append("<!-- 'RelatedPages' existed -->");
                         }
                     }
                 }
@@ -365,14 +357,18 @@ while (container.hasMoreContent()) {
             while (linkList.hasMoreContent()) {
                 // Get the list order
                 listOrder = cms.contentshow(linkList, "ListOrder");
-                out.println(getLinkListHtml(linkListTitle, getListItems(cms, linkList, listOrder), moreLinkUri, moreLinkText));
+                html.append(getLinkListHtml(linkListTitle, getListItems(cms, linkList, listOrder), moreLinkUri, moreLinkText));
             }
         }
         else {
             // Print the "Fact pages" link list
-            out.println(getLinkListHtml(linkListTitle, getFactPages(cms, linkList), null, null));
+            html.append(getLinkListHtml(linkListTitle, getFactPages(cms, linkList), null, null));
         }
     } // while-loop for pre-defined link lists
+    
+    if (html.length() > 0) {
+        out.println(html.toString());
+    }
     
     //
     // Done with pre-defined link lists
