@@ -178,6 +178,7 @@ public String getLinkListHtml(String linkListTitle, String listItems, String mor
     if (!listItems.isEmpty() || moreLinkUri != null) { // Require at least one of listItems OR moreLinkUri to be non-empty
         html += beginLinkListHtml(linkListTitle);
         //html += "<ul class=\"linklist\">";
+        html += "<div class=\"toggleable\">";
         html += "<ul>";
         // Add the items
         html += listItems;
@@ -185,21 +186,28 @@ public String getLinkListHtml(String linkListTitle, String listItems, String mor
             html += "<li><a href=\"" + moreLinkUri + "\"><em>" + moreLinkText + "</em></a></li>";
         }
         html += "</ul>";
+        html += "</div>";
         html += endLinkListHtml();
     }
     return html;
 }
 
 public String beginLinkListHtml(String linkListTitle) {
-    String html = "";
-    html += "<aside>";
-    if (linkListTitle != null)
-        html += "<h4>" + linkListTitle + "</h4>";
+    String html = "<h3 class=\"toggler-wrapper\">";
+    html += "<a class=\"toggler\">";
+    //html += "<aside>";
+    if (linkListTitle != null) {
+        html += linkListTitle;
+    } else {
+        html += "Related links";
+    }
+    html += "</a></h3>";
     return html;
 }
 
 public String endLinkListHtml() {
-    return "</aside>";
+    //return "</aside>";
+    return "";
 }
 
 /**
@@ -249,6 +257,8 @@ String loc                          = cms.getRequestContext().getLocale().toStri
 HttpSession sess                    = cms.getRequest().getSession(true);
 final boolean EDITABLE              = false;
 StringBuilder html                  = new StringBuilder(512);
+
+final String LABEL_SEE_ALSO         = loc.equalsIgnoreCase("no") ? "Se også" : "See also";
 
 // Get the URI for the current page
 String currentPageUri = cms.getRequestContext().getUri();
@@ -367,7 +377,14 @@ while (container.hasMoreContent()) {
     } // while-loop for pre-defined link lists
     
     if (html.length() > 0) {
-        out.println(html.toString());
+        %>
+        <aside class="article-meta">
+            <h2 class="article-meta__heading"><%= LABEL_SEE_ALSO %></h2>
+            <div class="article-meta__content">
+                <%= html.toString() %>
+            </div>
+        </aside>
+        <%
     }
     
     //
