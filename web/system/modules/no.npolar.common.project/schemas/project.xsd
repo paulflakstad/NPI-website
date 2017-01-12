@@ -7,6 +7,7 @@
     <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.project/schemas/optionallink.xsd"/>
     <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.project/schemas/person.xsd"/>
     <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.project/schemas/mentions.xsd"/>
+    <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.project/schemas/pubopts.xsd"/>
     
     <xsd:element name="Projects" type="OpenCmsProjects"/>
 
@@ -23,6 +24,7 @@
             <xsd:element name="Featured"        type="OpenCmsBoolean" default="false" />
             <xsd:element name="SuppressAPIText" type="OpenCmsBoolean" default="false" />
             <xsd:element name="AutoPubs"        type="OpenCmsBoolean" default="false" />
+            <xsd:element name="PubOpts"         type="OpenCmsPubOpt" minOccurs="0" maxOccurs="1" />
             <xsd:element name="DatasetsURI"     type="OpenCmsVarLink" minOccurs="0" maxOccurs="1" />
             <xsd:element name="NpiIdentifier"   type="OpenCmsString" />
             <xsd:element name="RisIdentifier"   type="OpenCmsString" />
@@ -78,6 +80,7 @@
                 <searchsetting element="Featured"       searchcontent="false" />
                 <searchsetting element="SuppressAPIText" searchcontent="false" />
                 <searchsetting element="AutoPubs" searchcontent="false" />
+                <searchsetting element="PubOpts" searchcontent="false" />
                 <searchsetting element="DatasetsURI" searchcontent="false" />
             </searchsettings>
             <validationrules>

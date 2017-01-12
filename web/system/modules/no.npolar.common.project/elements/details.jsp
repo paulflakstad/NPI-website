@@ -652,6 +652,7 @@ String ocmsLogo = null;
 String ocmsImage = null;
 String autoPubsStr = null;
 boolean autoPubs = false;
+String autoPubsTypes= "";
 String datasetsUri = null;
 
 String moreUri = projectFilePath;//requestFolderUri + "" + pid + ".html";
@@ -675,6 +676,44 @@ if (cmso.existsResource(moreUri)) {
         autoPubsStr = cms.contentshow(container, "AutoPubs");
         autoPubs    = Boolean.valueOf(autoPubsStr).booleanValue(); // Default is false
         datasetsUri = cms.contentshow(container, "DatasetsURI");
+        
+        
+        // Define which publication types to include (default is all)
+        I_CmsXmlContentContainer pubOpts = cms.contentloop(container, "PubOpts");
+        if (pubOpts != null) {
+            if (pubOpts.hasMoreResources()) {
+                if (Boolean.valueOf(cms.contentshow(pubOpts, "PeerReviewed")))
+                    autoPubsTypes += Publication.Type.PEER_REVIEWED + "|";
+                if (Boolean.valueOf(cms.contentshow(pubOpts, "Editorial")))
+                    autoPubsTypes += Publication.Type.EDITORIAL + "|";
+                if (Boolean.valueOf(cms.contentshow(pubOpts, "Review")))
+                    autoPubsTypes += Publication.Type.REVIEW + "|";
+                if (Boolean.valueOf(cms.contentshow(pubOpts, "Correction")))
+                    autoPubsTypes += Publication.Type.CORRECTION + "|";
+                if (Boolean.valueOf(cms.contentshow(pubOpts, "Book")))
+                    autoPubsTypes += Publication.Type.BOOK + "|";
+                if (Boolean.valueOf(cms.contentshow(pubOpts, "Poster")))
+                    autoPubsTypes += Publication.Type.POSTER + "|";
+                if (Boolean.valueOf(cms.contentshow(pubOpts, "Report")))
+                    autoPubsTypes += Publication.Type.REPORT + "|";
+                if (Boolean.valueOf(cms.contentshow(pubOpts, "Abstract")))
+                    autoPubsTypes += Publication.Type.ABSTRACT + "|";
+                if (Boolean.valueOf(cms.contentshow(pubOpts, "PhD")))
+                    autoPubsTypes += Publication.Type.PHD + "|";
+                if (Boolean.valueOf(cms.contentshow(pubOpts, "Master")))
+                    autoPubsTypes += Publication.Type.MASTER + "|";
+                if (Boolean.valueOf(cms.contentshow(pubOpts, "Map")))
+                    autoPubsTypes += Publication.Type.MAP + "|";
+                if (Boolean.valueOf(cms.contentshow(pubOpts, "Proceedings")))
+                    autoPubsTypes += Publication.Type.PROCEEDINGS + "|";
+                if (Boolean.valueOf(cms.contentshow(pubOpts, "Popular")))
+                    autoPubsTypes += Publication.Type.POPULAR + "|";
+                if (Boolean.valueOf(cms.contentshow(pubOpts, "Other")))
+                    autoPubsTypes += Publication.Type.OTHER + "|";
+            }
+        }
+        if (!autoPubsTypes.isEmpty()) 
+            autoPubsTypes = autoPubsTypes.substring(0, autoPubsTypes.length()-1); // Strip trailing "|"
     }
 }
 
@@ -1272,6 +1311,9 @@ if (autoPubs || CmsAgent.elementExists(datasetsUri)) {
     
     if (autoPubs) {
         params.put("id", pid);
+        if (!autoPubsTypes.isEmpty()) {
+            params.put("pubtypes", autoPubsTypes);
+        }
         
         out.println("<h2 class=\"toggler-wrapper\"><a class=\"toggler\" href=\"#publications-loader\">" + cms.labelUnicode("label.np.list.publications.heading") + "</a></h2>");
         out.println("<div class=\"toggleable\" id=\"publications-loader\"></div>");

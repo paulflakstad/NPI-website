@@ -1,0 +1,54 @@
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+	
+    <xsd:include schemaLocation="opencms://opencms-xmlcontent.xsd" />
+    
+    <xsd:element name="PubOpts" type="OpenCmsPubOpts" />
+
+    <xsd:complexType name="OpenCmsPubOpts">
+        <xsd:sequence>
+            <xsd:element name="PubOpt" type="OpenCmsPubOpt" minOccurs="0" maxOccurs="unbounded" />
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="OpenCmsPubOpt">
+        <xsd:sequence>
+            <xsd:element name="PeerReviewed"    type="OpenCmsBoolean"   default="true" />
+            <xsd:element name="Editorial"       type="OpenCmsBoolean"   default="true" />
+            <xsd:element name="Review"          type="OpenCmsBoolean"   default="true" />
+            <xsd:element name="Correction"      type="OpenCmsBoolean"   default="true" />
+            <xsd:element name="Book"            type="OpenCmsBoolean"   default="true" />
+            <xsd:element name="Poster"          type="OpenCmsBoolean"   default="true" />
+            <xsd:element name="Report"          type="OpenCmsBoolean"   default="true" />
+            <xsd:element name="Abstract"        type="OpenCmsBoolean"   default="true" />
+            <xsd:element name="PhD"             type="OpenCmsBoolean"   default="true" />
+            <xsd:element name="Master"          type="OpenCmsBoolean"   default="true" />
+            <xsd:element name="Map"             type="OpenCmsBoolean"   default="true" />
+            <xsd:element name="Proceedings"     type="OpenCmsBoolean"   default="true" />
+            <xsd:element name="Popular"         type="OpenCmsBoolean"   default="true" />
+            <xsd:element name="Other"           type="OpenCmsBoolean"   default="true" />
+        </xsd:sequence>
+        <xsd:attribute name="language" type="OpenCmsLocale" use="optional"/>
+    </xsd:complexType>
+
+    <xsd:annotation>
+        <xsd:appinfo>
+            <resourcebundle name="no.npolar.common.project.workplace"/>
+            <searchsettings>
+                <searchsetting element="PeerReviewed" searchcontent="false" />
+                <searchsetting element="Editorial" searchcontent="false" />
+                <searchsetting element="Review" searchcontent="false" />
+                <searchsetting element="Correction" searchcontent="false" />
+                <searchsetting element="Book" searchcontent="false" />
+                <searchsetting element="Poster" searchcontent="false" />
+                <searchsetting element="Report" searchcontent="false" />
+                <searchsetting element="Abstract" searchcontent="false" />
+                <searchsetting element="PhD" searchcontent="false" />
+                <searchsetting element="Master" searchcontent="false" />
+                <searchsetting element="Map" searchcontent="false" />
+                <searchsetting element="Proceedings" searchcontent="false" />
+                <searchsetting element="Popular" searchcontent="false" />
+                <searchsetting element="Other" searchcontent="false" />
+            </searchsettings>
+        </xsd:appinfo>
+    </xsd:annotation>
+</xsd:schema>
