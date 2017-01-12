@@ -31,6 +31,7 @@ public String getStackTrace(Exception e) {
     return trace;
 }
 
+/*
 public String idFromEmail(String email) {
     if (email.contains("%40npolar.no"))
         return email.replace("%40npolar.no", "");
@@ -39,6 +40,7 @@ public String idFromEmail(String email) {
     else
         return email;
 }
+//*/
 %><%
 // JSP action element + some commonly used stuff
 CmsAgent cms            = new CmsAgent(pageContext, request, response);
@@ -74,6 +76,7 @@ final boolean LOGGED_IN_USER = OpenCms.getRoleManager().hasRole(cms.getCmsObject
 // Output "debug" info?
 final boolean DEBUG = false;
 
+/*
 //
 // Parameters to use in the request to the service:
 //
@@ -88,8 +91,9 @@ if (pubTypes != null && !pubTypes.isEmpty())
 //params.put("facets"             , new String[]{ "false" }); // No facets 
 //params.put("filter-state"       , new String[]{ "published" }); // Must be published
 //params.put("filter-draft"       , new String[]{ "no" }); // Must be published (does not work, entries with a missing "draft" flag will also be included)
+//*/
 
-//*
+/*
 // Set custom default parameters (needed because the standard default sort parameter is no good)
 // ToDo: Fix parameter handling in class library, sort out:
 //          - default parameters (should be fallbacks for non-existing but needed parameters, overridden as soon as a value is given)
@@ -109,17 +113,48 @@ defaultParams.put("sort",                   new String[]{ "-published_sort" }); 
 //*/
 
 
+
+
 //
 // Fetch publications
 //
 GroupedCollection<Publication> publications = null;
 try {
-    // Create the "publication service" instance
-    PublicationService pubService = new PublicationService(cms.getRequestContext().getLocale());
-    // Set custom defaults
-    pubService.setDefaultParameters(defaultParams);
+    PublicationService pubService = new PublicationService( new Locale("en") );
+    pubService.addDefaultFilter(
+            Publication.Key.STATE, 
+            PublicationService.Delimiter.OR,
+            Publication.Val.STATE_PUBLISHED, 
+            Publication.Val.STATE_ACCEPTED,
+            Publication.Val.STATE_SUBMITTED
+    ).addDefaultParameter(
+            PublicationService.Param.FACETS, 
+            PublicationService.ParamVal.FACETS_NONE
+    ).addDefaultParameter(
+            PublicationService.Param.SORT_BY,
+            APIService.modReverse(Publication.Key.PUB_TIME)
+    ).addFilter(
+            APIService.combine(
+                    APIService.Delimiter.CHILD, 
+                    Publication.Key.LINKS, 
+                    Publication.Key.LINK_HREF
+            ), 
+            id
+    ).addParameter(
+            PublicationService.Param.RESULTS_LIMIT, 
+            PublicationService.ParamVal.RESULTS_LIMIT_NO_LIMIT
+    );
+    pubService.setFreetextQuery("");
+            
+    
+    if (pubTypes != null && !pubTypes.isEmpty()) {
+        pubService.addFilter(Publication.Key.TYPE, pubTypes);
+    }
+    
+    
+    
     // Get publications
-    publications = pubService.getPublications(params);
+    publications = pubService.getPublications();
     out.println("<!-- API URL: " + pubService.getLastServiceURL() + " -->");
     if (DEBUG) { out.println("Read " + (publications == null ? "null" : publications.size()) + " publications from service URL <a href=\"" + pubService.getLastServiceURL() + "\" target=\"_blank\">" + pubService.getLastServiceURL() + "</a>."); }
 } catch (Exception e) {
