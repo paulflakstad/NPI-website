@@ -67,6 +67,7 @@
                 <mapping element="Banner" mapto="property:image.banner" />
             </mappings>
             <layouts>
+                <layout element="Description" widget="TextareaWidget" configuration="3" />
                 <layout element="Category" widget="CategoryWidget" configuration="onlyleafs=true|property=category" />
                 <layout element="TimeDisplay" widget="SelectorWidget" configuration="datetime:Date and time|dateonly:Only date, disregard time" />
                 <layout element="Banner" widget="ImageGalleryWidget" configuration="{useformat:true}" />
