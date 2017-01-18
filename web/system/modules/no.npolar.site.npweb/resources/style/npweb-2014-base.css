@@ -85,7 +85,7 @@
  * Orange (#fff background) 	= #cc4a22
  * Orange (#eee background) 	= #bd4422
  * Blue (#fff-#eee backgrounds) = #06d
- * Blue (alternative) 			= #005dff
+ * Blue (alternative) 		= #005dff
  */
 
 /* Reset stuff, and set the box-sizing property */
@@ -4374,6 +4374,7 @@ section > h2.bluebar-dark {
     /*background: #3d5283;*/
     /*color: white;*/
     font-size: large;
+    margin: 0;
     padding: 0.5rem;
     font-weight: lighter;
     background-color: #e4e4e4;
