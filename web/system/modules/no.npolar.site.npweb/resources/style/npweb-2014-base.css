@@ -76,6 +76,9 @@
  * A mobile-first approach is used: the style set for very very small screens
  * is the starting point, and stuff is added as the screen size grows.
  *
+ * As of Jan 2017, there is a LOT of legacy/junk stuff here. The plan: Create 
+ * a brand new base.css for the next design version.
+ *
  * Author: Paul-Inge Flakstad, NPI
  */
  
