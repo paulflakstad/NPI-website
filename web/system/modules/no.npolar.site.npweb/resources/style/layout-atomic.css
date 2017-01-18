@@ -302,6 +302,9 @@ h1,h2,h3,h4,h5,h6,
 	width:120px;
 	margin:0;
 }
+.card--h .card__title {
+    margin-top: 0;
+}
 .layout-group.triple .layout-box.span2 {
 	width:66.666%;
 	float:left;
