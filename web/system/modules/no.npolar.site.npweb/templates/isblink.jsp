@@ -924,6 +924,82 @@ if (!pinnedNav) {
         if (Modernizr.svg) {
             $("#identity img").attr({ src : "<%= cms.link("/system/modules/no.npolar.site.npweb/resources/style/np-logo.svg") %>", style : "height:76%;" });
         }
+        
+        ////////////////////////////////////////////////////////////////////////
+        // Create available positions list to show on hover
+        //
+        
+        // First set the ID on the correct list item
+        $('#nav_quicklinks a').each(function() {
+            var quicklinkUri = $(this).attr('href');
+            if (quicklinkUri.indexOf('ledige-stillinger') !== -1 
+                    || quicklinkUri.indexOf('available-positions') !== -1) {
+                $(this).closest('li').attr('id', 'quicklink-openings');
+            }
+        });
+        // Then append an empty list to that item
+        $('#quicklink-openings').append('<ul id="openings" />');
+        
+        
+        // Parse the RSS feed (we access it via a local proxy to avoid CORS issues)
+        //var feedUri = 'https://www.jobbnorge.no/apps/joblist/joblistbuilder.ashx?id=f80a5414-0e95-425a-82e1-a64fa9060bc5';
+        var feedUri = '/<%= loc.toString() %>/rss-proxy-jobbnorge.jsp';
+
+        $.ajax({
+            url: feedUri,
+            type: 'GET',
+            dataType: 'html',
+            success: function(data) {
+                console.log('Parsing available positions feed...');
+                var xmlDoc = $.parseXML(data);
+
+                if (xmlDoc == null) {
+                    console.log('Parsing failed!');
+                } else {
+                    console.log('Parsed OK!');
+                    var $xml = $(xmlDoc);
+                    createOpeningsList($xml);
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown ){
+                console.log('ERROR! ' + textStatus + ' [[' + errorThrown + ']]');
+            }
+        });
+
+        function createOpeningsList($xml) {
+            console.log('Creating the list...');
+            $xml.find('item').each( function() {
+                var $this = $(this);
+                var item = {
+                    title	: $this.find("title").text().trim(),
+                    link	: $this.find("link").text(),
+                    description	: $this.find("description").text(),
+                    pubDate	: $this.find("pubDate").text(),
+                    author	: $this.find("author").text(),
+                    dept	: $this.find("jn\\:departmentname").text(),
+                    workplace 	: $this.find("jn\\:location").text(),
+                    deadline	: $this.find("jn\\:deadline").text()
+                };
+                console.log('Adding item "' + item.title + '"...');
+                $('#openings').append('<li class="card card--h card--xsymbolic">'
+                                            + '<a class="card__content" href="' + item.link + '">'
+                                                + '<h2 class="card__title">'
+                                                    + '<span class="">' + item.title + '</span>'
+                                                + '</h2>'
+                                                + '<p class="card__text">' 
+                                                    + item.dept + ', ' + item.workplace + ' - ' + item.deadline 
+                                                + '</p>'
+                                            + '</a>'
+                                        + '</li>');
+            });
+            $('#quicklink-openings a').first().append('<span class="stat-bubble">' + $('#openings > li').length + '<span>');
+        }
+
+        $('#quicklink-openings').on('mouseenter', function() { $('#openings').addClass('visible'); });
+        $('#quicklink-openings').on('mouseleave', function() { $('#openings').removeClass('visible'); });
+        //
+        // DONE with positions list
+        ////////////////////////////////////////////////////////////////////////
     </script>
     
 </body>

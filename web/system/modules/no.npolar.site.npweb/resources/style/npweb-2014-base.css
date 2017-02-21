@@ -4485,6 +4485,75 @@ section > h2.bluebar-dark {
 #homepage.intranet .search-panel {
     margin: 1px 1px 2rem 1px;
 }
+
+/*******************************************************************************
+* Stuff for the available positions list, shown on hover
+*/
+#nav_quicklinks li {
+    position: relative;
+}
+#nav_quicklinks .stat-bubble {
+    background-color: #f00;
+    color: #fff;
+    font-size: smaller;
+    text-align: center;
+    width: 1.5em;
+    height: 1.5em;
+    line-height: 1.5em;
+    border-radius: 50%;
+    position: absolute;
+    right: 0.25em;
+    top: -0.5em;
+}
+#openings {
+    position: absolute;
+    display: block;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: #fff;
+    z-index: -99;
+    width: 0;
+    height: 0;
+    opacity: 0;
+    transition: opacity .3s;
+}
+#openings.visible {
+    top: 100%;
+    right: auto;
+    width: 30vw;
+    height: auto;
+    max-height: 400px;
+    max-height: 90vh;
+    opacity: 1;
+    z-index: 99;
+    box-shadow: 0 2px 3px rgba(0,0,0,0.7);
+}
+#openings li {
+    float: none;
+}
+#openings .card {
+    box-shadow: 0 2px 3px rgba(0,0,0,0.2);
+    margin: 10px;
+    display: block;
+    float: none;
+}
+#openings .card:hover {
+    box-shadow: 0 2px 3px rgba(0,0,0,0.5);
+}
+#openings .card + .card {
+    border-top: 1px solid #dfdfdf;
+}
+#openings .card__content {
+    padding: 0.5em;
+    display: block;
+}
+#openings .card__title {
+    font-size: 1em;
+    margin: 0;
+}
 /* END temp.css */
 
 
