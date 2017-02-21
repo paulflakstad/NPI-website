@@ -413,6 +413,10 @@ section {
     overflow:auto;
     margin-bottom:0;
 }
+abbr {
+    border-bottom: 2px dotted #ddd;
+    cursor: help;
+}
 
 .nbsp {
     white-space:nowrap;
@@ -968,8 +972,12 @@ h1 .scientific-name {
 }
 .smallertext,
 .smalltext,
-.small-text {
+.small-text,
+.affiliation {
 	font-size:0.8em;
+}
+.affiliation.affiliation--personal {
+    font-style: italic; /* maybe? (not sure) */
 }
 .byline {
     color:#666;
