@@ -971,14 +971,16 @@ if (!pinnedNav) {
             $xml.find('item').each( function() {
                 var $this = $(this);
                 var item = {
-                    title	: $this.find("title").text().trim(),
+                    title	: $this.find("jn\\:positiontitle, positiontitle").text().trim(),
                     link	: $this.find("link").text(),
                     description	: $this.find("description").text(),
                     pubDate	: $this.find("pubDate").text(),
                     author	: $this.find("author").text(),
-                    dept	: $this.find("jn\\:departmentname").text(),
-                    workplace 	: $this.find("jn\\:location").text(),
-                    deadline	: $this.find("jn\\:deadline").text()
+                    scope       : $this.find("jn\\:jobscope, jobscope"),
+                    duration    : $this.find("jn\\:jobduration, jobduration"),
+                    dept	: $this.find("jn\\:departmentname, departmentname").text(),
+                    workplace 	: $this.find("jn\\:location, location").text(),
+                    deadline	: $this.find("jn\\:deadline, deadline").text()
                 };
                 console.log('Adding item "' + item.title + '"...');
                 $('#openings').append('<li class="card card--h card--xsymbolic">'
