@@ -505,7 +505,7 @@ if (sess.getAttribute("fs") != null && !((String)sess.getAttribute("fs")).equals
 %>
 
 <script type="text/javascript" src="<%= cms.link("/system/modules/no.npolar.site.npweb/resources/js/modernizr.js") %>"></script>
-<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 <script type="text/javascript" src="<%= cms.link("/system/modules/no.npolar.site.npweb/resources/js/highslide/highslide-full.js") %>"></script>
 <!--<script type="text/javascript" src="<cms:link>/system/modules/no.npolar.common.jquery/resources/jquery.qtip.min.js</cms:link>"></script>-->
 <!--<script type="text/javascript" src="<cms:link>//cdnjs.cloudflare.com/ajax/libs/qtip2/2.1.1/jquery.qtip.min.js</cms:link>"></script>-->
