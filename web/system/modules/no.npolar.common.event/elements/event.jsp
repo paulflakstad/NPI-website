@@ -123,6 +123,7 @@ final String LABEL_ADD_TO_CALENDAR  = loc.equalsIgnoreCase("no") ? "Legg til i<b
 final String URI_ICAL_EXPORT        = "/system/modules/no.npolar.common.event/elements/icalendar.jsp".concat("?event=" + requestFileUri);
 
 final String URI_PARAGRAPH_HANDLER  = "/system/modules/no.npolar.common.pageelements/elements/paragraphhandler.jsp";
+final String URI_REFERENCES_LIST    = "/system/modules/no.npolar.common.pageelements/elements/cn-reflist.jsp";
 
 final String CAT_PATH_NPI_SEMINAR   = "event/npi-seminar/";
 final String CAT_PATH_BOOK_CAFE     = "event/book-cafe/";
@@ -498,7 +499,7 @@ while (container.hasMoreContent()) {
     // The "Paragraph" elements is a common page element, with its own designated handler
     //
     cms.include(URI_PARAGRAPH_HANDLER);
-    
+
     
     
     personlist = cms.contentloop(container, "People");
@@ -696,6 +697,10 @@ if (!partnersHtml.toString().isEmpty()) {
     
     out.println("</div>");
 }
+
+
+// Include the list of references (if any)
+cms.include(URI_REFERENCES_LIST);
 
 cms.include(template, elements[1], EDITABLE_TEMPLATE);
 %>
