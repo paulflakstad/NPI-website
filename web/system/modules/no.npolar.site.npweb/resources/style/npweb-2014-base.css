@@ -4478,6 +4478,7 @@ section > h2.bluebar-dark {
 }
 #homepage.intranet .timestamp {
     font-size: smaller;
+    color: #666;
 }
 #homepage.intranet #service-list {
     margin-top: 1rem;
@@ -4535,24 +4536,29 @@ section > h2.bluebar-dark {
     float: none;
 }
 #openings .card {
-    box-shadow: 0 2px 3px rgba(0,0,0,0.2);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
     margin: 10px;
     display: block;
     float: none;
+    transition: all .2s ease-in-out;
 }
 #openings .card:hover {
-    box-shadow: 0 2px 3px rgba(0,0,0,0.5);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
-#openings .card + .card {
+/*#openings .card + .card {
     border-top: 1px solid #dfdfdf;
-}
+}*/
 #openings .card__content {
     padding: 0.5em;
     display: block;
 }
 #openings .card__title {
-    font-size: 1em;
+    font-size: 1rem;
+    font-weight: normal;
     margin: 0;
+}
+#openings .card__text {
+    color: #666;
 }
 /* END temp.css */
 
