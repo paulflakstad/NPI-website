@@ -4,34 +4,40 @@
                     objects (all hits, mixed from all sources), and arrange the 
                     hits (mixed) using their SCORE. This should be quite easy.
                     Also, one should offer the option to filter by source 
-                    (Isblink, personalhåndbok, HMS-håndbok etc.)
+                    (Isblink, personalhÃ¥ndbok, HMS-hÃ¥ndbok etc.)
     Created on : Sep 3, 2014, 5:21:04 PM
     Author     : Paul-Inge Flakstad, Norwegian Polar Institute
---%><%@page import="org.dom4j.Element"%>
+--%>
+<%@page import="org.apache.commons.lang.StringEscapeUtils"%>
+<%@page import="org.jsoup.nodes.Element"%>
 <%@page import="java.util.regex.Matcher"%>
 <%@page import="java.util.regex.Pattern"%>
-<%@page import="org.opencms.main.*, 
-            org.opencms.security.CmsRoleManager,
-            org.opencms.security.CmsRole,
-            org.opencms.search.*, 
-            org.opencms.search.fields.*, 
-            org.opencms.file.*, 
-            org.opencms.json.*,
-            org.opencms.jsp.*, 
-            org.opencms.util.CmsStringUtil,
-            org.dom4j.Document,
-            org.dom4j.Node,
-            org.dom4j.io.SAXReader,
-            java.util.*,
-            java.io.*,
-            java.net.*,
-            org.apache.commons.httpclient.*,
-            org.apache.commons.httpclient.cookie.CookiePolicy,
-            org.apache.commons.httpclient.cookie.CookieSpec,
-            org.apache.commons.httpclient.methods.*" buffer="none"
-%><%@taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"
-%><%@include file="compendia-personal-credentials.jsp" 
-%><%!
+<%@page import="org.opencms.main.*"%>
+<%@page import="org.opencms.security.CmsRoleManager"%>
+<%@page import="org.opencms.security.CmsRole"%>
+<%@page import="org.opencms.search.*"%>
+<%@page import="org.opencms.search.fields.*"%>
+<%@page import="org.opencms.file.*"%>
+<%@page import="org.opencms.json.*"%>
+<%@page import="org.opencms.jsp.*"%>
+<%@page import="org.opencms.util.CmsStringUtil"%>
+<%@page import="org.dom4j.Document"%>
+<%@page import="org.dom4j.Node"%>
+<%@page import="org.dom4j.io.SAXReader"%>
+<%@page import="java.util.*"%>
+<%@page import="java.io.*"%>
+<%@page import="java.net.*"%>
+<%@page import="org.jsoup.Jsoup"%>
+<%@page import="org.jsoup.safety.Whitelist"%>
+<%@page import="org.jsoup.select.Elements"%>
+<%@page import="org.apache.commons.httpclient.*"%>
+<%@page import="org.apache.commons.httpclient.cookie.CookiePolicy"%>
+<%@page import="org.apache.commons.httpclient.cookie.CookieSpec"%>
+<%@page import="org.apache.commons.httpclient.methods.*"%>
+<%@page buffer="none" pageEncoding="UTF-8" trimDirectiveWhitespaces="true" %>
+<%@taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"%>
+<%@include file="compendia-personal-credentials.jsp"%>
+<%!
 public static String note = "";
 
 public static class SearchResultHit implements Comparator<SearchResultHit> {
@@ -210,7 +216,484 @@ public class SearchResultsXml {
     }
 }
 
-public static String getCompendiaPersonalSerp(String usr, String pwd, String query, SearchResults serp, String sourceSelected) throws Exception {
+/**
+ * Injects hits from Compendia Personal (CP).
+ * <p>
+ * The CP search returns hits from all the different sources on that domain -
+ * "HMS-hÃ¥ndbok", "Compendia Stat", and "PersonalhÃ¥ndbok"
+ * <p>
+ * This method tries to mimic a human user doing a search. It is also a hack; if 
+ * CP at any point changes critical HTML or URIs, this method will break pending 
+ * an update which reflects any such external changes.
+ */
+public static void injectCompendiaPersonalSerp(String usr, 
+                                                String pwd,
+                                                String key,
+                                                String query,
+                                                SearchResults serp,
+                                                String sourceSelected,
+                                                JspWriter out) throws Exception {
+    //
+    // See 
+    // http://svn.apache.org/viewvc/httpcomponents/oac.hc3x/trunk/src/examples/FormLoginDemo.java?revision=604567&view=markup
+    //
+
+    // Churn out some extra comments along the way?
+    final boolean DEBUG = true;
+
+    // How to access Compendia Personal (CP)
+    final String CP_PROTOCOL = "https";
+    final String CP_DOMAIN = "cp.compendia.no";
+    final int CP_PORT = 443;
+
+    // Login-related URIs on CP
+    final String CP_LOGIN_FORM_URI = "/login";
+    final String CP_LOGIN_VALIDATION_URI = "/login_check";
+
+    // Login details for CP. (These must reflect the form at CP_LOGIN_FORM_URI.)
+    final String CP_LOGIN_FORM_USR = "_username";
+    final String CP_LOGIN_FORM_PWD = "_password";
+    final String CP_LOGIN_FORM_SUBMIT = "_submit";
+    final String CP_LOGIN_FORM_SUBMIT_VAL = "Logg+inn";
+
+    // The search results page URI on CP
+    final String CP_SERP_URI_BASE = "/norsk-polarinstitutt/hms-handbok/search";
+    final String CP_SERP_URI_QUERY = CP_SERP_URI_BASE + "?q=" + URLEncoder.encode(query, "utf-8");
+
+    // 
+    HttpClient compendiaPersonalClient = new HttpClient();
+    compendiaPersonalClient.getParams().setCookiePolicy(CookiePolicy.RFC_2109);
+    //httpclient.getParams().setCookiePolicy(CookiePolicy.BROWSER_COMPATIBILITY);
+    compendiaPersonalClient.getHostConfiguration().setHost(CP_DOMAIN, CP_PORT, CP_PROTOCOL);
+
+    // First, attempt to get the SERP directly, without logging in.
+    HttpMethod theRequest = new GetMethod(CP_SERP_URI_QUERY);
+    theRequest.setFollowRedirects(true);
+    int responseStatusCode = compendiaPersonalClient.executeMethod(theRequest);
+
+    if (DEBUG) { out.println("<p>Initial GET " + theRequest.getPath() + ": Response was '" + theRequest.getStatusLine().toString() + "'</p>"); }
+    //if (DEBUG) { out.println("<p>" + theRequest.getResponseHeader("Location") + "</p>"); }
+
+    if (theRequest.getPath().equals(CP_LOGIN_FORM_URI)) {
+        if (DEBUG) { out.println("<p>Posting login...</p>"); }
+        // Our last GET was for the login page => Do the login
+        theRequest.releaseConnection(); // Release first
+        theRequest = new PostMethod(CP_LOGIN_VALIDATION_URI);
+        // Set the login details (parameter names like in the form)
+        NameValuePair[] loginParams = 
+                new NameValuePair[] {
+                    new NameValuePair(CP_LOGIN_FORM_USR, usr)
+                    ,new NameValuePair(CP_LOGIN_FORM_PWD, pwd)
+                    ,new NameValuePair(CP_LOGIN_FORM_SUBMIT, CP_LOGIN_FORM_SUBMIT_VAL)
+                };
+        ((PostMethod)theRequest).setRequestBody(loginParams);
+        // POST the login details
+        responseStatusCode = compendiaPersonalClient.executeMethod(theRequest);
+
+        // HttpClient 3.x does not allow for follwing redirects when using POST
+        // => Follow it manually
+        if (responseStatusCode == HttpStatus.SC_MOVED_PERMANENTLY
+                || responseStatusCode == HttpStatus.SC_MOVED_TEMPORARILY) {
+            Header locationHeader = theRequest.getResponseHeader("Location");
+            // Find out what to GET next, then get it (but release the current 
+            // HttpMethod instance first)
+            String redirectTarget = locationHeader.getValue();
+            if (DEBUG) { out.println("<p>Login form validation responded with redirecting to " + redirectTarget + ". Getting it...</p>"); }
+            theRequest.releaseConnection();
+            theRequest = new GetMethod(redirectTarget);
+            theRequest.setFollowRedirects(true);
+            responseStatusCode = compendiaPersonalClient.executeMethod(theRequest);
+        }
+    }
+
+    if (DEBUG) { out.println("<p>Past login step. Last requested path was " + theRequest.getPath() + "</p>"); }
+    
+    // If we want to show cookie values
+    if (DEBUG) { 
+        CookieSpec cookiespec = CookiePolicy.getDefaultSpec();
+        org.apache.commons.httpclient.Cookie[] initcookies = cookiespec.match(
+            CP_DOMAIN, CP_PORT, "/", false, compendiaPersonalClient.getState().getCookies()
+        );
+        out.println("<p>Initial set of cookies:</p>");    
+        if (initcookies.length == 0) {
+            out.println("<p>None</p>");    
+        } else {
+            for (int i = 0; i < initcookies.length; i++) {
+                out.println("<br>- " + initcookies[i].toString());
+            }
+        }
+    }
+
+    /*
+    // For safety
+    int numRedirects = 0;
+    final int MAX_ALLOWED_REDIRECTS = 20;
+
+    // Check the response status code for this initial request.
+    // (We expect to be redirected several times (302s), forcing us to log in)
+    if (responseStatusCode != HttpStatus.SC_OK) {
+        while ((responseStatusCode == HttpStatus.SC_MOVED_TEMPORARILY
+                || responseStatusCode == HttpStatus.SC_MOVED_PERMANENTLY)
+                && numRedirects++ < MAX_ALLOWED_REDIRECTS) {
+            // We got a redirect
+            Header locationHeader = theRequest.getResponseHeader("Location");
+            if (DEBUG) { out.println("<p>GET " + theRequest.getPath() + ": Response was '" + theRequest.getStatusLine().toString() + "'</p>"); }
+            if (DEBUG) { out.println("<p>" + locationHeader + "</p>"); }
+
+            // Find out what to GET next, then get it (but release the current 
+            // HttpMethod instance first)
+            String redirectTarget = locationHeader.getValue();
+            theRequest.releaseConnection();
+            theRequest = new GetMethod(redirectTarget);
+            theRequest.setFollowRedirects(false);
+            compendiaPersonalClient.executeMethod(theRequest);
+
+            if (redirectTarget.equals(CP_LOGIN_FORM_URI)) {
+                // Our last GET was the login page => Do the login
+                // (Since we're doing one extra request here, we release first)
+                theRequest.releaseConnection();
+                theRequest = new PostMethod(CP_LOGIN_VALIDATION_URI);
+                theRequest.setFollowRedirects(false);
+                // Set the login details (parameter names like in the form)
+                NameValuePair[] loginParams = 
+                        new NameValuePair[] {
+                            new NameValuePair(CP_LOGIN_FORM_USR, usr)
+                            ,new NameValuePair(CP_LOGIN_FORM_PWD, pwd)
+                            ,new NameValuePair(CP_LOGIN_FORM_SUBMIT, CP_LOGIN_FORM_SUBMIT_VAL)
+                        };
+                ((PostMethod)theRequest).setRequestBody(loginParams);
+                // POST login details
+                compendiaPersonalClient.executeMethod(theRequest);
+            } 
+            
+            responseStatusCode = theRequest.getStatusCode();
+        }
+    }
+    //*/
+
+
+
+    /*
+    // GET the login page
+    GetMethod authget = new GetMethod(CP_LOGIN_FORM_URI);
+    httpclient.executeMethod(authget);
+    if (DEBUG) { out.println("<p>GET " + CP_LOGIN_FORM_URI + ": response was " + authget.getStatusLine().toString() + "</p>"); }
+    authget.releaseConnection();
+        
+    // See if we got any cookies from the login page
+    CookieSpec cookiespec = CookiePolicy.getDefaultSpec();
+    org.apache.commons.httpclient.Cookie[] initcookies = cookiespec.match(
+        CP_DOMAIN, CP_PORT, "/", false, httpclient.getState().getCookies()
+    );
+    if (DEBUG) { 
+        out.println("<p>Initial set of cookies:</p>");    
+        if (initcookies.length == 0) {
+            out.println("<p>None</p>");    
+        } else {
+            for (int i = 0; i < initcookies.length; i++) {
+                out.println("<br>- " + initcookies[i].toString());
+            }
+        }
+    }
+
+    // Mimic a login via the login page
+    PostMethod authpost = new PostMethod(CP_LOGIN_VALIDATION_URI);
+    // Set the login details (parameter names like in the form)
+    NameValuePair[] loginParams = 
+            new NameValuePair[] {
+                new NameValuePair(CP_LOGIN_FORM_USR, usr)
+                ,new NameValuePair(CP_LOGIN_FORM_PWD, pwd)
+                ,new NameValuePair(CP_LOGIN_FORM_SUBMIT, CP_LOGIN_FORM_SUBMIT_VAL)
+            };
+    authpost.setRequestBody(loginParams);
+    // POST login details
+    httpclient.executeMethod(authpost);
+    
+    // 
+    int statuscode = authpost.getStatusCode();
+    if (statuscode == HttpStatus.SC_MOVED_TEMPORARILY) {
+        Header locationHeader = authpost.getResponseHeader("Location");
+        if (DEBUG) { out.println("<p>Response to login POST was '" + authpost.getStatusLine().toString() + "'</p>"); }
+        if (DEBUG) { out.println("<p>" + locationHeader + "</p>"); }
+
+        String nextPage = locationHeader.getValue();
+        authpost.releaseConnection();
+
+        if (nextPage != null && !nextPage.equals("")) {
+            GetMethod nextGet = new GetMethod(nextPage);
+            httpclient.executeMethod(nextGet);
+            if (DEBUG) { out.println("<p>GET " + nextPage + ": response was " + nextGet.getStatusLine().toString() + "</p>"); }
+
+            statuscode = nextGet.getStatusCode();
+            if (statuscode == HttpStatus.SC_MOVED_TEMPORARILY) {
+                locationHeader = nextGet.getResponseHeader("Location");
+                if (DEBUG) { out.println("<p>" + locationHeader + "</p>"); }
+                nextPage = locationHeader.getValue();
+                nextGet.releaseConnection();
+
+                nextGet = new GetMethod(nextPage);
+                httpclient.executeMethod(nextGet);
+                if (DEBUG) { out.println("<p>GET " + nextPage + ": response was " + nextGet.getStatusLine().toString() + "</p>"); }
+            } else {
+                nextGet.releaseConnection();
+            }
+        }
+    }
+
+    // At this point, we should be authenticated as the shared common user.
+    
+    // GET the SERP's HTML source
+    // I.e. get("/norsk-polarinstitutt/hms-handbok/search?q=" + query)
+    GetMethod serpGet = new GetMethod(CP_SERP_URI_QUERY);
+    httpclient.executeMethod(serpGet);
+    if (DEBUG) { out.println("<p>GET SERP at " + CP_SERP_URI_QUERY + ": respose was " + serpGet.getStatusLine().toString() + "</p>"); }
+    //*/
+
+    // At this point, we should be authenticated as the shared common user.
+
+    String serpSource = theRequest.getResponseBodyAsString();
+    theRequest.releaseConnection();
+
+    // Parse the HTML and cherrypick the interesting bits 
+    // (Note the jsoup dependency here)
+    org.jsoup.nodes.Document serpDoc = Jsoup.parse(serpSource);
+
+    // Pick the interesting bits from the response html
+    Elements hitLinks =     serpDoc.select(".main-results-without-dn p");
+    Elements hitBottom =    serpDoc.select(".main-results-without-dn p + table");
+
+    // Whitelists to use in the cleaning up of our HTML extractions
+    Whitelist whitelistLink = new Whitelist()
+            .addTags(
+                "a"
+            ).addAttributes(
+                "a", 
+                "href"
+    );
+    Whitelist whitelistMeta = new Whitelist()
+            .addTags(
+                "a", 
+                "span",
+                "b",
+                "strong"
+            ).addAttributes(
+                "a",
+                "href"
+    );
+
+    if (DEBUG) { out.println("<p>hitLinks.size() is " + hitLinks.size() + ", hitBottom.size() is " + hitBottom.size() + "</p>"); }
+
+    if (!hitLinks.isEmpty()) {
+        for (int i = 0; i < hitLinks.size(); i++) {
+            String linkTag = Jsoup.clean(hitLinks.get(i).html(), whitelistLink);
+            String linkUri = Jsoup.parse(linkTag).select("a").first().attr("href");
+
+            // The "key" parameter must be present in order for links to work
+            linkUri = linkUri
+                                //.replace("http://", "https://")
+                                .concat(linkUri.contains("?") ? "&amp;" : "?").concat("key=" + key);
+            String linkText = Jsoup.parse(linkTag).text();
+            // Get the snippet/source(+category)
+            String linkMeta = Jsoup.clean(hitBottom.get(i).html(), whitelistMeta);
+            // First, we split this into [snippet] and [source(+category)]
+            // Because we know it will have this structure: 
+            //  <span>[snippet]</span>[source(+ category)]
+            // we can just use basic string operations
+            String linkSnippet = linkMeta.substring("<span>".length(), linkMeta.lastIndexOf("</span")); 
+            String linkSourceAndCategory = linkMeta.substring(linkMeta.lastIndexOf("</span"));
+            // Next, we need to split the source and catogory, in order to 
+            // create a SearchResultHit instance for this hit.
+            // Source and category separation is inconsistent, so fix that first:
+            //  1.) Replace en dash with hyphen (to ensure consistent delimiter)
+            linkSourceAndCategory = linkSourceAndCategory.replace(" -", " -");
+            //  2.) Split on that hyphen (even no-category hits will have one)
+            String linkSource = StringEscapeUtils.unescapeHtml(linkSourceAndCategory.split(" -")[0]);
+            //  3.) Strip leading <span> from the link source
+            linkSource = linkSource.substring(linkSource.indexOf(">") + 1);
+            //  4.) See if a category was provided (it won't always be)
+            String linkCategory = null;
+            try { 
+                linkCategory = linkSourceAndCategory.split(" -")[1].trim(); 
+            } catch (ArrayIndexOutOfBoundsException e) {}
+            
+            // Finally, create the hit instance.
+            // ...or don't (if a source filter was activated by the user and it 
+            // doesn't match this hit's source)
+            if (sourceSelected == null || sourceSelected.equals(linkSource)) {
+                serp.add(new SearchResultHit(linkText, linkSnippet, linkCategory, linkUri, linkUri, linkSource, 98));
+            }
+        }
+
+    } else {
+        // Do nothing
+    }
+    /*
+    // Before we can request a SERP, we need to provide login details so we can
+    // do the request as an authenticated user
+    
+    HttpClient httpclient = new HttpClient();
+    httpclient.getParams().setCookiePolicy(CookiePolicy.RFC_2109);
+    //httpclient.getParams().setCookiePolicy(CookiePolicy.BROWSER_COMPATIBILITY);
+    httpclient.getHostConfiguration().setHost(CP_DOMAIN, CP_PORT, CP_PROTOCOL);
+    
+    
+    // GET the login page
+    GetMethod authget = new GetMethod(CP_LOGIN_FORM_URI);
+    httpclient.executeMethod(authget);
+    if (DEBUG) { out.println("<p>GET " + CP_LOGIN_FORM_URI + ": response was " + authget.getStatusLine().toString() + "</p>"); }
+    authget.releaseConnection();
+        
+    // See if we got any cookies from the login page
+    CookieSpec cookiespec = CookiePolicy.getDefaultSpec();
+    org.apache.commons.httpclient.Cookie[] initcookies = cookiespec.match(
+        CP_DOMAIN, CP_PORT, "/", false, httpclient.getState().getCookies()
+    );
+    if (DEBUG) { 
+        out.println("<p>Initial set of cookies:</p>");    
+        if (initcookies.length == 0) {
+            out.println("<p>None</p>");    
+        } else {
+            for (int i = 0; i < initcookies.length; i++) {
+                out.println("<br>- " + initcookies[i].toString());
+            }
+        }
+    }
+
+    // Mimic a login via the login page
+    PostMethod authpost = new PostMethod(CP_LOGIN_VALIDATION_URI);
+    // Set the login details (parameter names like in the form)
+    NameValuePair[] loginParams = 
+            new NameValuePair[] {
+                new NameValuePair(CP_LOGIN_FORM_USR, usr)
+                ,new NameValuePair(CP_LOGIN_FORM_PWD, pwd)
+                ,new NameValuePair(CP_LOGIN_FORM_SUBMIT, CP_LOGIN_FORM_SUBMIT_VAL)
+            };
+    authpost.setRequestBody(loginParams);
+    // POST login details
+    httpclient.executeMethod(authpost);
+    
+    // 
+    int statuscode = authpost.getStatusCode();
+    if (statuscode == HttpStatus.SC_MOVED_TEMPORARILY) {
+        Header locationHeader = authpost.getResponseHeader("Location");
+        if (DEBUG) { out.println("<p>Response to login POST was '" + authpost.getStatusLine().toString() + "'</p>"); }
+        if (DEBUG) { out.println("<p>" + locationHeader + "</p>"); }
+
+        String nextPage = locationHeader.getValue();
+        authpost.releaseConnection();
+
+        if (nextPage != null && !nextPage.equals("")) {
+            GetMethod nextGet = new GetMethod(nextPage);
+            httpclient.executeMethod(nextGet);
+            if (DEBUG) { out.println("<p>GET " + nextPage + ": response was " + nextGet.getStatusLine().toString() + "</p>"); }
+
+            statuscode = nextGet.getStatusCode();
+            if (statuscode == HttpStatus.SC_MOVED_TEMPORARILY) {
+                locationHeader = nextGet.getResponseHeader("Location");
+                if (DEBUG) { out.println("<p>" + locationHeader + "</p>"); }
+                nextPage = locationHeader.getValue();
+                nextGet.releaseConnection();
+
+                nextGet = new GetMethod(nextPage);
+                httpclient.executeMethod(nextGet);
+                if (DEBUG) { out.println("<p>GET " + nextPage + ": response was " + nextGet.getStatusLine().toString() + "</p>"); }
+            } else {
+                nextGet.releaseConnection();
+            }
+        }
+    }
+
+    // At this point, we should be authenticated as the shared common user.
+    
+    // GET the SERP's HTML source
+    // I.e. get("/norsk-polarinstitutt/hms-handbok/search?q=" + query)
+    GetMethod serpGet = new GetMethod(CP_SERP_URI_QUERY);
+    httpclient.executeMethod(serpGet);
+    if (DEBUG) { out.println("<p>GET SERP at " + CP_SERP_URI_QUERY + ": respose was " + serpGet.getStatusLine().toString() + "</p>"); }
+    String serpSource = serpGet.getResponseBodyAsString();
+    serpGet.releaseConnection();
+
+    // Parse the HTML and cherrypick the interesting bits 
+    // (Note the jsoup dependency here)
+    org.jsoup.nodes.Document serpDoc = Jsoup.parse(serpSource);
+
+    // Pick the interesting bits from the response html
+    Elements hitLinks =     serpDoc.select(".main-results-without-dn p");
+    Elements hitBottom =    serpDoc.select(".main-results-without-dn p + table");
+
+    // Whitelists to use in the cleaning up of our HTML extractions
+    Whitelist whitelistLink = new Whitelist()
+            .addTags(
+                "a"
+            ).addAttributes(
+                "a", 
+                "href"
+    );
+    Whitelist whitelistMeta = new Whitelist()
+            .addTags(
+                "a", 
+                "span",
+                "b",
+                "strong"
+            ).addAttributes(
+                "a",
+                "href"
+    );
+
+    if (DEBUG) { out.println("<p>hitLinks.size() is " + hitLinks.size() + ", hitBottom.size() is " + hitBottom.size() + "</p>"); }
+
+    if (!hitLinks.isEmpty()) {
+        for (int i = 0; i < hitLinks.size(); i++) {
+            String linkTag = Jsoup.clean(hitLinks.get(i).html(), whitelistLink);
+            String linkUri = Jsoup.parse(linkTag).select("a").first().attr("href");
+
+            // The "key" parameter must be present in order for links to work
+            linkUri = linkUri
+                                //.replace("http://", "https://")
+                                .concat(linkUri.contains("?") ? "&amp;" : "?").concat("key=" + key);
+            String linkText = Jsoup.parse(linkTag).text();
+            // Get the snippet/source(+category)
+            String linkMeta = Jsoup.clean(hitBottom.get(i).html(), whitelistMeta);
+            // First, we split this into [snippet] and [source(+category)]
+            // Because we know it will have this structure: 
+            //  <span>[snippet]</span>[source(+ category)]
+            // we can just use basic string operations
+            String linkSnippet = linkMeta.substring("<span>".length(), linkMeta.lastIndexOf("</span")); 
+            String linkSourceAndCategory = linkMeta.substring(linkMeta.lastIndexOf("</span"));
+            // Next, we need to split the source and catogory, in order to 
+            // create a SearchResultHit instance for this hit.
+            // Source and category separation is inconsistent, so fix that first:
+            //  1.) Replace en dash with hyphen (to ensure consistent delimiter)
+            linkSourceAndCategory = linkSourceAndCategory.replace(" -", " -");
+            //  2.) Split on that hyphen (even no-category hits will have one)
+            String linkSource = StringEscapeUtils.unescapeHtml(linkSourceAndCategory.split(" -")[0]);
+            //  3.) Strip leading <span> from the link source
+            linkSource = linkSource.substring(linkSource.indexOf(">") + 1);
+            //  4.) See if a category was provided (it won't always be)
+            String linkCategory = null;
+            try { 
+                linkCategory = linkSourceAndCategory.split(" -")[1].trim(); 
+            } catch (ArrayIndexOutOfBoundsException e) {}
+            
+            // Finally, create the hit instance.
+            // ...or don't (if a source filter was activated by the user and it 
+            // doesn't match this hit's source)
+            if (sourceSelected == null || sourceSelected.equals(linkSource)) {
+                serp.add(new SearchResultHit(linkText, linkSnippet, linkCategory, linkUri, linkUri, linkSource, 98));
+            }
+        }
+
+    } else {
+        // Do nothing
+    }
+    //*/
+}
+
+public static String getCompendiaPersonalSerp(String usr,
+                                                String pwd,
+                                                String query,
+                                                SearchResults serp,
+                                                String sourceSelected) throws Exception {
     //
     // See http://svn.apache.org/viewvc/httpcomponents/oac.hc3x/trunk/src/examples/FormLoginDemo.java?revision=604567&view=markup
     //
@@ -322,7 +805,7 @@ public static String getCompendiaPersonalSerp(String usr, String pwd, String que
 
                             /*if (!items.isEmpty())
                                 s += "<a href=\"" + protocol + "://" + domain + pathSerpHuman + "\">";*/
-                            //s += "<h2>Personalhåndboka: " + numHits + " treff</h2>";
+                            //s += "<h2>PersonalhÃ¥ndboka: " + numHits + " treff</h2>";
                             s += "<a class=\"toggletrigger\" href=\"javascript:void(0);\">" + numHits + " treff i " + databaseName + "</a>";
                             /*if (!items.isEmpty())
                                 s += "</a>";*/
@@ -378,7 +861,7 @@ public static String getCompendiaPersonalSerp(String usr, String pwd, String que
                     }
                 }
             }
-            //s += "<a href=\"" + protocol + "://" + domain + pathSerpHuman + "\">Gå til dette søket</a>";
+            //s += "<a href=\"" + protocol + "://" + domain + pathSerpHuman + "\">GÃ¥ til dette sÃ¸ket</a>";
         }
     /*} catch (Exception e) {
         return e.getMessage();
@@ -511,7 +994,7 @@ public static String getParameter(CmsJspActionElement cms, String paramName) {
     boolean onlineProject = cms.getRequestContext().currentProject().isOnlineProject(); //OpenCms.getRoleManager().hasRole(cms.getCmsObject(), CmsRole.WORKPLACE_USER);
     
     final String PARAM_NAME_SEARCHPHRASE_LOCAL = "query";
-    final String LABEL_SEARCH = "Søk";
+    final String LABEL_SEARCH = "SÃ¸k";
     final String LABEL_FILTERS = "Filtre";
     
     final Comparator<SearchSource> NUM_HITS_COMP = new Comparator<SearchSource>() {
@@ -567,17 +1050,20 @@ if (q != null && !q.isEmpty()) {
             // Username / passwords must be set as request attributes in the included file xxx-credentials.jsp
             String usr = (String)pageContext.getAttribute("cp_username");
             String pwd = (String)pageContext.getAttribute("cp_password");
-            getCompendiaPersonalSerp(usr, pwd, q, serp, sourceSelected);
+            String key = (String)pageContext.getAttribute("cp_key");
+            //getCompendiaPersonalSerp(usr, pwd, q, serp, sourceSelected);
+            injectCompendiaPersonalSerp(usr, pwd, key, q, serp, sourceSelected, out);
         }
     } catch (Exception e) {
-        note += "<p>En feil oppsto da vi så etter treff i Personal-/HMS-håndboka, Compendia personal og lover.<br />Vi kan derfor ikke vise deg treff fra disse.</p>";
+        note += "<p>En feil oppsto da vi sÃ¥ etter treff i Personal-/HMS-hÃ¥ndboka, Compendia personal og lover.<br />Vi kan derfor ikke vise deg treff fra disse.</p>";
+        note += "<p>" + e.getMessage() + "</p>";
     }
     
     try {
         if (sourceSelected == null || sourceSelected.equals("Ansatte"))
             addEmployeesSerp(q, serp);
     } catch (Exception e) {
-        note += "<p>En feil oppsto da vi så etter treff i lista over ansatte.<br />Vi kan derfor ikke vise deg treff fra denne.</p>";
+        note += "<p>En feil oppsto da vi sÃ¥ etter treff i lista over ansatte.<br />Vi kan derfor ikke vise deg treff fra denne.</p>";
     }
 }
 try {
@@ -603,7 +1089,7 @@ try {
     //*/
 } catch (Exception e) {
     out.println("<!-- exception when reading OpenCms search results: " + e.getMessage() + " -->");
-    note += "<p>En feil oppsto da vi så etter treff i selve Isblink.<br />Vi kan derfor ikke vise deg treff derfra.</p>";
+    note += "<p>En feil oppsto da vi sÃ¥ etter treff i selve Isblink.<br />Vi kan derfor ikke vise deg treff derfra.</p>";
 }
 
     int numHits = serp.size();
@@ -618,7 +1104,7 @@ try {
     String filters = "";
     if (sourceSelected != null) {
         filters += "<li style=\"display:inline-block; margin:0;\">"
-                    + "Viser nå kun treff i &laquo;" + sourceSelected + "&raquo;<br />"
+                    + "Viser nÃ¥ kun treff i &laquo;" + sourceSelected + "&raquo;<br />"
                     + "<a href=\"" + requestFileUri + "?" + PARAM_NAME_SEARCHPHRASE_LOCAL + "=" + q + "\">"
                         + "Vis treff i alle kilder"
                     + "</a></li>";
