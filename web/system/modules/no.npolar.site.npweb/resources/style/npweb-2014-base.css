@@ -4585,16 +4585,16 @@ section > h2.bluebar-dark {
   display: inline-block;
   /*border: 1px solid rgba(0,0,0,0.2);*/
   border: none;
-  border-bottom: 3px solid rgba(0,0,0,0.5);
-  border-radius: 4px;
+  border-bottom: 0.2em solid rgba(0,0,0,0.5);
+  border-radius: 0.2em;
   /*background-color: #08d;*/
   /*background-color: #115e8f;*/ /* dark velvety blue */
   background-color: #1570B1; /* standard "link" blue */
   /* "color" for text, "fill" for svg images (icons) */
   color: #fff;
   fill: #fff; 
-  color: rgba(255,255,255,0.92);
-  fill: rgba(255,255,255,0.92);
+  color: rgba(255,255,255,0.95);
+  fill: rgba(255,255,255,0.95);
   text-decoration: none;
   text-align: center;
   /*text-shadow: 0 0 0.2em rgba(0,0,0,0.2);*/
@@ -4615,13 +4615,17 @@ section > h2.bluebar-dark {
 .button,
 .button:hover {
   color: #fff;
-  color: rgba(255,255,255,0.92);
-  fill: rgba(255,255,255,0.92);
+  fill: #fff;
+  color: rgba(255,255,255,1);
+  fill: rgba(255,255,255,1);
+  transition: all .25s ease-out;
 }
 
 .button:not(.button--disabled):hover {
-  filter: brightness(1.215);
-  /*box-shadow: 0 0.5em 0.25em rgba(0,0,0,0.025) inset;*/
+    /*filter: brightness(1.215);*/
+    filter: brightness(1.1) saturate(2);
+    /*box-shadow: 0 0.5em 0.25em rgba(0,0,0,0.025) inset;*/
+    text-shadow: 0 0 .2em rgba(0,0,0,8);
 }
 .button:not(.button--disabled):active {
   /*border-bottom-width: 1px;
