@@ -1034,6 +1034,11 @@ article > .descr {
     display:inline; 
     margin:0;
 }
+/* lists in the article => typically "regular" lists => give items vertical air */
+article li {
+    margin-top: 0.25em;
+    margin-bottom: 0.25em;
+}
 .paragraph {
     overflow: visible; /* Allow box-shadows on buttons etc. to spill outside */
 	display:table; /* Needed in order to successfully re-arrange order of child elements */
