@@ -2776,7 +2776,7 @@ svg.icon {
     /*border-bottom: 2px solid transparent;*/
     transition: all 0.25s;
     background-color: #e7e7e7;
-    background-color: rgba(0,0,0,0.1);
+    background-color: rgba(0,0,0,0.05);
 }
 /* Enforce styles for e.g. a h2 child inside an a.toggler */
 .toggler > * {
