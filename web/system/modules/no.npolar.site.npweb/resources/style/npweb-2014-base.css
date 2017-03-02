@@ -4249,21 +4249,31 @@ section > h2.bluebar-dark {
 }
 
 /*******************************************************************************
-* Horizontal list: list--h
+* Horizontal lists: .list--h and .list--inline
 */
-.list--h {
+.list--h,
+.list--inline {
     padding: 0;
     margin: 0;
+    list-style: none;
 }
-.list--h li {
+.list--inline {
+    display: inline-block;
+}
+.list--h li,
+.list--inline li {
     display: inline-block;
     padding: 0;
     margin: 0;
-    margin-right:1em;
 }
-.list--h li:last-child {
-    margin-right:0;
+.list--inline li {
+    margin-bottom: 1em;
 }
+.list--h li + li,
+.list--inline li + li {
+    margin-left: 1em;
+}
+
 /* override some bad rules ... */
 .featured-box ul.list--h,
 .portal-box ul.list--h {
@@ -4388,6 +4398,7 @@ section > h2.bluebar-dark {
     box-shadow: none;
     font-size: small;
 }
+/* often better to employ the .content class on children in need of padding */
 .article-meta--padded {
     padding: 1em;
 }
@@ -4403,6 +4414,15 @@ section > h2.bluebar-dark {
     color: #666;
     background-color: rgba(0, 0, 0, 0.1);
     color: rgba(0,0,0,0.6);
+}
+/* this wrapper often shouldn't have padding, because it will mess up complex 
+ * child sections (cards, togglers etc.) 
+ */
+.article-meta__content { 
+}
+/* the (padded) content (i.e. the "actual" content's wrapper) */
+.article-meta .content {
+    padding: 1em;
 }
 /* people cards in article meta blocks */
 .article-meta__content.cards--people {
