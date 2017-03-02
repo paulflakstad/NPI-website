@@ -178,7 +178,7 @@ public String getLinkListHtml(String linkListTitle, String listItems, String mor
     if (!listItems.isEmpty() || moreLinkUri != null) { // Require at least one of listItems OR moreLinkUri to be non-empty
         html += beginLinkListHtml(linkListTitle);
         //html += "<ul class=\"linklist\">";
-        html += "<div class=\"toggleable\">";
+        html += "<div class=\"toggleable content\">";
         html += "<ul>";
         // Add the items
         html += listItems;
@@ -272,6 +272,7 @@ while (container.hasMoreContent()) {
     I_CmsXmlContentContainer linkList = null;
     String linkListTitle = null;
     String listOrder = null;
+    int listCount = 0;
     
     
     
@@ -296,8 +297,15 @@ while (container.hasMoreContent()) {
     // Pre-defined link lists
     //
     
-    // A list of the XSD element names of the pre-defined lists, and an iterator
-    List<String> preDefinedLinkLists = Arrays.asList("Attachments", "FactPages", "RelatedPages", "FactSheets", "MediaLinks", "ExternalLinks");
+    // These are the XSD element names of the pre-defined lists
+    List<String> preDefinedLinkLists = Arrays.asList(
+            "Attachments", 
+            "FactPages", 
+            "RelatedPages", 
+            "FactSheets", 
+            "MediaLinks", 
+            "ExternalLinks"
+    );
     Iterator preDefItr = preDefinedLinkLists.iterator();
     
     // "Auto-related" pages: pages that link to the current page as a "FactPage".
@@ -377,11 +385,34 @@ while (container.hasMoreContent()) {
     } // while-loop for pre-defined link lists
     
     if (html.length() > 0) {
+        // Determine how many lists we're dealing with
+        String htmlStr = html.toString();
+        listCount = htmlStr.split("\"toggleable content\"").length - 1;
+        
+        // If we have a single list, we don't want any togglers - just show the
+        // content by default
+        if (listCount == 1) {
+            try {
+                // Extract the list title
+                linkListTitle = htmlStr.substring(htmlStr.indexOf("<a class=\"toggler\">"));
+                linkListTitle = linkListTitle.substring(linkListTitle.indexOf(">")+1, linkListTitle.indexOf("</a>"));
+            } catch (Exception e) {
+                // This really shouldn't be happening
+            }
+            try {
+                // Strip away everything except the list itself
+                htmlStr = htmlStr.substring(htmlStr.indexOf("<ul>"));
+                htmlStr = htmlStr.substring(0, htmlStr.indexOf("</ul>") + 5);
+            } catch (Exception e) {
+                // This really shouldn't be happening
+            }
+            // Now we should have both the list and its title
+        }
         %>
         <aside class="article-meta">
-            <h2 class="article-meta__heading"><%= LABEL_SEE_ALSO %></h2>
-            <div class="article-meta__content">
-                <%= html.toString() %>
+            <h2 class="article-meta__heading"><%= listCount > 1 ? LABEL_SEE_ALSO : linkListTitle %></h2>
+            <div class="article-meta__content<%= listCount == 1 ? " content" : "" %>">
+                <%= htmlStr %>
             </div>
         </aside>
         <%
