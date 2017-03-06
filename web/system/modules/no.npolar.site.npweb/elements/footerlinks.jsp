@@ -22,8 +22,11 @@ Locale loc                  = cms.getRequestContext().getLocale();
 </div>
 <div class="span1">
     <%
-    //out.println(cms.getContent("/footer-buttons.html", "body", loc)); // THIS DOESN'T WORK, because the editor won't allow empty html elements.
-    cms.include("/" + loc.toString() + "/footer-social-media-buttons.html"); // SO DO THIS instead... -.- (Plain text file, one in each language folder)
+    // THIS DOESN'T WORK, because the editor won't allow the empty html elements
+    // we rely on for icons (icon font) - e.g. <i class="icon-twitter"></i>
+    //out.println(cms.getContent("/footer-buttons.html", "body", loc));
+    // So, instead we use plain text files, one for each language
+    cms.include("/" + loc.toString() + "/footer-social-media-buttons.html");
     /*
     footerLinksParam.clear();
     footerLinksParam.put("resourceUri", "/footer-4.html");
