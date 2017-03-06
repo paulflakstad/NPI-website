@@ -2,7 +2,8 @@
     Document   : sibling-switch.jsp
     Created on : 23.jun.2010, 15:15:15
     Author     : Paul-Inge Flakstad <flakstad at npolar.no>
---%><%@ page import="org.opencms.jsp.*,
+--%><%@page import="no.npolar.util.init.DefaultRendererInit"%>
+<%@ page import="org.opencms.jsp.*,
                  org.opencms.file.CmsResource,
                  org.opencms.file.CmsResourceFilter,
                  org.opencms.file.CmsProperty,
@@ -59,6 +60,27 @@ public List getLangSiblings(CmsJspActionElement cms, String resourceUri) throws 
     }
     return siblings;
 }
+
+public String getSwitchLink(CmsJspActionElement cms, 
+                            String altResourcePath, 
+                            String queryString, 
+                            Locale altLocale, 
+                            String switchLabel) {
+
+    String s = "<a href=\"" + cms.link(altResourcePath).concat(queryString) + "\""
+                                + " data-tooltip=\"" + OpenCms.getWorkplaceManager().getMessages(altLocale).key("label.language.switch") + "\""
+                                + " class=\"language-switch_" + altLocale.toString() + "\"><span class=\"language-switch-flag\"></span>";
+
+    if (switchLabel != null && !switchLabel.isEmpty()) {
+        s += "<span class=\"language-switch-language\">" +
+                        switchLabel.substring(0,1).toUpperCase() + switchLabel.substring(1) +
+                        "</span>";
+    }
+    
+    s += "</a>";
+
+    return s;
+}
 %><%
 //CmsAgent                cms         = new CmsAgent(pageContext, request, response);
 CmsJspActionElement cms = new CmsJspActionElement(pageContext, request, response);
@@ -86,59 +108,78 @@ if (!excluded) {
         queryString = URLDecoder.decode(cms.getRequest().getQueryString(), ENCODING);
     queryString = queryString == null ? "" : "?".concat(queryString.replaceAll("\\&", "&amp;"));
     
-    // Get a list of all sibling resources that have a different locale than the current resource
-    List languageSiblings = getLangSiblings(cms, requestFileUri);
+    // Handle case: Path to alternate version set as request attribute
+    //      This approach is used by e.g. "person", see
+    //      /system/modules/no.npolar.common.person/elements/person.jsp
+    String altPath = null;
+    try {
+        altPath = (String)request.getAttribute("alternate_uri");
+        Locale altLocale = Locale.forLanguageTag(altPath.split("/")[1]);
+        out.println(getSwitchLink(cms, altPath, queryString, altLocale, printText ? altLocale.getDisplayLanguage(altLocale) : null));
+    } catch (Exception e) {
+        // ignore
+    }
     
-    if (!languageSiblings.isEmpty()) {
-        Iterator itr = languageSiblings.iterator();
-        while (itr.hasNext()) {
-            CmsResource languageSibling = (CmsResource)itr.next();
-            
-            // We don't want to link to any URI that only redirects back to the 
-            // current page.
-            String languageSiblingRedir = cmso.readPropertyObject(languageSibling, "redirect.permanent", true).getValue("");
-            try {
-                if (!languageSiblingRedir.isEmpty() ) {
-                    String thisUri = cmso.getSitePath(cmso.readResource(requestFileUri)).replace("index.html", "");
-                    String thatUri = cmso.getSitePath(cmso.readResource(languageSiblingRedir)).replace("index.html", "");
-                    if (thatUri.equals(thisUri)) {
-                        // Sibling redirects to the current page => Ignore it
-                        continue;
+    if (altPath == null) {
+        // No alternate path was set as request attribute => Evaluate sibling(s).
+        
+        // Get a list of all sibling resources that have a different locale than the current resource
+        List languageSiblings = getLangSiblings(cms, requestFileUri);
+
+        if (!languageSiblings.isEmpty()) {
+            Iterator itr = languageSiblings.iterator();
+            while (itr.hasNext()) {
+                CmsResource languageSibling = (CmsResource)itr.next();
+
+                // We don't want to link to any URI that only redirects back to the 
+                // current page.
+                String languageSiblingRedir = cmso.readPropertyObject(languageSibling, "redirect.permanent", true).getValue("");
+                try {
+                    if (!languageSiblingRedir.isEmpty() ) {
+                        String thisUri = cmso.getSitePath(cmso.readResource(requestFileUri)).replace("index.html", "");
+                        String thatUri = cmso.getSitePath(cmso.readResource(languageSiblingRedir)).replace("index.html", "");
+                        if (thatUri.equals(thisUri)) {
+                            // Sibling redirects to the current page => Ignore it
+                            continue;
+                        }
                     }
+                } catch (Exception ignore) {}
+
+                // Get the URI to the sibling
+                String languageSiblingPath = cmso.getSitePath(languageSibling);
+                // If necessary, modify the URI, so we don't link to any index.html-file
+                if (languageSiblingPath.endsWith("/index.html")) {
+                    languageSiblingPath = languageSiblingPath.substring(0, languageSiblingPath.lastIndexOf("index.html"));
                 }
-            } catch (Exception ignore) {}
-                
-            // Get the URI to the sibling
-            String languageSiblingPath = cmso.getSitePath(languageSibling);
-            // If necessary, modify the URI, so we don't link to any index.html-file
-            if (languageSiblingPath.endsWith("/index.html")) {
-                languageSiblingPath = languageSiblingPath.substring(0, languageSiblingPath.lastIndexOf("index.html"));
-            }
-            // Get the "locale" property object for the sibling
-            CmsProperty localeProperty = cmso.readPropertyObject(languageSibling, "locale", true);
-            if (!localeProperty.isNullProperty()) {
-                // Get the sibling's locale
-                Locale languageSiblingLocale = new Locale(localeProperty.getValue());
-                // Get the language name (display language) for the sibling's locale (in the sibling's own language)
-                String switchLabel = languageSiblingLocale.getDisplayLanguage(languageSiblingLocale);
-                // Print the link, capitalize the display language
-                out.print("<a href=\"" + cms.link(languageSiblingPath).concat(queryString) + "\""
-                                + " data-tooltip=\"" + OpenCms.getWorkplaceManager().getMessages(languageSiblingLocale).key("label.language.switch") + "\""
-                                + " class=\"language-switch_" + localeProperty.getValue() + "\"><span class=\"language-switch-flag\"></span>");
-                if (printText) {
-                    out.print("<span class=\"language-switch-language\">" +
-                                    switchLabel.substring(0,1).toUpperCase() + switchLabel.substring(1) +
-                                    "</span>");
+                // Get the "locale" property object for the sibling
+                CmsProperty localeProperty = cmso.readPropertyObject(languageSibling, "locale", true);
+                if (!localeProperty.isNullProperty()) {
+                    // Get the sibling's locale
+                    Locale languageSiblingLocale = new Locale(localeProperty.getValue());
+                    // Get the language name (display language) for the sibling's locale (in the sibling's own language)
+                    String switchLabel = languageSiblingLocale.getDisplayLanguage(languageSiblingLocale);
+                    // Print the link, capitalize the display language
+                    out.print(getSwitchLink(cms, languageSiblingPath, queryString, languageSiblingLocale, printText ? switchLabel : null));
+                    /*
+                    out.print("<a href=\"" + cms.link(languageSiblingPath).concat(queryString) + "\""
+                                    + " data-tooltip=\"" + OpenCms.getWorkplaceManager().getMessages(languageSiblingLocale).key("label.language.switch") + "\""
+                                    + " class=\"language-switch_" + localeProperty.getValue() + "\"><span class=\"language-switch-flag\"></span>");
+                    if (printText) {
+                        out.print("<span class=\"language-switch-language\">" +
+                                        switchLabel.substring(0,1).toUpperCase() + switchLabel.substring(1) +
+                                        "</span>");
+                    }
+                    out.println("</a>");
+                    //*/
+                } else {
+                    // Missing locale on language sibling
+                    //out.println("<!-- Missing locale on language sibling -->");
                 }
-                out.println("</a>");
-            } else {
-                // Missing locale on language sibling
-                //out.println("<!-- Missing locale on language sibling -->");
             }
+        } else {
+            // No language siblings
+            out.println("<!-- No language siblings -->");
         }
-    } else {
-        // No language siblings
-        out.println("<!-- No language siblings -->");
     }
 } else {
     // Language switch turned off for this file

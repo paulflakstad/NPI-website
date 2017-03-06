@@ -3,7 +3,8 @@
                  Adapted to the responsive website, and without dropdown menus.
     Created on : 14.sep.2010, 19:29:17
     Author     : Paul-Inge Flakstad <flakstad at npolar.no>
---%><%@page import="java.io.UnsupportedEncodingException"%>
+--%><%@page import="no.npolar.util.init.DefaultRendererInit"%>
+<%@page import="java.io.UnsupportedEncodingException"%>
 <%@page import="org.opencms.main.CmsException"%>
 <%@ page import="org.opencms.jsp.*,
                  org.opencms.file.CmsResource,
@@ -19,8 +20,10 @@
                  java.util.Iterator,
                  java.util.Date,
                  no.npolar.common.menu.*,
-                 no.npolar.util.*" session="true" 
-%><%!
+                 no.npolar.util.*"
+%>
+<%@page trimDirectiveWhitespaces="true" pageEncoding="UTF-8" session="true" %>
+<%!
 public void printSubmenuForm(MenuItem current, CmsAgent cms, JspWriter out) throws IOException {
     if (current.getLevel() > 1)
         printSubmenuForm(current.getParent(), cms, out);
@@ -73,15 +76,29 @@ public List<MenuItem> getBreadCrumbItems(Menu menu, CmsAgent cms, String resourc
     } else {
         menuItems.add(0, homeMenuItem);
     }
+
+    // Handle pages that have no regular VFS resoruce - e.g. a person page 
+    // generated using only the Data Centre entry
+    // (see no.npolar.util.init.DefaultRendererInit)
+    if (cms.getRequest().getAttribute(DefaultRendererInit.ATTR_NAME_REQUESTED_URI) != null
+            && cms.getRequest().getAttribute("title") != null) {
+        // Assume we're dealing with a page that has no regular VFS file
+        menuItems.add(new MenuItem(
+                (String)cms.getRequest().getAttribute("title"), 
+                (String)cms.getRequest().getAttribute(DefaultRendererInit.ATTR_NAME_REQUESTED_URI)
+        ));
+    }
     
     // Handle pages not referenced to in the menu
     if (menu.getElementByUrl(resourceUri) == null) {
         final String EMPLOYEES_FOLDER = loc.equalsIgnoreCase("no") ? "/no/ansatte/" : "/en/people/";
         final int TYPE_ID_PERSON = org.opencms.main.OpenCms.getResourceManager().getResourceType("person").getTypeId();
-        final int TYPE_ID_PERSONALPAGE = org.opencms.main.OpenCms.getResourceManager().getResourceType("personalpage").getTypeId();
-        final String EVENTS_FOLDER = loc.equalsIgnoreCase("no") ? "/no/hendelser/" : "/en/events/";
-        final int TYPE_ID_EVENT = org.opencms.main.OpenCms.getResourceManager().getResourceType("np_event").getTypeId();
+        //final int TYPE_ID_PERSONALPAGE = org.opencms.main.OpenCms.getResourceManager().getResourceType("personalpage").getTypeId();
+        //final String EVENTS_FOLDER = loc.equalsIgnoreCase("no") ? "/no/hendelser/" : "/en/events/";
+        //final int TYPE_ID_EVENT = org.opencms.main.OpenCms.getResourceManager().getResourceType("np_event").getTypeId();
         String requestFileUri = cms.getRequestContext().getUri();
+
+        
         
         //try {
             // Handle case: Inject parent item for loose files whose parent/ancestor folder has a "Navigation Text" property value set.

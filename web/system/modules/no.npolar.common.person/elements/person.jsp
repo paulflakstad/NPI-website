@@ -2,7 +2,9 @@
     Document   : person-service-provided
     Created on : Oct 9, 2013, 12:20:51 PM
     Author     : flakstad
---%><%@page import="no.npolar.util.*,
+--%>
+<%@page import="no.npolar.data.api.util.APIUtil" %>
+<%@page import="no.npolar.util.*,
                 no.npolar.data.api.ProjectService,
                 no.npolar.data.api.Project,
                 no.npolar.data.api.Publication,
@@ -24,14 +26,35 @@
                 java.text.SimpleDateFormat,
                 java.io.*,
                 java.net.*,
-                java.util.*"%><%!
-static String s = "";
+                java.util.*" %>
+
+<%@page session="true" 
+        contentType="text/html; charset=UTF-8" 
+        pageEncoding="utf-8" 
+        trimDirectiveWhitespaces="true" 
+        %>
+<%!
+//static String s = "";
+
+/** Holds the person folders - one for each language. */ 
+public static final String[] PERSON_FOLDERS = { 
+    "/no/ansatte/",
+    "/en/people/" 
+};
+
+public static Map<String, String> mappings = new HashMap<String, String>();
                 
 /**
-* Creates a tree of (unique) categories, representing parent/child relations between the categories.
-* The tree is converted to a string, containing html code (nested unordered lists) that can be used directly.
-* Because the string is built recursively, a static string, "s", is employed. (And this method returns "void", not "String".)
-* The linkUri argument is used when generating links. Each category will be a link to this URI, with its own category path as the "cat" parameter.
+* Creates a tree of (unique) categories, representing parent/child relations 
+* between the categories.
+* 
+* The tree is converted to a string, containing html code (nested unordered 
+* lists) that can be used directly.
+* 
+* NO? Because the string is built recursively, a static string, "s", is employed. (And this method returns "void", not "String".)
+* 
+* The linkUri argument is used when generating links. Each category will be a 
+* link to this URI, with its own category path as the "cat" parameter.
 * Usage:
 * 1. buildCategoryTreeString(...);
 * 2. String myHtmlCodeForNestedList = new String(s);
@@ -41,7 +64,7 @@ public String buildCategoryTreeString(CmsAgent cms
                                   , List orgTrees) 
                                         throws CmsException {    
     // Reset the static string
-    s = "";
+    //s = "";
     // Get the cms object and other "standard" objects
     //CmsObject cmso = cms.getCmsObject();
     //String requestFileUri = cms.getRequestContext().getUri();
@@ -133,8 +156,10 @@ public String printTree(DefaultTreeModel tree
 }
 
 /**
-* Finds a node containing a given userObject in the tree. The first encountered matching node
-* (using depth first traversal) is returned, or null if no matching node is found.
+* Finds a node containing a given userObject in the tree. 
+* 
+* The first encountered matching node (using depth first traversal) is returned, 
+* or null if no matching node is found.
 */
 public DefaultMutableTreeNode findNode(DefaultTreeModel tree, Object userObject) {
     Enumeration treeNodes = ((DefaultMutableTreeNode)tree.getRoot()).depthFirstEnumeration();
@@ -146,11 +171,9 @@ public DefaultMutableTreeNode findNode(DefaultTreeModel tree, Object userObject)
     return null;
 }
 
-public static Map<String, String> mappings = new HashMap<String, String>();
-
 
 /**
- * Convenience class: String or link
+ * Convenience class: String or link.
  */
 public class OptLink {
     private String text = null;
@@ -187,7 +210,7 @@ public class OptLink {
  * Requests the given URL and return the respose as a String.
  */
 public String httpResponseAsString(String url) throws MalformedURLException, IOException {
-    BufferedReader in = new BufferedReader(new InputStreamReader(new URL(url).openConnection().getInputStream()));
+    BufferedReader in = new BufferedReader(new InputStreamReader(new URL(url).openConnection().getInputStream(), "UTF-8"));
     StringBuffer contentBuffer = new StringBuffer();
     String inputLine;
     while ((inputLine = in.readLine()) != null) {
@@ -202,9 +225,15 @@ public String httpResponseAsString(String url) throws MalformedURLException, IOE
  * Gets an error message as normalized HTML.
  */
 public String error(String msg) {
+    return error("Error", msg);
+}
+/**
+ * Gets an error message as normalized HTML.
+ */
+public String error(String title, String msg) {
     String s = "<article class=\"main-content\">";
-    s += "<h1>Error</h1>";
-    s += "<div class=\"ingress\"><p class=\"error\">" + msg + "</p></div>";
+    s += "<h1>" + title + "</h1>";
+    s += "<div class=\"ingress msg msg--alert\"><p class=\"msg__content\">" + msg + "</p></div>";
     s += "</article>";
     
     return s;
@@ -232,8 +261,9 @@ public String getImageUri(String id, CmsObject cmso) {
     String imageName = "/images/people/".concat(id);
     for (String ext : fileExt) {
         String imageUri = imageName + "." + ext;
-        if (cmso.existsResource(imageUri))
+        if (cmso.existsResource(imageUri)) {
             return imageUri;
+        }
     }
     return "";
 }
@@ -247,8 +277,9 @@ public String normalizePhoneNumber(String phoneNumber, CmsObject cmso) {
     if (!phoneNumber.isEmpty()) {
         if (phoneNumber.startsWith("+47")) {
             phoneNumber = phoneNumber.substring(3);
-            if (!loc.equalsIgnoreCase("no"))
+            if (!loc.equalsIgnoreCase("no")) {
                 phoneNumber = "+47 " + phoneNumber;
+            }
         }
         
     }
@@ -260,8 +291,9 @@ public String normalizePhoneNumber(String phoneNumber, CmsObject cmso) {
  */
 public String getMapping(String serviceValue) {
     String s = mappings.get(serviceValue);
-    if (s != null && !s.isEmpty())
+    if (s != null && !s.isEmpty()) {
         return s;
+    }
     return serviceValue;
 }
 
@@ -337,6 +369,21 @@ public String makeNiceWebsite(String url) {
     }
     return url;
 }
+
+public String getPersonAlternateUri(String localeStr, String personId) {
+    return getAlternatePersonFolder(localeStr).concat(personId);
+}
+
+public String getPersonFolder(String localeStr) {
+    return localeStr.equals("no") ? getPersonFolders()[0] : getPersonFolders()[1];
+}
+
+public String getAlternatePersonFolder(String localeStr) {
+    return localeStr.equals("no") ? getPersonFolder("en") : getPersonFolder("no");
+}
+public String[] getPersonFolders() {
+    return PERSON_FOLDERS;
+}
 %><%
 // JSP action element + some commonly used stuff
 CmsAgent cms            = new CmsAgent(pageContext, request, response);
@@ -346,18 +393,45 @@ String requestFolderUri = cms.getRequestContext().getFolderUri();
 Locale locale           = cms.getRequestContext().getLocale();
 String loc              = locale.toString();
 
+final String PERSON_INDEX_URI   = getPersonFolder(loc);//loc.equals("no") ? "/no/ansatte/" : "/en/people/";
+
+// The resource type ID for "person"
+final int TYPE_ID_PERSON = org.opencms.main.OpenCms.getResourceManager().getResourceType("person").getTypeId();
+
 // Direct editable stuff?
 final boolean EDITABLE = false;
 final boolean T_EDIT = false;
 // Flag: Logged in user?
 final boolean LOGGED_IN_USER = OpenCms.getRoleManager().hasRole(cms.getCmsObject(), CmsRole.WORKPLACE_USER);
 // Template ("outer" or "master" template) and template elements (most often "head" and "foot")
-final String T = cms.getTemplate();
-final String[] T_ELEM = cms.getTemplateIncludeElements();
+final String T = cmso.readPropertyObject(PERSON_INDEX_URI, "template", true).getValue("");
+final String[] T_ELEM = cmso.readPropertyObject(PERSON_INDEX_URI, "template-include-elements", true).getValue("head;foot").split(";");
+
+// If requestFileUri == PERSON_INDEX_URI, we're dealing with
+boolean personFileInVfs = cmso.existsResource(requestFileUri) && cmso.readResource(requestFileUri).getTypeId() == TYPE_ID_PERSON;
+
+// ToDo:
+// If no person file exists, AND the person is no longer employed, we should
+// return a 404 not found.
 
 // Make sure an ID exists, it is required
-String pid = CmsResource.getName(cms.getRequestContext().getFolderUri());
-pid = pid.substring(0, pid.length()-1); // Remove trailing slash
+String pid = null;
+try {
+    // Check if a person ID has been set as request attribute - if yes, no 
+    // regular VFS file exists; we'll have to rely only the Data Centre entry
+    pid = (String)request.getAttribute("external_id");
+    if (pid != null && !pid.isEmpty()) {
+        // Set the alternate URI, so that we can switch language. (Since this is
+        // not a regular VFS file, there is no sibling.)
+        request.setAttribute("alternate_uri", getPersonAlternateUri(loc, pid));
+    }
+} catch (Exception e) {}
+
+// If the ID is null at this point, we're dealing with a regular VFS file
+if (pid == null) {
+    pid = CmsResource.getName(cms.getRequestContext().getFolderUri());
+    pid = pid.substring(0, pid.length()-1); // Remove trailing slash
+} 
 if (pid == null || pid.isEmpty()) {
     // No ID: crash
     request.setAttribute("title", "Error");
@@ -366,16 +440,18 @@ if (pid == null || pid.isEmpty()) {
     cms.include(T, T_ELEM[1], T_EDIT);
     return; // IMPORTANT!
 }
-
-// The resource type ID for "person"
-final int TYPE_ID_PERSON = org.opencms.main.OpenCms.getResourceManager().getResourceType("person").getTypeId();
-// The image size for the profile image
-final int IMG_SIZE = Integer.valueOf(cmso.readPropertyObject(requestFileUri, "image.size", true).getValue("150")).intValue();
 // Common page element handlers
 final String PARAGRAPH_HANDLER = "/system/modules/no.npolar.common.pageelements/elements/paragraphhandler.jsp";
 
 final String PUB_LIST = "/system/modules/no.npolar.common.person/elements/person-publications-full-list.jsp";
 final String PROJ_LIST = "/system/modules/no.npolar.common.person/elements/person-projects-full-list.jsp";
+
+final String LABEL_NOT_FOUND_TITLE = loc.equalsIgnoreCase("no") ? 
+        "Fant ikke denne personen" 
+        : "Could not find this person";
+final String LABEL_NOT_FOUND_MSG = loc.equalsIgnoreCase("no") ? 
+        "Det finnes ingen person med denne ID-en (\"" + pid + "\") i vÃ¥rt system." 
+        : "There is no person with this ID (\"" + pid + "\") in our system.";
 
 
     
@@ -384,11 +460,10 @@ final String PROJ_LIST = "/system/modules/no.npolar.common.person/elements/perso
 // 
 
 // Service details
-final String SERVICE_PROTOCOL = "http";
+final String SERVICE_PROTOCOL = "https";
 final String SERVICE_DOMAIN_NAME = "api.npolar.no";
-final String SERVICE_PORT = "80";
 final String SERVICE_PATH = "/person/";
-final String SERVICE_BASE_URL = SERVICE_PROTOCOL + "://" + SERVICE_DOMAIN_NAME + ":" + SERVICE_PORT + SERVICE_PATH;
+final String SERVICE_BASE_URL = SERVICE_PROTOCOL + "://" + SERVICE_DOMAIN_NAME + SERVICE_PATH;
 
 // Test service 
 // ToDo: Use a servlet context variable instead of a helper file in the e-mail routine.
@@ -399,10 +474,10 @@ int responseCode = 0;
 final int SLOW_LIMIT = 10000; // 10 seconds
 final String ERROR_MSG_NO_SERVICE = loc.equalsIgnoreCase("no") ? 
         ("<h1>Persondetaljer</h1><h2>Vel, dette skulle ikke skje&nbsp;&hellip;</h2>"
-            + "<p>Sideinnholdet som skulle vært her kan dessverre ikke vises akkurat nå, på grunn av en midlertidig feil.</p>"
-            + "<p>Vi liker heller ikke dette, og håper å ha alt i orden igjen snart.</p>"
-            + "<p>Prøv gjerne å laste inn siden på nytt om litt.</p>"
-            + "<p style=\"font-style:italic;\">Skulle feilen vedvare, setter vi pris på det om du tar deg tid til å <a href=\"mailto:web@npolar.no\">sende oss en kort notis om dette</a>.")
+            + "<p>Sideinnholdet som skulle vÃ¦rt her kan dessverre ikke vises akkurat nÃ¥, pÃ¥ grunn av en midlertidig feil.</p>"
+            + "<p>Vi liker heller ikke dette, og hÃ¥per Ã¥ ha alt i orden igjen snart.</p>"
+            + "<p>PrÃ¸v gjerne Ã¥ laste inn siden pÃ¥ nytt om litt.</p>"
+            + "<p style=\"font-style:italic;\">Skulle feilen vedvare, setter vi pris pÃ¥ det om du tar deg tid til Ã¥ <a href=\"mailto:web@npolar.no\">sende oss en kort notis om dette</a>.")
         :
         ("<h1>Person details</h1><h2>Well this shouldn't happen&nbsp;&hellip;</h2>"
             + "<p>The content that should appear here can't be displayed at the moment, due to a temporary error.</p>"
@@ -464,8 +539,17 @@ String serviceUrl = SERVICE_BASE_URL + pid + ".json";
 String jsonFeed = null;
 JSONObject p = null;
 try {
-    jsonFeed = httpResponseAsString(serviceUrl);
+    jsonFeed = APIUtil.httpResponseAsString(serviceUrl);
     p = new JSONObject(jsonFeed);
+} catch (FileNotFoundException fnfe) {
+    cms.setStatus(404);
+    request.setAttribute("title", LABEL_NOT_FOUND_TITLE);
+    // Remove the alternate URI for switching language.
+    request.removeAttribute("alternate_uri");
+    cms.include(T, T_ELEM[0], T_EDIT);
+    out.println(error(LABEL_NOT_FOUND_TITLE, LABEL_NOT_FOUND_MSG));
+    cms.include(T, T_ELEM[1], T_EDIT);
+    return; // IMPORTANT!
 } catch (Exception e) {
     request.setAttribute("title", "Error");
     cms.include(T, T_ELEM[0], T_EDIT);
@@ -513,8 +597,6 @@ try {
     final SimpleDateFormat DATE_FORMAT_JSON = new SimpleDateFormat("yyyy-dd-MM");
     final SimpleDateFormat DATE_FORMAT_SCREEN = new SimpleDateFormat(loc.equalsIgnoreCase("no") ? "d. MMMM yyyy" : "d MMMM yyyy", locale);
 
-
-    final String PERSON_INDEX_URI   = loc.equals("no") ? "/no/ansatte/" : "/en/people/";
     final String ICON_FOLDER        = "/images/icons/";
     final String ICON_EMAIL         = "person-email.png";
     final String ICON_PHONE         = "person-phone.png";
@@ -539,39 +621,39 @@ try {
     final String LABEL_EMPLOYMENT_TYPE      = cms.labelUnicode("label.Person.EmploymentType");
     final String LABEL_ON_LEAVE             = cms.labelUnicode("label.Person.OnLeave");
     final String LABEL_CURRENTLY_EMPLOYED   = cms.labelUnicode("label.Person.CurrentlyEmployed");
-    final String LABEL_NO_LONGER_EMPLOYED   = cms.labelUnicode("label.Person.NoLongerEmployed");
+    final String LABEL_NO_LONGER_EMPLOYED   = cms.labelUnicode("label.for.person.nolongeremployed");
 
     final String LABEL_ORG_COMM                 = loc.equalsIgnoreCase("no") ? "Kommunikasjon" : "Communications";
     final String LABEL_ORG_COMM_INFO            = loc.equalsIgnoreCase("no") ? "Informasjon" : "Information";
     final String LABEL_ORG_ADM                  = loc.equalsIgnoreCase("no") ? "Administrasjon" : "Administration";
-    final String LABEL_ORG_ADM_ECONOMICS        = loc.equalsIgnoreCase("no") ? "Økonomi" : "Economics";
+    final String LABEL_ORG_ADM_ECONOMICS        = loc.equalsIgnoreCase("no") ? "Ã˜konomi" : "Economics";
     final String LABEL_ORG_ADM_HR               = loc.equalsIgnoreCase("no") ? "Personal" : "Human resources";
-    final String LABEL_ORG_ADM_SENIOR           = loc.equalsIgnoreCase("no") ? "Seniorrådgivere" : "Senior advisers";
+    final String LABEL_ORG_ADM_SENIOR           = loc.equalsIgnoreCase("no") ? "SeniorrÃ¥dgivere" : "Senior advisers";
     final String LABEL_ORG_ADM_ICT              = loc.equalsIgnoreCase("no") ? "IKT" : "ICT";
     final String LABEL_ORG_LEADER               = loc.equalsIgnoreCase("no") ? "Ledergruppen" : "Management Group";
     final String LABEL_ORG_RESEARCH             = loc.equalsIgnoreCase("no") ? "Forskning" : "Scientific research";
     final String LABEL_ORG_RESEARCH_BIODIV      = loc.equalsIgnoreCase("no") ? "Biodiversitet" : "Biodiversity";
     final String LABEL_ORG_RESEARCH_GEO         = loc.equalsIgnoreCase("no") ? "Geologi og geofysikk" : "Geology and geophysics";
     final String LABEL_ORG_RESEARCH_MARINE_CRYO = loc.equalsIgnoreCase("no") ? "Hav og havis" : "Oceans and sea ice";
-    final String LABEL_ORG_RESEARCH_ICE         = loc.equalsIgnoreCase("no") ? "Senter for is, klima og økosystemer (ICE)" : "Centre for Ice, Climate and Ecosystems (ICE)";
+    final String LABEL_ORG_RESEARCH_ICE         = loc.equalsIgnoreCase("no") ? "Senter for is, klima og Ã¸kosystemer (ICE)" : "Centre for Ice, Climate and Ecosystems (ICE)";
     final String LABEL_ORG_RESEARCH_ICE_FLUXES  = loc.equalsIgnoreCase("no") ? "ICE-havis" : "ICE Fluxes";
     final String LABEL_ORG_RESEARCH_ICE_FIMBUL  = loc.equalsIgnoreCase("no") ? "ICE-Fimbulisen" : "ICE Fimbul Ice Shelf";
-    final String LABEL_ORG_RESEARCH_ICE_ECOSYS  = loc.equalsIgnoreCase("no") ? "ICE-økosystemer" : "ICE Ecosystems";
-    final String LABEL_ORG_RESEARCH_ECOTOX      = loc.equalsIgnoreCase("no") ? "Miljøgifter" : "Environmental pollutants";
-    final String LABEL_ORG_RESEARCH_SUPPORT     = loc.equalsIgnoreCase("no") ? "Støtte" : "Support";
-    final String LABEL_ORG_ENVMAP               = loc.equalsIgnoreCase("no") ? "Miljø- og kart" : "Environment and mapping";
-    final String LABEL_ORG_ENVMAP_DATA          = loc.equalsIgnoreCase("no") ? "Miljødata" : "Environmental data";
-    final String LABEL_ORG_ENVMAP_MANAGEMENT    = loc.equalsIgnoreCase("no") ? "Miljørådgivning" : "Environmental management";
+    final String LABEL_ORG_RESEARCH_ICE_ECOSYS  = loc.equalsIgnoreCase("no") ? "ICE-Ã¸kosystemer" : "ICE Ecosystems";
+    final String LABEL_ORG_RESEARCH_ECOTOX      = loc.equalsIgnoreCase("no") ? "MiljÃ¸gifter" : "Environmental pollutants";
+    final String LABEL_ORG_RESEARCH_SUPPORT     = loc.equalsIgnoreCase("no") ? "StÃ¸tte" : "Support";
+    final String LABEL_ORG_ENVMAP               = loc.equalsIgnoreCase("no") ? "MiljÃ¸- og kart" : "Environment and mapping";
+    final String LABEL_ORG_ENVMAP_DATA          = loc.equalsIgnoreCase("no") ? "MiljÃ¸data" : "Environmental data";
+    final String LABEL_ORG_ENVMAP_MANAGEMENT    = loc.equalsIgnoreCase("no") ? "MiljÃ¸rÃ¥dgivning" : "Environmental management";
     final String LABEL_ORG_ENVMAP_MAP           = loc.equalsIgnoreCase("no") ? "Kart" : "Map";
     final String LABEL_ORG_OL                   = loc.equalsIgnoreCase("no") ? "Operasjons- og logistikk" : "Operations and logistics";
     final String LABEL_ORG_OL_ANTARCTIC         = loc.equalsIgnoreCase("no") ? "Antarktis" : "The Antarctic";
     final String LABEL_ORG_OL_ARCTIC            = loc.equalsIgnoreCase("no") ? "Arktis" : "The Arctic";
-    final String LABEL_ORG_OL_LYR               = loc.equalsIgnoreCase("no") ? "Støtte" : "Support";
+    final String LABEL_ORG_OL_LYR               = loc.equalsIgnoreCase("no") ? "StÃ¸tte" : "Support";
     final String LABEL_ORG_OTHER                = loc.equalsIgnoreCase("no") ? "Sekretariater og organer" : "Secretariats and organizational bodies";
-    final String LABEL_ORG_OTHER_AC             = loc.equalsIgnoreCase("no") ? "Arktisk råd" : "Arctic Council";
+    final String LABEL_ORG_OTHER_AC             = loc.equalsIgnoreCase("no") ? "Arktisk rÃ¥d" : "Arctic Council";
     final String LABEL_ORG_OTHER_CLIC           = loc.equalsIgnoreCase("no") ? "Climate and Cryosphere (CliC)" : "Climate and Cryosphere (CliC)";
-    final String LABEL_ORG_OTHER_NA2011         = loc.equalsIgnoreCase("no") ? "Nansen-Amundsenåret 2011" : "Nansen-Amundsen-year 2011";
-    final String LABEL_ORG_OTHER_NYSMAC         = loc.equalsIgnoreCase("no") ? "Ny-Ålesund Science Managers Committee (NySMAC)" : "Ny-Ålesund Science Managers Committee (NySMAC)";
+    final String LABEL_ORG_OTHER_NA2011         = loc.equalsIgnoreCase("no") ? "Nansen-AmundsenÃ¥ret 2011" : "Nansen-Amundsen-year 2011";
+    final String LABEL_ORG_OTHER_NYSMAC         = loc.equalsIgnoreCase("no") ? "Ny-Ã…lesund Science Managers Committee (NySMAC)" : "Ny-Ã…lesund Science Managers Committee (NySMAC)";
     final String LABEL_ORG_OTHER_SSF            = loc.equalsIgnoreCase("no") ? "Svalbard Science Forum" : "Svalbard Science Forum";
 
     mappings.put("admin",       LABEL_ORG_ADM);
@@ -642,7 +724,7 @@ try {
     String areas        = null;
     String references   = null;
     I_CmsXmlContentContainer other = null;
-    String otherString  = null;
+    String otherString  = "";
     
     List<String> pubTypes = new ArrayList<String>();
     pubTypes.add("peer-reviewed");
@@ -674,6 +756,17 @@ try {
     try { imageUri = getImageUri(id, cmso); } catch (Exception e) {}
     try { title = fname + " " + lname; } catch (Exception e) { title = "Unknown title"; }
 
+    if (!personFileInVfs && !currEmployed) {
+        // No person file, and not currently employed
+        cms.setStatus(404);
+        // Remove the alternate URI for switching language.
+        request.removeAttribute("alternate_uri");
+        request.setAttribute("title", LABEL_NOT_FOUND_TITLE);
+        cms.include(T, T_ELEM[0], T_EDIT);
+        out.println(error(LABEL_NOT_FOUND_TITLE, LABEL_NOT_FOUND_MSG));
+        cms.include(T, T_ELEM[1], T_EDIT);
+        return; // IMPORTANT!
+    }
 
 
     try {
@@ -694,96 +787,102 @@ try {
         
     }
 
-    // Read additional content from the person file in the CMS
-    I_CmsXmlContentContainer thisFile = cms.contentload("singleFile", requestFileUri, EDITABLE);
-    while (thisFile.hasMoreContent()) {
-        website     = cms.contentshow(thisFile, "PersonalWebsite");
-        descr       = cms.contentshow(thisFile, "Description");
-        career      = cms.contentshow(thisFile, "Career");
-        activities  = cms.contentshow(thisFile, "Activities");
-        areas       = cms.contentshow(thisFile, "InterestsExpertise");
-        references  = cms.contentshow(thisFile, "Bibliography");
-        
-        //
-        // Auto-publications
-        //
-        autoPubsStr = cms.contentshow(thisFile, "AutoPubs");
-        autoPubs    = Boolean.valueOf(CmsAgent.elementExists(autoPubsStr) ? autoPubsStr : "true").booleanValue(); // Default to "true"
-        
-        // Define which publication types to include (default is all)
-        I_CmsXmlContentContainer pubOpts = cms.contentloop(thisFile, "PubOpts");
-        if (pubOpts != null) {
-            if (pubOpts.hasMoreContent()) {
-                if (Boolean.valueOf(cms.contentshow(pubOpts, "PeerReviewed")))
-                    autoPubsTypes += Publication.TYPE_PEER_REVIEWED + "|";
-                if (Boolean.valueOf(cms.contentshow(pubOpts, "Editorial")))
-                    autoPubsTypes += Publication.TYPE_EDITORIAL + "|";
-                if (Boolean.valueOf(cms.contentshow(pubOpts, "Review")))
-                    autoPubsTypes += Publication.TYPE_REVIEW + "|";
-                if (Boolean.valueOf(cms.contentshow(pubOpts, "Correction")))
-                    autoPubsTypes += Publication.TYPE_CORRECTION + "|";
-                if (Boolean.valueOf(cms.contentshow(pubOpts, "Book")))
-                    autoPubsTypes += Publication.TYPE_BOOK + "|";
-                if (Boolean.valueOf(cms.contentshow(pubOpts, "Poster")))
-                    autoPubsTypes += Publication.TYPE_POSTER + "|";
-                if (Boolean.valueOf(cms.contentshow(pubOpts, "Report")))
-                    autoPubsTypes += Publication.TYPE_REPORT + "|";
-                if (Boolean.valueOf(cms.contentshow(pubOpts, "Abstract")))
-                    autoPubsTypes += Publication.TYPE_ABSTRACT + "|";
-                if (Boolean.valueOf(cms.contentshow(pubOpts, "PhD")))
-                    autoPubsTypes += Publication.TYPE_PHD + "|";
-                if (Boolean.valueOf(cms.contentshow(pubOpts, "Master")))
-                    autoPubsTypes += Publication.TYPE_MASTER + "|";
-                if (Boolean.valueOf(cms.contentshow(pubOpts, "Map")))
-                    autoPubsTypes += Publication.TYPE_MAP + "|";
-                if (Boolean.valueOf(cms.contentshow(pubOpts, "Proceedings")))
-                    autoPubsTypes += Publication.TYPE_PROCEEDINGS + "|";
-                if (Boolean.valueOf(cms.contentshow(pubOpts, "Popular")))
-                    autoPubsTypes += Publication.TYPE_POPULAR + "|";
-                if (Boolean.valueOf(cms.contentshow(pubOpts, "Other")))
-                    autoPubsTypes += Publication.TYPE_OTHER + "|";
+    if (personFileInVfs) {
+        try {
+            // Read additional content from the person file in the CMS
+            I_CmsXmlContentContainer thisFile = cms.contentload("singleFile", requestFileUri, EDITABLE);
+            while (thisFile.hasMoreContent()) {
+                website     = cms.contentshow(thisFile, "PersonalWebsite");
+                descr       = cms.contentshow(thisFile, "Description");
+                career      = cms.contentshow(thisFile, "Career");
+                activities  = cms.contentshow(thisFile, "Activities");
+                areas       = cms.contentshow(thisFile, "InterestsExpertise");
+                references  = cms.contentshow(thisFile, "Bibliography");
+
+                //
+                // Auto-publications
+                //
+                autoPubsStr = cms.contentshow(thisFile, "AutoPubs");
+                autoPubs    = Boolean.valueOf(CmsAgent.elementExists(autoPubsStr) ? autoPubsStr : "true").booleanValue(); // Default to "true"
+
+                // Define which publication types to include (default is all)
+                I_CmsXmlContentContainer pubOpts = cms.contentloop(thisFile, "PubOpts");
+                if (pubOpts != null) {
+                    if (pubOpts.hasMoreContent()) {
+                        if (Boolean.valueOf(cms.contentshow(pubOpts, "PeerReviewed")))
+                            autoPubsTypes += Publication.TYPE_PEER_REVIEWED + "|";
+                        if (Boolean.valueOf(cms.contentshow(pubOpts, "Editorial")))
+                            autoPubsTypes += Publication.TYPE_EDITORIAL + "|";
+                        if (Boolean.valueOf(cms.contentshow(pubOpts, "Review")))
+                            autoPubsTypes += Publication.TYPE_REVIEW + "|";
+                        if (Boolean.valueOf(cms.contentshow(pubOpts, "Correction")))
+                            autoPubsTypes += Publication.TYPE_CORRECTION + "|";
+                        if (Boolean.valueOf(cms.contentshow(pubOpts, "Book")))
+                            autoPubsTypes += Publication.TYPE_BOOK + "|";
+                        if (Boolean.valueOf(cms.contentshow(pubOpts, "Poster")))
+                            autoPubsTypes += Publication.TYPE_POSTER + "|";
+                        if (Boolean.valueOf(cms.contentshow(pubOpts, "Report")))
+                            autoPubsTypes += Publication.TYPE_REPORT + "|";
+                        if (Boolean.valueOf(cms.contentshow(pubOpts, "Abstract")))
+                            autoPubsTypes += Publication.TYPE_ABSTRACT + "|";
+                        if (Boolean.valueOf(cms.contentshow(pubOpts, "PhD")))
+                            autoPubsTypes += Publication.TYPE_PHD + "|";
+                        if (Boolean.valueOf(cms.contentshow(pubOpts, "Master")))
+                            autoPubsTypes += Publication.TYPE_MASTER + "|";
+                        if (Boolean.valueOf(cms.contentshow(pubOpts, "Map")))
+                            autoPubsTypes += Publication.TYPE_MAP + "|";
+                        if (Boolean.valueOf(cms.contentshow(pubOpts, "Proceedings")))
+                            autoPubsTypes += Publication.TYPE_PROCEEDINGS + "|";
+                        if (Boolean.valueOf(cms.contentshow(pubOpts, "Popular")))
+                            autoPubsTypes += Publication.TYPE_POPULAR + "|";
+                        if (Boolean.valueOf(cms.contentshow(pubOpts, "Other")))
+                            autoPubsTypes += Publication.TYPE_OTHER + "|";
+                    }
+                }
+                if (!autoPubsTypes.isEmpty()) 
+                    autoPubsTypes = autoPubsTypes.substring(0, autoPubsTypes.length()-1); // Strip trailing "|"
+
+                //
+                // Auto-projects
+                //
+                autoProjectsStr = cms.contentshow(thisFile, "AutoProjects");
+                autoProjects    = Boolean.valueOf(CmsAgent.elementExists(autoProjectsStr) ? autoProjectsStr : "true").booleanValue(); // Default to "true"
+
+                // Define which projects to list (default is all)
+                I_CmsXmlContentContainer projectOpts = cms.contentloop(thisFile, "ProjectOpts");
+                if (projectOpts != null) {
+                    if (projectOpts.hasMoreContent()) {
+                        if (Boolean.valueOf(cms.contentshow(projectOpts, "Planned")))
+                            autoProjectTypes += Project.JSON_VAL_STATE_PLANNED + "|";
+                        if (Boolean.valueOf(cms.contentshow(projectOpts, "Ongoing")))
+                            autoProjectTypes += Project.JSON_VAL_STATE_ONGOING + "|";
+                        if (Boolean.valueOf(cms.contentshow(projectOpts, "Completed")))
+                            autoProjectTypes += Project.JSON_VAL_STATE_COMPLETED + "|";
+                        if (Boolean.valueOf(cms.contentshow(projectOpts, "Cancelled")))
+                            autoProjectTypes += Project.JSON_VAL_STATE_CANCELLED + "|";
+                    }
+                } 
+                if (!autoProjectTypes.isEmpty()) 
+                    autoProjectTypes = autoProjectTypes.substring(0, autoProjectTypes.length()-1); // Strip trailing "|"
+
+
+                //degree      = cms.contentshow(thisFile, "Degree");
+                //nation      = cms.contentshow(thisFile, "Nationality");
+                other       = cms.contentloop(thisFile, "Other");
+
+                // Build the "other" string (if needed) 
+                otherString = "";
+                while (other.hasMoreContent()) {
+                    String heading = cms.contentshow(other, "Heading");
+                    String text = cms.contentshow(other, "Text");
+                    if (CmsAgent.elementExists(heading))
+                        otherString += "<h2>" + heading + "</h2>";
+                    if (CmsAgent.elementExists(text))
+                        otherString += text;
+                }
             }
-        }
-        if (!autoPubsTypes.isEmpty()) 
-            autoPubsTypes = autoPubsTypes.substring(0, autoPubsTypes.length()-1); // Strip trailing "|"
-        
-        //
-        // Auto-projects
-        //
-        autoProjectsStr = cms.contentshow(thisFile, "AutoProjects");
-        autoProjects    = Boolean.valueOf(CmsAgent.elementExists(autoProjectsStr) ? autoProjectsStr : "true").booleanValue(); // Default to "true"
-        
-        // Define which projects to list (default is all)
-        I_CmsXmlContentContainer projectOpts = cms.contentloop(thisFile, "ProjectOpts");
-        if (projectOpts != null) {
-            if (projectOpts.hasMoreContent()) {
-                if (Boolean.valueOf(cms.contentshow(projectOpts, "Planned")))
-                    autoProjectTypes += Project.JSON_VAL_STATE_PLANNED + "|";
-                if (Boolean.valueOf(cms.contentshow(projectOpts, "Ongoing")))
-                    autoProjectTypes += Project.JSON_VAL_STATE_ONGOING + "|";
-                if (Boolean.valueOf(cms.contentshow(projectOpts, "Completed")))
-                    autoProjectTypes += Project.JSON_VAL_STATE_COMPLETED + "|";
-                if (Boolean.valueOf(cms.contentshow(projectOpts, "Cancelled")))
-                    autoProjectTypes += Project.JSON_VAL_STATE_CANCELLED + "|";
-            }
-        } 
-        if (!autoProjectTypes.isEmpty()) 
-            autoProjectTypes = autoProjectTypes.substring(0, autoProjectTypes.length()-1); // Strip trailing "|"
-       
-        
-        //degree      = cms.contentshow(thisFile, "Degree");
-        //nation      = cms.contentshow(thisFile, "Nationality");
-        other       = cms.contentloop(thisFile, "Other");
-        
-        // Build the "other" string (if needed) 
-        otherString = "";
-        while (other.hasMoreContent()) {
-            String heading = cms.contentshow(other, "Heading");
-            String text = cms.contentshow(other, "Text");
-            if (CmsAgent.elementExists(heading))
-                otherString += "<h2>" + heading + "</h2>";
-            if (CmsAgent.elementExists(text))
-                otherString += text;
+        } catch (Exception noSuchVfsResource) {
+            // Log this?
         }
     }
 } catch (Exception e) {
@@ -860,6 +959,8 @@ if (!email.isEmpty()
         || orgTrees.length > 0) {
 
     if (!imageUri.isEmpty()) {
+        // The image size for the profile image
+        final int IMG_SIZE = Integer.valueOf(cmso.readPropertyObject(requestFileUri, "image.size", true).getValue("150")).intValue();
         CmsImageScaler imageHandle = new CmsImageScaler(cmso, cmso.readResource(imageUri));
         if (imageHandle.getWidth() > IMG_SIZE) {
             CmsImageScaler rescaler = imageHandle.getReScaler(imageHandle);
@@ -1051,9 +1152,14 @@ if (autoPubs) {
 }
 //*/
 //*
+
 out.println("<div id=\"rightside\" class=\"column small\">");
-// Special menu for personal pages...
-cms.include("/system/modules/no.npolar.site.npweb/elements/personal-menu.jsp");
+try {
+    // Special menu for personal pages...
+    cms.include("/system/modules/no.npolar.site.npweb/elements/personal-menu.jsp");
+} catch (Exception e) {
+    // ignore this
+}
 /*
 if (autoPubs) {
     // Auto-fetched publications

@@ -204,11 +204,11 @@ if (query != null && !query.isEmpty()) {
                     fName = o.getString("first_name");
                     lName = o.getString("last_name"); 
                     personFolder = EMPLOYEES_FOLDER + id + "/";
-                    if (!cms.getCmsObject().existsResource(personFolder)) {
-                        throw new NullPointerException("No corresponding person found in the CMS.");
-                    }
+                    //if (!cms.getCmsObject().existsResource(personFolder)) {
+                    //    throw new NullPointerException("No corresponding person found in the CMS.");
+                    //}
                 } catch (Exception e) { 
-                    // Error on a mandatory field OR no corresponding folder => cannot output this
+                    // Error on a mandatory field => cannot output this
                     continue; 
                 }
                 // Optional fields

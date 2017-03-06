@@ -675,7 +675,10 @@ CmsObject cmso = cms.getCmsObject();
 
 // This parameter should normally be set only when the user selected using suggestions
 String requestedEmployeeUri = request.getParameter("employeeuri");
-if (requestedEmployeeUri != null && !requestedEmployeeUri.isEmpty() && cmso.existsResource(requestedEmployeeUri)) {
+if (requestedEmployeeUri != null 
+        && !requestedEmployeeUri.isEmpty() 
+        //&& cmso.existsResource(requestedEmployeeUri)
+        ) {
     //CmsRequestUtil.redirectPermanently(cms, requestedEmployeeUri); // Bad method, sends 302
     cms.sendRedirect(requestedEmployeeUri, HttpServletResponse.SC_MOVED_PERMANENTLY);
 }
@@ -1003,11 +1006,11 @@ try {
                     personFolder = EMPLOYEES_FOLDER + id + "/";
                     if (!emp.hasCmsFolder(cms.getCmsObject())) {
                         mismatches += "<li>" + fName + " " + lName + " [" + id + "]</li>";
-                        throw new NullPointerException("No corresponding person found in the CMS.");
+                        //throw new NullPointerException("No corresponding person found in the CMS.");
                     }
                     
                 } catch (Exception e) { 
-                    // Error on a mandatory field OR no corresponding folder => cannot output this
+                    // Error on a mandatory field => cannot output this
                     continue; 
                 }
                 // Optional fields
