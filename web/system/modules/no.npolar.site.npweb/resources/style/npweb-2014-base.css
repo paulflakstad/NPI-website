@@ -747,6 +747,17 @@ ul.line-items li {
 	color:#000;
 }
 
+/* results presented as cards (e.g. employee hits on the site search) */
+.search-panel .card.card--h {
+    background: #fff;
+    box-shadow: .1em .1em .2em rgba(0,0,0,0.1);
+    display: block;
+    text-decoration: none;
+}
+.search-panel .card.card--h:hover {
+    box-shadow: .1em .1em .2em rgba(0,0,0,0.3);
+}
+
 /*******************************************************************************
  * The searchbox: A component consisting of an input field and a submit button
  */
