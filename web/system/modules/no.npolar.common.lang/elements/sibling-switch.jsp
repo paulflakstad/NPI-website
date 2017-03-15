@@ -2,8 +2,7 @@
     Document   : sibling-switch.jsp
     Created on : 23.jun.2010, 15:15:15
     Author     : Paul-Inge Flakstad <flakstad at npolar.no>
---%><%@page import="no.npolar.util.init.DefaultRendererInit"%>
-<%@ page import="org.opencms.jsp.*,
+--%><%@ page import="org.opencms.jsp.*,
                  org.opencms.file.CmsResource,
                  org.opencms.file.CmsResourceFilter,
                  org.opencms.file.CmsProperty,
@@ -67,12 +66,15 @@ public String getSwitchLink(CmsJspActionElement cms,
                             Locale altLocale, 
                             String switchLabel) {
 
-    String s = "<a href=\"" + cms.link(altResourcePath).concat(queryString) + "\""
-                                + " data-tooltip=\"" + OpenCms.getWorkplaceManager().getMessages(altLocale).key("label.language.switch") + "\""
-                                + " class=\"language-switch_" + altLocale.toString() + "\"><span class=\"language-switch-flag\"></span>";
+    String s = "<a"
+                + " href=\"" + cms.link(altResourcePath).concat(queryString) + "\""
+                + " data-tooltip=\"" + OpenCms.getWorkplaceManager().getMessages(altLocale).key("label.language.switch") + "\""
+                + " class=\"language-switch_" + altLocale.toString() + " language-switch language-switch--" + altLocale + "\""
+                + ">"
+                    + "<span class=\"language-switch-flag language-switch__flag\"></span>";
 
     if (switchLabel != null && !switchLabel.isEmpty()) {
-        s += "<span class=\"language-switch-language\">" +
+        s += "<span class=\"language-switch-language language-switch__language\">" +
                         switchLabel.substring(0,1).toUpperCase() + switchLabel.substring(1) +
                         "</span>";
     }
