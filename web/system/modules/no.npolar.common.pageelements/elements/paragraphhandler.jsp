@@ -49,7 +49,7 @@ public String getImageContainer(CmsAgent cms,
 
     if (cms.elementExists(imageText) || cms.elementExists(imageSource)) {
         imageFrameHTML += 
-                "<" + TEXT_CONTAINER + " class=\"caption highslide-caption\">" +
+                "<" + TEXT_CONTAINER + " class=\"media__caption caption highslide-caption\">" +
                     (cms.elementExists(imageCaptionLede) ? "<h3 class=\"caption__title\">".concat(imageCaptionLede).concat("</h3>") : "") +
                     "<p class=\"caption__text\">" +
                     (cms.elementExists(imageText) ? cms.stripParagraph(imageText) : "") + 
