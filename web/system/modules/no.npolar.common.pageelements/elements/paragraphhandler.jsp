@@ -38,7 +38,7 @@ public String getImageContainer(CmsAgent cms,
     sizeClasses.put("S", " thumb");
     sizeClasses.put("M", "");
     sizeClasses.put("L", " big");
-    sizeClasses.put("XL", "");
+    sizeClasses.put("XL", " oversize");;
     
     String imageFrameHTML =
             "<" + IMAGE_CONTAINER + " class=\"media" // The base class
