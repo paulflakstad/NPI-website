@@ -67,6 +67,7 @@
                 <mapping element="Image/URI"    mapto="property:image.thumb" />
             </mappings>
             <layouts>
+                <layout element="Description" widget="HtmlWidget" configuration="height:100px,source,link" />
 		<!--<layout element="NpiIdentifier" widget="TextareaWidgetPlaintext" configuration="width:140px,height:1em" />-->
                 <layout element="Logo"          widget="ImageGalleryWidget" configuration="{useformat:true}" />
                 <!--<layout element="Status"        widget="SelectorWidget"     configuration="1:Active|0:Discontinued|2:Planned" />-->
