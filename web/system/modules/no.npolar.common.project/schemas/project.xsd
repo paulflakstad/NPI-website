@@ -26,6 +26,7 @@
             <xsd:element name="AutoPubs"        type="OpenCmsBoolean" default="false" />
             <xsd:element name="PubOpts"         type="OpenCmsPubOpt" minOccurs="0" maxOccurs="1" />
             <xsd:element name="DatasetsURI"     type="OpenCmsVarLink" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="DataCentreID"    type="OpenCmsString" minOccurs="0" maxOccurs="1" />
             <xsd:element name="NpiIdentifier"   type="OpenCmsString" />
             <xsd:element name="RisIdentifier"   type="OpenCmsString" />
             <xsd:element name="Keywords"        type="OpenCmsString" />
@@ -56,6 +57,7 @@
             <resourcebundle name="no.npolar.common.project.workplace" />
             <mappings>
                 <mapping element="Title"        mapto="property:Title" />
+                <mapping element="DataCentreID" mapto="property:api-id" />
                 <mapping element="Description"  mapto="property:Description" />
                 <mapping element="Keywords"     mapto="property:Keywords" />
                 <mapping element="Category"     mapto="propertyList:collector.categories" />
@@ -82,6 +84,7 @@
                 <searchsetting element="AutoPubs" searchcontent="false" />
                 <searchsetting element="PubOpts" searchcontent="false" />
                 <searchsetting element="DatasetsURI" searchcontent="false" />
+                <searchsetting element="DataCentreID" searchcontent="false" />
             </searchsettings>
             <validationrules>
                 <rule element="Title" regex="!.*[Ee]rror.*" message="${key.editor.errormessage.Article.mustnotcontainerror|${validation.path}}" />
