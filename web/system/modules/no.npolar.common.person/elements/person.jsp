@@ -1027,26 +1027,21 @@ params.put("locale", loc);
 params.put("pubtypes", autoPubsTypes);
 params.put("projecttypes", autoProjectTypes);
 
+// Currently a gif but should be a css animation, like (but this doesn't work):
+// <span class=\"loader\" style=\"font-size:0.8em; height:1em; width:1em; margin:0; border-width:0.2em;\"></span>"
+String loadingCue = " <img src=\"/system/modules/no.npolar.site.npweb/resources/style/loader.gif\""
+        + " alt=\"\""
+        + " style=\"display:inline-block; width:1em;\""
+        + ">";
+
 if (autoPubs) {
-    out.println("<div id=\"employee-pubs-full\" class=\"toggleable collapsed\">");
-    /*out.println("<div class=\"\" style=\"color:#aaa;\">"
-                    + cms.labelUnicode("label.np.publist.heading") + " <img src=\"/system/modules/no.npolar.site.npweb/resources/style/loader.gif\" alt=\"\" style=\"width:0.7em;\">"
-                + "</div>");*/
-    out.println("<div id=\"pub-list-working\" style=\"text-align:center; padding:0.4em 1%; line-height:2em; height:2em; background-color:#f5f5f5; color:#666; margin-bottom:0.2rem;\">"
-                    + "<div style=\"text-align:left; font-size:2em; color:#aaa;\">"
-                        + cms.labelUnicode("label.np.publist.heading") + " <img src=\"/system/modules/no.npolar.site.npweb/resources/style/loader.gif\" alt=\"\" style=\"width:0.7em;\">"
-                    + "</div>"
+    out.println("<div id=\"employee-pubs-full\">");
+    out.println("<div id=\"pub-list-working\" class=\"toggler\" style=\"color:#666;\">"
+                    + "<span style=\"color:#aaa;\">" // span is here for text color control (parent's color is for error message, should loading fail)
+                        + cms.labelUnicode("label.np.publist.heading") 
+                        + loadingCue
+                    + "</span>"
                 + "</div>");
-    /*out.println("<p id=\"pub-list-working\" style=\"text-align:center; padding:0.4em 1%; line-height:2em; height:2em; background-color:#f5f5f5; color:#666;\">"
-            + "<img src=\"" + cms.link("/system/modules/no.npolar.site.npweb/resources/style/loader.gif") + "\" style=\"width:1.5em; vertical-align:middle;\" alt=\"\" />"
-            + " " + cms.labelUnicode("label.np.publist.loading") + " &hellip;</p>");*/
-    try { 
-        //cms.include(PUB_LIST, null, params);
-    } catch (Exception e) {
-        if (LOGGED_IN_USER) {
-            out.println("<p>Auto-listing publications failed! Error was: " + e.getMessage() + "</p>");
-        }
-    }
     out.println("</div>");
     
     %>
@@ -1056,30 +1051,20 @@ if (autoPubs) {
                 var msg = "<%= cms.labelUnicode("label.np.publist.error") %>";//"Sorry, an error occurred while looking for publications: ";
                 $( "#pub-list-working" ).html( msg + " (" + xhr.status + " " + xhr.statusText + ")" );
             } else {
-                initToggleable( $('#employee-pubs-full') );
+                initToggleablesInside( $('#employee-pubs-full') );
             }
         });
     </script>
     <%
 }
 if (autoProjects) {
-    out.println("<div id=\"employee-proj-full\" class=\"toggleable collapsed\">");
-    /*out.println("<p id=\"proj-list-working\" style=\"text-align:center; padding:0.4em 1%; line-height:2em; height:2em; background-color:#f5f5f5; color:#666;\">"
-            + "<img src=\"" + cms.link("/system/modules/no.npolar.site.npweb/resources/style/loader.gif") + "\" style=\"width:1.5em; vertical-align:middle;\" alt=\"\" />"
-            + " " + cms.labelUnicode("label.np.projectlist.loading") + " &hellip;</p>");*/
-    
-    out.println("<div id=\"proj-list-working\" style=\"text-align:center; padding:0.4em 1%; line-height:2em; height:2em; background-color:#f5f5f5; color:#666; margin-bottom:0.2rem;\">"
-                    + "<div style=\"text-align:left; font-size:2em; color:#aaa;\">"
-                        + cms.labelUnicode("label.np.projectlist.heading") + " <img src=\"/system/modules/no.npolar.site.npweb/resources/style/loader.gif\" alt=\"\" style=\"width:0.7em;\">"
-                    + "</div>"
+    out.println("<div id=\"employee-proj-full\">");    
+    out.println("<div id=\"proj-list-working\" class=\"toggler\" style=\"color:#666;\">"
+                    + "<span style=\"color:#aaa;\">"
+                        + cms.labelUnicode("label.np.projectlist.heading") 
+                        + loadingCue
+                    + "</span>"
                 + "</div>");
-    try { 
-        //cms.include(PROJ_LIST, null, params);
-    } catch (Exception e) {
-        if (LOGGED_IN_USER) {
-            out.println("<p>Auto-listing projects failed! Error was: " + e.getMessage() + "</p>");
-        }
-    }
     out.println("</div>");
     
     %>
@@ -1089,7 +1074,7 @@ if (autoProjects) {
                 var msg = "<%= cms.labelUnicode("label.np.projectlist.error") %>";//"Sorry, an error occurred while looking for projects: ";
                 $( "#proj-list-working" ).html( msg + " (" + xhr.status + " " + xhr.statusText + ")" );
             } else {
-                initToggleable( $('#employee-proj-full') );
+                initToggleablesInside( $('#employee-proj-full') );
             }
         });
     </script>

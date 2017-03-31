@@ -124,7 +124,7 @@ try {
             PublicationService.modFilter(PublicationService.combine(PublicationService.Delimiter.CHILD, Publication.Key.PEOPLE, Publication.Key.EMAIL)),
             email
     );
-    
+        
     // The personal pages in the CMS has an option to include only certain types 
     // of publications, so add a filter if this is used
     if (pubTypes != null && !pubTypes.isEmpty()) {
@@ -268,8 +268,10 @@ if (publications != null && !publications.isEmpty()) {
     ResourceBundle labels = ResourceBundle.getBundle(Labels.getBundleName(), locale);
     //out.println("<h2 class=\"toggletrigger\">" + cms.labelUnicode("label.np.publist.heading") + "</h2>");
     %>
-    <a class="toggletrigger" tabindex="0"><%= cms.labelUnicode("label.np.publist.heading") %></a>
-    <div class="toggletarget" style="display:none;">
+    <!--<a class="toggletrigger" tabindex="0"><%= cms.labelUnicode("label.np.publist.heading") %></a>-->
+    <!--<div class="toggletarget" style="display:none;">-->
+    <h2 class="toggler-wrapper"><a class="toggler" href="#publications"><%= cms.labelUnicode("label.np.publist.heading") %></a></h2>
+    <div class="toggleable" id="publications">
     <%
     // Get types of publications
     Iterator<String> iTypes = publications.getTypesContained().iterator();
@@ -338,7 +340,8 @@ if (publications != null && !publications.isEmpty()) {
 else {
     // No publications found on serviceUrl 
     %>
-    <div class="toggletrigger inactive" style="color:#aaa; cursor:initial;"><%= cms.labelUnicode("label.np.publist.heading.none") %></div>
+    <!--<div class="toggletrigger inactive" style="color:#aaa; cursor:initial;"><%= cms.labelUnicode("label.np.publist.heading.none") %></div>-->
+    <div class="toggler toggler--inactive inactive" style="color:#aaa; cursor:initial;"><%= cms.labelUnicode("label.np.publist.heading.none") %></div>
     <%
     if (DEBUG) { out.println("No publications. Publications = " + (publications == null ? "null" : publications.size()) + "."); }
 }
