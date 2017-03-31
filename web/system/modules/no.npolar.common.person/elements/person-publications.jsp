@@ -1,12 +1,9 @@
 <%-- 
     Document   : person-publications
+    Description: Outputs a person's publications. 
+                    NOT IN USE as of 2017-03-31.
     Created on : Oct 9, 2013, 5:11:32 PM
-    Author     : flakstad
---%><%-- 
-    Document   : details
-    Description: Fetches and presents project details from an external service, using the given project ID.
-    Created on : Sep 2, 2013, 11:38:28 PM
-    Author     : flakstad
+    Author     : Paul-Inge Flakstad, Norwegian Polar Institute
 --%><%@page import="java.util.SortedMap,
                  java.util.Arrays,
                  java.util.Collections,
