@@ -2819,6 +2819,15 @@ svg.icon {
     transition: transform .35s ease-in-out;
     transform: rotate(-90deg); /* = arrow right */
 }
+/* 
+ * Disabled/inactive toggler - i.e. a "toggler-like" element, used primarily on
+ * the automagic lists on employee pages.
+ */
+.toggler--inactive:before,
+.toggler--disabled:before {
+    content: "";
+    display: none;
+}
 /*
  * We base styles on the aria-expanded attribute, which should be present for 
  * accessibility reasons. ToDo: Add :target rules, to address the case of 
@@ -2843,6 +2852,10 @@ svg.icon {
 .toggler[aria-expanded="true"]:hover {
     /*background-color:rgba(132, 28, 5, 1);
     color:#fff;*/
+}
+.toggler--inactive:hover,
+.toggler--disabled:hover {
+    box-shadow: none;
 }
 /* This is the icon/symbol for the .toggler (currently not in use) */
 .toggler .icon {
