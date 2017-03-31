@@ -810,33 +810,37 @@ try {
                 if (pubOpts != null) {
                     if (pubOpts.hasMoreContent()) {
                         if (Boolean.valueOf(cms.contentshow(pubOpts, "PeerReviewed")))
-                            autoPubsTypes += Publication.TYPE_PEER_REVIEWED + "|";
+                            autoPubsTypes += Publication.Type.PEER_REVIEWED + "|";
                         if (Boolean.valueOf(cms.contentshow(pubOpts, "Editorial")))
-                            autoPubsTypes += Publication.TYPE_EDITORIAL + "|";
+                            autoPubsTypes += Publication.Type.EDITORIAL + "|";
                         if (Boolean.valueOf(cms.contentshow(pubOpts, "Review")))
-                            autoPubsTypes += Publication.TYPE_REVIEW + "|";
+                            autoPubsTypes += Publication.Type.REVIEW + "|";
                         if (Boolean.valueOf(cms.contentshow(pubOpts, "Correction")))
-                            autoPubsTypes += Publication.TYPE_CORRECTION + "|";
+                            autoPubsTypes += Publication.Type.CORRECTION + "|";
                         if (Boolean.valueOf(cms.contentshow(pubOpts, "Book")))
-                            autoPubsTypes += Publication.TYPE_BOOK + "|";
+                            autoPubsTypes += Publication.Type.BOOK + "|";
+                        if (Boolean.valueOf(cms.contentshow(pubOpts, "BookContrib")))
+                            autoPubsTypes += Publication.Type.IN_BOOK + "|";
                         if (Boolean.valueOf(cms.contentshow(pubOpts, "Poster")))
-                            autoPubsTypes += Publication.TYPE_POSTER + "|";
+                            autoPubsTypes += Publication.Type.POSTER + "|";
                         if (Boolean.valueOf(cms.contentshow(pubOpts, "Report")))
-                            autoPubsTypes += Publication.TYPE_REPORT + "|";
+                            autoPubsTypes += Publication.Type.REPORT + "|";
+                        if (Boolean.valueOf(cms.contentshow(pubOpts, "ReportContrib")))
+                            autoPubsTypes += Publication.Type.IN_REPORT + "|";
                         if (Boolean.valueOf(cms.contentshow(pubOpts, "Abstract")))
-                            autoPubsTypes += Publication.TYPE_ABSTRACT + "|";
+                            autoPubsTypes += Publication.Type.ABSTRACT + "|";
                         if (Boolean.valueOf(cms.contentshow(pubOpts, "PhD")))
-                            autoPubsTypes += Publication.TYPE_PHD + "|";
+                            autoPubsTypes += Publication.Type.PHD + "|";
                         if (Boolean.valueOf(cms.contentshow(pubOpts, "Master")))
-                            autoPubsTypes += Publication.TYPE_MASTER + "|";
+                            autoPubsTypes += Publication.Type.MASTER + "|";
                         if (Boolean.valueOf(cms.contentshow(pubOpts, "Map")))
-                            autoPubsTypes += Publication.TYPE_MAP + "|";
+                            autoPubsTypes += Publication.Type.MAP + "|";
                         if (Boolean.valueOf(cms.contentshow(pubOpts, "Proceedings")))
-                            autoPubsTypes += Publication.TYPE_PROCEEDINGS + "|";
+                            autoPubsTypes += Publication.Type.PROCEEDINGS + "|";
                         if (Boolean.valueOf(cms.contentshow(pubOpts, "Popular")))
-                            autoPubsTypes += Publication.TYPE_POPULAR + "|";
+                            autoPubsTypes += Publication.Type.POPULAR + "|";
                         if (Boolean.valueOf(cms.contentshow(pubOpts, "Other")))
-                            autoPubsTypes += Publication.TYPE_OTHER + "|";
+                            autoPubsTypes += Publication.Type.OTHER + "|";
                     }
                 }
                 if (!autoPubsTypes.isEmpty()) 
