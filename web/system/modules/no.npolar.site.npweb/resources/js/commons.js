@@ -434,38 +434,41 @@ function initToggleablesInside(/*jQuery*/container) {
     
     toggleTriggers.each( function(index) {
         var target = getToggleable($(this));
-        var parent = target.parent();
-        var isExpanded = target.hasClass(expandedClass) || parent.hasClass(expandedClass);
-        
-        var targetId = target.attr('id');
-        if (typeof targetId === 'undefined' || targetId === false) {
-            targetId = 'toggleable-'+index;
-            target.attr('id', targetId);
-        }        
-        target.attr('aria-hidden', isExpanded ? 'false' : 'true');
-        
-        //console.log('Set ' + $(this).prop('tagName') + ' as trigger in loop iteration ' + index);
-        // Add ARIA info + make trigger keyboard accesssible
-        $(this).attr({ 
-            'aria-controls' : targetId,
-            'aria-expanded' : isExpanded ? 'true' : 'false',
-            'tabindex' : '0' // in case the trigger is not natively focusable
-        });
-        // If the trigger is an <a> element, make sure a href attribute exists
-        if ($(this).prop('tagName').toUpperCase() === 'A') {
-            var href = $(this).attr('href');
-            if (typeof href === 'undefined' || href === false) {
-                $(this).attr({
-                    'href' : '#'+targetId
-                });
+        // Continue only if a target exists
+        if (target.length > 0) {
+            var parent = target.parent();
+            var isExpanded = target.hasClass(expandedClass) || parent.hasClass(expandedClass);
+
+            var targetId = target.attr('id');
+            if (typeof targetId === 'undefined' || targetId === false) {
+                targetId = 'toggleable-'+index;
+                target.attr('id', targetId);
             }
-        }
-        
-        if (!isExpanded) {
-            target.slideUp(1); // Hide toggleable content
-        } else {
-            target.addClass(expandedClass);
-            parent.addClass(expandedClass);
+            target.attr('aria-hidden', isExpanded ? 'false' : 'true');
+
+            //console.log('Set ' + $(this).prop('tagName') + ' as trigger in loop iteration ' + index);
+            // Add ARIA info + make trigger keyboard accesssible
+            $(this).attr({ 
+                'aria-controls' : targetId,
+                'aria-expanded' : isExpanded ? 'true' : 'false',
+                'tabindex' : '0' // in case the trigger is not natively focusable
+            });
+            // If the trigger is an <a> element, make sure a href attribute exists
+            if ($(this).prop('tagName').toUpperCase() === 'A') {
+                var href = $(this).attr('href');
+                if (typeof href === 'undefined' || href === false) {
+                    $(this).attr({
+                        'href' : '#'+targetId
+                    });
+                }
+            }
+
+            if (!isExpanded) {
+                target.slideUp(1); // Hide toggleable content
+            } else {
+                target.addClass(expandedClass);
+                parent.addClass(expandedClass);
+            }
         }
     });
 }
