@@ -4549,7 +4549,11 @@ section > h2.bluebar-dark {
 #homepage.intranet .search-panel {
     margin: 1px 1px 2rem 1px;
 }
-
+/* mainly for events injected from the public site */
+#homepage.intranet .event a[href^="http://www.npolar.no/"]::before {
+    content: '\e81c'; /* "icon-link-ext" */
+    font-family: "Fontello";
+}
 /*******************************************************************************
 * Stuff for the available positions list, shown on hover
 */
