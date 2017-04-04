@@ -143,10 +143,14 @@ EventCalendar calendar      = new EventCalendar(TimeZone.getDefault());
 // The title for the category used to label "Polar book cafe" events
 //final String CATEGORY_PATH_BOOK_CAFE    = "event/book-cafe/";
 //final String CATEGORY_TITLE_BOOK_CAFE   = locale.toString().equalsIgnoreCase("no") ? "Polar bokkafe" : "Polar book cafe";
-final String EVENTS_FOLDER  = locale.toString().equalsIgnoreCase("no") ? "/no/hendelser/" : "/en/events/";
+final String EVENTS_FOLDER_INTRANET  = locale.toString().equalsIgnoreCase("no") ? "/no/hendelser/" : "/en/events/";
+final String EVENTS_FOLDER_EXTRANET  = locale.toString().equalsIgnoreCase("no") ? "/no/hendelser/" : "/en/events/";
 //final String HEADING        = locale.toString().equalsIgnoreCase("no") ? "Aktiviteter" : "Events";
 final String MORE_LINK_TEXT = locale.toString().equalsIgnoreCase("no") ? "Flere aktiviteter" : "More events";
 final String NO_EVENTS		= locale.toString().equalsIgnoreCase("no") ? "Kalenderen er tom fremover!" : "No upcoming events in the calendar!";
+
+final String SITE_ROOT_INTRANET = "/sites/isblink";
+final String SITE_ROOT_EXTRANET = "/sites/np";
 
 //final String DF_FULL = "d. MMM YYYY hh:mm";
 //SimpleDateFormat datetime = new SimpleDateFormat(cms.label("label.event.dateformat.datetime"), locale);
@@ -159,13 +163,26 @@ final String NO_EVENTS		= locale.toString().equalsIgnoreCase("no") ? "Kalenderen
 final int EVENT_ENTRIES_MAX = 4;
 
 // Step 1: fetch all regular events
-List<EventEntry> events = calendar.getEvents(EventCalendar.RANGE_UPCOMING_AND_IN_PROGRESS, cms, EVENTS_FOLDER, null, null, null, false, false, EVENT_ENTRIES_MAX);
+List<EventEntry> events = calendar.getEvents(EventCalendar.RANGE_UPCOMING_AND_IN_PROGRESS, cms, EVENTS_FOLDER_INTRANET, null, null, null, false, false, EVENT_ENTRIES_MAX);
 
-// Step 2: fetch all promoted events
+// Step 2: Mix in events from the public site
+try {
+    // Switch to public site
+    cms.getRequestContext().setSiteRoot(SITE_ROOT_EXTRANET);
+    // Inject events and sort the resulting list
+    events.addAll(calendar.getEvents(EventCalendar.RANGE_UPCOMING_AND_IN_PROGRESS, cms, EVENTS_FOLDER_EXTRANET, null, null, null, false, false, EVENT_ENTRIES_MAX));
+    Collections.sort(events, no.npolar.common.eventcalendar.EventEntry.COMPARATOR_START_TIME);
+    // Switch back to intranet site
+    cms.getRequestContext().setSiteRoot(SITE_ROOT_INTRANET);
+} catch (Exception e) {
+    out.println("\n\n<!-- Unable to read events from the public site -->\n\n");
+}
+
+// Step 3: fetch all promoted events
 List<EventEntry> promotedEvents = new ArrayList<EventEntry>(0);
 try {
     List<CmsResource> featuredResources = cmso.readResourcesWithProperty(
-            EVENTS_FOLDER
+            EVENTS_FOLDER_INTRANET
             , "featured"
             , "true"
             , CmsResourceFilter.DEFAULT_FILES.addRequireType(OpenCms.getResourceManager().getResourceType(EventEntry.RESOURCE_TYPE_NAME_EVENT).getTypeId())
@@ -177,13 +194,13 @@ try {
         }
     }
     
-    // Step 3: Remove duplicates
+    // Step 4: Remove duplicates
     if (!promotedEvents.isEmpty()) {
         Collections.sort(promotedEvents, EventEntry.COMPARATOR_START_TIME);
         events.removeAll(promotedEvents); // avoid duplicates
         events.addAll(0, promotedEvents);
         
-        // Step 4: Trim the events list
+        // Step 5: Trim the events list
         if (events.size() > EVENT_ENTRIES_MAX) {
             events = events.subList(0, EVENT_ENTRIES_MAX);
         }
@@ -226,7 +243,7 @@ if (iEvents.hasNext()) {
     }
     %>
     </ul>
-    <!--<a class="cta more news-list-more" href="<%= EVENTS_FOLDER %>"><%= MORE_LINK_TEXT %></a>-->
+    <!--<a class="cta more news-list-more" href="<%= EVENTS_FOLDER_INTRANET %>"><%= MORE_LINK_TEXT %></a>-->
 	<!--</div>-->
     <%
 
