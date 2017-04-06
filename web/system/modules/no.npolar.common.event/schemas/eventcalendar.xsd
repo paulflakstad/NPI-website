@@ -1,0 +1,62 @@
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+	
+    <xsd:include schemaLocation="opencms://opencms-xmlcontent.xsd"/>
+    <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.event/schemas/label.xsd"/>
+    
+    <xsd:element name="EventCalendars" type="OpenCmsEventCalendars"/>    
+
+    <xsd:complexType name="OpenCmsEventCalendars">
+        <xsd:sequence>
+            <xsd:element name="EventCalendar" type="OpenCmsEventCalendar" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="OpenCmsEventCalendar">
+        <xsd:sequence>
+            <xsd:element name="EventsFolder" type="OpenCmsVfsFile" />
+            <xsd:element name="UndatedFolder" type="OpenCmsVfsFile" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="ExcludeFolder" type="OpenCmsVfsFile" minOccurs="0" maxOccurs="unbounded" />
+            <xsd:element name="CategoriesRoot" type="OpenCmsVfsFile" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="CategoriesSort" type="OpenCmsString" />
+            <xsd:element name="HostCategory" type="OpenCmsString" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="ExcludeNavCategory" type="OpenCmsString" minOccurs="0" maxOccurs="unbounded" />
+            <xsd:element name="DisplayCategory" type="OpenCmsString" minOccurs="0" maxOccurs="unbounded" />
+            <xsd:element name="ShowWeekNumbers" type="OpenCmsBoolean" default="true" />
+            <xsd:element name="MinTime" type="OpenCmsDateTime" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="MaxTime" type="OpenCmsDateTime" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="DisplayType" type="OpenCmsString" />
+            <xsd:element name="EventDescription" type="OpenCmsBoolean" default="true" />
+            <xsd:element name="HideExpiredEvents" type="OpenCmsBoolean" default="true" />
+            <xsd:element name="InitialTime" type="OpenCmsDateTime" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="InitialRange" type="OpenCmsString" />
+            <xsd:element name="CalendarLink" type="OpenCmsVfsFile" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="CalendarAddClass" type="OpenCmsString" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="EventLabel" type="OpenCmsLabel" minOccurs="0" maxOccurs="1" />
+        </xsd:sequence>
+        <xsd:attribute name="language" type="OpenCmsLocale" use="optional" />
+    </xsd:complexType>
+
+    <xsd:annotation>
+        <xsd:appinfo>
+            <resourcebundle name="no.npolar.common.event" />
+            <layouts>
+                <layout element="CategoriesSort" widget="SelectorWidget" configuration="2*:By relevance|
+                                                                                        1:By title|
+                                                                                        0:By resource name (fastest)" />
+                <layout element="HostCategory" widget="CategoryWidget" configuration="onlyleafs=false|property=category" />
+                <layout element="ExcludeNavCategory" widget="CategoryWidget" configuration="onlyleafs=false|property=category" />
+                <layout element="DisplayCategory" widget="CategoryWidget" configuration="onlyleafs=false|property=category" />
+                <layout element="DisplayType" widget="SelectorWidget" configuration="5:Default navigation and listing|
+                                                                                     4:Default navigation, listing and category filters|
+                                                                                     3*:Calendar, default navigation, listing and category filters|
+                                                                                     2:Calendar, default navigation and listing|
+                                                                                     1:Calendar and listing|
+                                                                                     0:Calendar only" />
+                <layout element="InitialRange" widget="SelectorWidget" configuration="99:Catch all|
+                                                                                      0:Current year|
+                                                                                      1:Current month" />
+            </layouts>
+        </xsd:appinfo>
+    </xsd:annotation>
+    
+</xsd:schema>
