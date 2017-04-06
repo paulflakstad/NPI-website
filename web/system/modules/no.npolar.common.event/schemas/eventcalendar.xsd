@@ -14,6 +14,7 @@
     <xsd:complexType name="OpenCmsEventCalendar">
         <xsd:sequence>
             <xsd:element name="EventsFolder" type="OpenCmsVfsFile" />
+            <xsd:element name="AdditionalFolder" type="OpenCmsVfsFile" minOccurs="0" maxOccurs="10" />
             <xsd:element name="UndatedFolder" type="OpenCmsVfsFile" minOccurs="0" maxOccurs="1" />
             <xsd:element name="ExcludeFolder" type="OpenCmsVfsFile" minOccurs="0" maxOccurs="unbounded" />
             <xsd:element name="CategoriesRoot" type="OpenCmsVfsFile" minOccurs="0" maxOccurs="1" />

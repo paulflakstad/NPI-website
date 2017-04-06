@@ -220,6 +220,7 @@ final String PARAM_NAME_EXPIRED         = "exp";
 // AJAX parameter names
 //final String PARAM_NAME_HIDE_EXPIRED    = "hide_expired";
 final String PARAM_NAME_EVENTS_FOLDER   = "events_folder";
+final String PARAM_NAME_EVENT_FOLDERS_ADD = "event_folders_add";
 final String PARAM_NAME_EXCLUDE_FOLDER  = "exclude_folder";
 final String PARAM_NAME_OVERVIEW        = "overview";
 final String PARAM_NAME_CALENDAR_CLASS  = "calendar_class";
@@ -263,6 +264,21 @@ if (request.getParameter(PARAM_NAME_LOCALE) != null) {
 //==============================================================================
 // Config variables
 String eventsFolder             = request.getParameter(PARAM_NAME_EVENTS_FOLDER);
+
+List<String> eventFolders       = new ArrayList<String>();
+// Additional folders - not recommended...
+// As of 2017-04, it is used only on the intranet site, to inject events from the public site)
+String additionalFoldersStr     = request.getParameter(PARAM_NAME_EVENT_FOLDERS_ADD);
+if (additionalFoldersStr != null && !additionalFoldersStr.trim().isEmpty()) {
+    for (String additionalFolderUri : additionalFoldersStr.split(",")) {
+        if (!additionalFolderUri.trim().isEmpty()) {
+            eventFolders.add(additionalFolderUri);
+        }
+    }
+}
+// Add the main folder as the LAST item in the list
+eventFolders.add(eventsFolder);
+
 String categoryPath             = request.getParameter(PARAM_NAME_CATEGORY_PATH);
 String undatedEventsFolder      = null; // Hard to manage a list, so use only one
 List undatedEventsFolders       = new ArrayList(); // DUMMY list, methods in .jar need a list (ToDo: FIX!!!)
@@ -400,6 +416,8 @@ int offset = 0;
 try { offset = Integer.valueOf(request.getParameter(PARAM_NAME_OFFSET)); } catch (Exception e) {};
 
 
+EventsCollector eventsCollector = null;
+/*
 EventsCollector eventsCollector = new EventsCollector(cms, eventsFolder)
                                         .addCategoriesToMatch(paramFilterCategories)
                                         .excludeFolders(excludedEventsFolders) 
@@ -409,7 +427,53 @@ EventsCollector eventsCollector = new EventsCollector(cms, eventsFolder)
                                         .setExpiredHandling(ARCHIVE_MODE)
                                         .setRecurrencesHandling(true)
                                         .setUndatedHandling(false);
+//*/
+// Redefine the range if we're viewing the archive
+if (ARCHIVE_MODE) {
+    range = new CollectorTimeRange(CollectorTimeRange.RANGE_EXPIRED, DATE_NOW);
+}
 
+for (String folder : eventFolders) {
+    String siteRootOri = cms.getRequestContext().getSiteRoot();
+    String siteRootTemp = null;
+            
+    if (folder.startsWith("/sites/")) {
+        // This is a root path to another site on this OpenCms installation
+        // (VERY rarely used - as of 2017-04 only on the intranet site)
+        String[] folderParts = folder.substring(1).split("/");
+        try {
+            siteRootTemp = "/" + folderParts[0] + "/" + folderParts[1];
+            cms.getRequestContext().setSiteRoot(siteRootTemp);
+            folder = cms.getRequestContext().removeSiteRoot(folder);
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+    eventsCollector = new EventsCollector(cms, folder)
+            .addCategoriesToMatch(paramFilterCategories)
+            .excludeFolders(excludedEventsFolders) 
+            .setSortOrder(!ARCHIVE_MODE)
+            .setOverlapLeniency(!ARCHIVE_MODE)
+            .setCategoryMatchMode(true)
+            .setExpiredHandling(ARCHIVE_MODE)
+            .setRecurrencesHandling(true)
+            .setUndatedHandling(false)
+            ;
+    
+    events.addAll(eventsCollector.get(range, limit));
+    
+    // Reset site root if necessary
+    if (siteRootTemp != null) {
+        cms.getRequestContext().setSiteRoot(siteRootOri);
+    }
+}
+
+// If we're mixing from multiple folders, we need to sort events
+if (eventFolders.size() > 1) {
+    Collections.sort(events, ARCHIVE_MODE ? EventEntry.COMPARATOR_START_TIME_DESC : EventEntry.COMPARATOR_START_TIME);
+}
+
+/*
 if (!ARCHIVE_MODE) {
 
     events = eventsCollector.get(range, limit);
@@ -417,6 +481,7 @@ if (!ARCHIVE_MODE) {
     if (DEBUG) { out.println("\n<!-- Collected " + events.size() + " events"
                                 + " (" + (eventsCollector.isExpiredInclusive() ? "in" : "ex") + "cluding expired events"
                                 + ", " + (eventsCollector.isOverlapLenient() ? "in" : "ex") + "cluding events that only partially overlap the range). -->\n"); }
+*/
     /*
     // Get undated events
     if (!undatedEventsFolders.isEmpty()) {
@@ -435,10 +500,11 @@ if (!ARCHIVE_MODE) {
     }
     if (DEBUG) { out.println("\n<!-- Collected " + noDateEvents.size() + " undated events. -->\n"); }
     //*/
-} 
+/*} 
 else { // if (ARCHIVE_MODE)
 
     events = eventsCollector.get(new CollectorTimeRange(CollectorTimeRange.RANGE_EXPIRED, DATE_NOW), limit);
+    */
     /*
     // We need to MANUALLY remove any event(s) that started before "now", but have not yet expired.
     Iterator<EventEntry> iExpired = eventsExpired.iterator();
@@ -452,12 +518,16 @@ else { // if (ARCHIVE_MODE)
 
     if (DEBUG) { out.println("\n<!-- Collected " + eventsExpired.size() + " expired events. -->\n"); }
     */
-}
+//}
 
 
 //int numCurrentRangeEvents = eventsInRange.size(); // The number of dated events, for convenience
 //int numNoDateEvents = noDateEvents.size(); // The number of undated events, for convenience
-
+if (DEBUG) {
+    out.println("\n<!-- Added " + events.size() + " " + (ARCHIVE_MODE ? "expired" : "dated") + " events"
+            + " (" + (eventsCollector.isExpiredInclusive() ? "in" : "ex") + "cluding expired events"
+            + ", " + (eventsCollector.isOverlapLenient() ? "in" : "ex") + "cluding events that only partially overlap the range). -->\n"); 
+}
 //
 // Done collecting and sorting events
 //

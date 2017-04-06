@@ -358,6 +358,7 @@ final String PARAM_NAME_EXPIRED         = "exp";
 
 // AJAX parameter names
 final String PARAM_NAME_EVENTS_FOLDER   = "events_folder";
+final String PARAM_NAME_EVENT_FOLDERS_ADD = "event_folders_add";
 final String PARAM_NAME_EXCLUDE_FOLDER  = "exclude_folder";
 final String PARAM_NAME_OVERVIEW        = "overview";
 final String PARAM_NAME_CALENDAR_CLASS  = "calendar_class";
@@ -405,6 +406,7 @@ if (resourceUri == null)
 //==============================================================================
 // Config variables
 String eventsFolder             = null;
+List<String> eventFolders       = new ArrayList<String>();
 String categoryPath             = null;
 String undatedEventsFolder      = null; // Hard to manage a list, so use only one
 List undatedEventsFolders       = new ArrayList(); // DUMMY list, methods in .jar need a list (ToDo: FIX!!!)
@@ -434,11 +436,36 @@ boolean categoryFiltering       = true;
 // Read the config file (xmlcontent resource of type "np_eventcal"):
 I_CmsXmlContentContainer configuration = cms.contentload("singleFile", resourceUri, false);
 while (configuration.hasMoreResources()) {
-    // The folder to collect events from (events will be collected from the entire sub-tree)
+    // Folder(s) to collect events from (will collect from the entire sub-tree)
+    
+// Main folder - categories etc. will be based on this one
     eventsFolder = cms.contentshow(configuration, "EventsFolder");
     if (!CmsAgent.elementExists(eventsFolder)) {
         eventsFolder = requestFolderUri;
     }
+    // Additional folders 
+    // (as of 2017-04, used only on the intranet to include events from public site)
+    I_CmsXmlContentContainer additionalFoldersLoop = cms.contentloop(configuration, "AdditionalFolder");
+    while (additionalFoldersLoop.hasMoreResources()) {
+        eventFolders.add( cms.contentshow(additionalFoldersLoop) );
+    }
+    // It is important that the main folder is the LAST one in the list
+    eventFolders.add(eventsFolder);
+    /*
+    eventsFolder = eventFolders.get(0);
+    if (!CmsAgent.elementExists(eventsFolder)) {
+        eventsFolder = requestFolderUri;
+        eventFolders.add(eventsFolder);
+    }
+    //*/
+    /*
+    // Main folder - categories etc. will be based on this one
+    eventsFolder = cms.contentshow(configuration, "EventsFolder");
+    if (!CmsAgent.elementExists(eventsFolder)) {
+        eventsFolder = requestFolderUri;
+    }
+    //*/
+    
     // The root path to the categories, typically ${EVENTS_FOLDER}/_categories/
     categoryPath = cms.contentshow(configuration, "CategoriesRoot");
     // The preferred sorting mode for categories in the category navigation
@@ -666,8 +693,10 @@ if (DEBUG) { out.println("\n<!--\nReady to collect events. Range is " + rangeExp
 final int DEFAULT_LIMIT = 20;
 int limit = DEFAULT_LIMIT;
 try { limit = Integer.valueOf(request.getParameter("limit")); } catch (Exception e) {};
+EventsCollector eventsCollector = null;
 
 
+/*
 EventsCollector eventsCollector = new EventsCollector(cms, eventsFolder)
                                         .addCategoriesToMatch(paramFilterCategories)
                                         .excludeFolders(excludedEventsFolders) 
@@ -677,14 +706,60 @@ EventsCollector eventsCollector = new EventsCollector(cms, eventsFolder)
                                         .setExpiredHandling(ARCHIVE_MODE)
                                         .setRecurrencesHandling(true)
                                         .setUndatedHandling(false);
+//*/
+// Redefine the range if we're viewing the archive
+if (ARCHIVE_MODE) {
+    range = new CollectorTimeRange(CollectorTimeRange.RANGE_EXPIRED, DATE_NOW);
+}
+for (String folder : eventFolders) {
+    String siteRootOri = cms.getRequestContext().getSiteRoot();
+    String siteRootTemp = null;
+            
+    if (folder.startsWith("/sites/")) {
+        // This is a root path to another site on this OpenCms installation
+        // (VERY rarely used - as of 2017-04 only on the intranet site)
+        String[] folderParts = folder.substring(1).split("/");
+        try {
+            siteRootTemp = "/" + folderParts[0] + "/" + folderParts[1];
+            cms.getRequestContext().setSiteRoot(siteRootTemp);
+            folder = cms.getRequestContext().removeSiteRoot(folder);
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+    eventsCollector = new EventsCollector(cms, folder)
+            .addCategoriesToMatch(paramFilterCategories)
+            .excludeFolders(excludedEventsFolders) 
+            .setSortOrder(!ARCHIVE_MODE)
+            .setOverlapLeniency(!ARCHIVE_MODE)
+            .setCategoryMatchMode(true)
+            .setExpiredHandling(ARCHIVE_MODE)
+            .setRecurrencesHandling(true)
+            .setUndatedHandling(false)
+            ;
+    
+    events.addAll(eventsCollector.get(range, limit));
+    
+    // Reset site root if necessary
+    if (siteRootTemp != null) {
+        cms.getRequestContext().setSiteRoot(siteRootOri);
+    }
+}
 
+// If we're mixing from multiple folders, we need to sort events
+if (eventFolders.size() > 1) {
+    Collections.sort(events, ARCHIVE_MODE ? EventEntry.COMPARATOR_START_TIME_DESC : EventEntry.COMPARATOR_START_TIME);
+}
+    
+/*
 if (!ARCHIVE_MODE) {
-
-    events = eventsCollector.get(range, limit);
-
-    if (DEBUG) { out.println("\n<!-- Collected " + events.size() + " dated events"
-                                + " (" + (eventsCollector.isExpiredInclusive() ? "in" : "ex") + "cluding expired events"
-                                + ", " + (eventsCollector.isOverlapLenient() ? "in" : "ex") + "cluding events that only partially overlap the range). -->\n"); }
+    events.addAll(eventsCollector.get(range, limit));
+    if (DEBUG) { 
+        out.println("\n<!-- Added " + events.size() + " dated events"
+                + " (" + (eventsCollector.isExpiredInclusive() ? "in" : "ex") + "cluding expired events"
+                + ", " + (eventsCollector.isOverlapLenient() ? "in" : "ex") + "cluding events that only partially overlap the range). -->\n"); 
+    }
+    //*/
     /*
     // Get undated events
     if (!undatedEventsFolders.isEmpty()) {
@@ -701,13 +776,16 @@ if (!ARCHIVE_MODE) {
             noDateEvents.addAll(undatedCollector.get(undatedEventFolder, CollectorTimeRange.getCatchAllRange(), -1));
         }
     }
-    */
-    //if (DEBUG) { out.println("\n<!-- Collected " + noDateEvents.size() + " undated events. -->\n"); }
-    
+    if (DEBUG) { out.println("\n<!-- Collected " + noDateEvents.size() + " undated events. -->\n"); }
+    //*/
+/*
 } 
-else { // if (ARCHIVE_MODE)
+    
+else { // if (ARCHIVE_MODE) 
+//*/
+if (ARCHIVE_MODE) {
 
-    events = eventsCollector.get(new CollectorTimeRange(CollectorTimeRange.RANGE_EXPIRED, DATE_NOW), limit);
+    //events.addAll(eventsCollector.get(new CollectorTimeRange(CollectorTimeRange.RANGE_EXPIRED, DATE_NOW), limit));
 
     // We need to MANUALLY remove any event(s) that started before "now", but have not yet expired.
     Iterator<EventEntry> iExpired = events.iterator();
@@ -718,9 +796,15 @@ else { // if (ARCHIVE_MODE)
         }
     }
     //eventsExpired.removeAll(noDateEvents); // ToDo: This shouldn't be necessary...
-
-    if (DEBUG) { out.println("\n<!-- Collected " + events.size() + " expired events. -->\n"); }
+    //if (DEBUG) { out.println("\n<!-- Collected " + events.size() + " expired events. -->\n"); }
 }
+
+if (DEBUG) {
+    out.println("\n<!-- Added " + events.size() + " " + (ARCHIVE_MODE ? "expired" : "dated") + " events"
+            + " (" + (eventsCollector.isExpiredInclusive() ? "in" : "ex") + "cluding expired events"
+            + ", " + (eventsCollector.isOverlapLenient() ? "in" : "ex") + "cluding events that only partially overlap the range). -->\n"); 
+}
+
 //int numCurrentRangeEvents = eventsInRange.size(); // The number of dated events, for convenience
 //int numNoDateEvents = noDateEvents.size(); // The number of undated events, for convenience
 
@@ -904,6 +988,13 @@ if (categoryFiltering) {
 
     Map<String, String[]> ajaxParams = new HashMap<String, String[]>();
     ajaxParams.put(PARAM_NAME_EVENTS_FOLDER, new String[] { eventsFolder });
+    if (eventFolders.size() > 1) {
+        String additionalFolders = "";
+        for (String additionalFolder : eventFolders.subList(0, eventFolders.size() - 1)) {
+            additionalFolders += (additionalFolders.isEmpty() ? "" : ",") + additionalFolder;
+        }
+        ajaxParams.put(PARAM_NAME_EVENT_FOLDERS_ADD, new String[] { additionalFolders });
+    }
     ajaxParams.put(PARAM_NAME_CATEGORY_PATH, new String[] { categoryPath });
     ajaxParams.put(PARAM_NAME_LOCALE, new String[] { locale.toString() });
     ajaxParams.put(PARAM_NAME_OFFSET, new String[] { String.valueOf(limit) });
