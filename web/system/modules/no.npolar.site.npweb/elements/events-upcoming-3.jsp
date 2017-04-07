@@ -1,16 +1,13 @@
 <%-- 
     Document   : events-upcoming-3
     Created on : Nov 17, 2015, 12:40:19 PM
-    Author     : Paul-Inge Flakstad, Norwegian Polar Institute <flakstad at npolar.no>
-    Comment    : This file Really should be renamed "events-upcoming-isblink"
---%><%-- 
-    Document   : events-upcoming (based loosely on polar-bokkafe-list)
-    Created on : Mar 27, 2014, 12:53:17 PM
     Author     : Paul-Inge Flakstad, Norwegian Polar Institute
+    Comment    : This file Really should be renamed "events-upcoming-isblink"
 --%><%@ page import="java.util.*,
                  java.text.SimpleDateFormat,
                  no.npolar.common.eventcalendar.*,
                  no.npolar.util.*,
+                 org.opencms.db.CmsUserSettings,
                  org.opencms.file.CmsResource,
                  org.opencms.file.CmsResourceFilter,
                  org.opencms.file.CmsObject,
@@ -18,6 +15,7 @@
                  org.opencms.loader.CmsResourceManager,
                  org.opencms.main.CmsException,
                  org.opencms.main.OpenCms,
+                 org.opencms.util.CmsRequestUtil,
                  org.opencms.xml.A_CmsXmlDocument,
                  org.opencms.xml.content.*"  session="true" 
 %><%!
@@ -130,6 +128,32 @@
         
         return s;
     }
+
+    /**
+     * Gets the workplace timestamp as a Date instance.
+     * 
+     * If time warp is active, the returned datetime will be the "warped" time. 
+     * Otherwise, the actual "now" is returned.
+     *
+     * @param cmso An initialized CmsObject.
+     * @return Date The current workplace "now" - either the actual "now" or a time-warped "now".
+     */
+    public static Date getOpenCmsCurrentTime(CmsObject cmso) {
+        long userCurrentTime = new Date().getTime();
+        Object timeWarpObj = cmso.getRequestContext().getCurrentUser().getAdditionalInfo(CmsUserSettings.ADDITIONAL_INFO_TIMEWARP);
+        try {
+            userCurrentTime = (Long)timeWarpObj;
+        } catch (ClassCastException e) {
+            try {
+                userCurrentTime = Long.parseLong((String)timeWarpObj);
+                if (userCurrentTime <= 0) {
+                    userCurrentTime = new Date().getTime();
+                }
+            } catch (Throwable t) {}
+        } catch (Throwable t) {}
+
+        return new Date(userCurrentTime);
+    }
 %><%
 CmsAgent cms                = new CmsAgent(pageContext, request, response);
 CmsObject cmso              = cms.getCmsObject();
@@ -152,6 +176,8 @@ final String NO_EVENTS		= locale.toString().equalsIgnoreCase("no") ? "Kalenderen
 final String SITE_ROOT_INTRANET = "/sites/isblink";
 final String SITE_ROOT_EXTRANET = "/sites/np";
 
+final CollectorTimeRange RANGE = new CollectorTimeRange(CollectorTimeRange.RANGE_UPCOMING_AND_IN_PROGRESS, new Date());//getOpenCmsCurrentTime(cmso));
+
 //final String DF_FULL = "d. MMM YYYY hh:mm";
 //SimpleDateFormat datetime = new SimpleDateFormat(cms.label("label.event.dateformat.datetime"), locale);
 //SimpleDateFormat dateonly = new SimpleDateFormat(cms.label("label.event.dateformat.dateonly"), locale);
@@ -160,18 +186,32 @@ final String SITE_ROOT_EXTRANET = "/sites/np";
 
 
 // The list should contain no more than this
-final int EVENT_ENTRIES_MAX = 4;
+final int EVENT_ENTRIES_MAX = 8;
 
-// Step 1: fetch all regular events
-List<EventEntry> events = calendar.getEvents(EventCalendar.RANGE_UPCOMING_AND_IN_PROGRESS, cms, EVENTS_FOLDER_INTRANET, null, null, null, false, false, EVENT_ENTRIES_MAX);
+EventsCollector eventsCollector = new EventsCollector(cms, EVENTS_FOLDER_INTRANET)
+                                        .setSortOrder(true)
+                                        .setOverlapLeniency(true)
+                                        .setExpiredHandling(false)
+                                        .setRecurrencesHandling(true)
+                                        .setUndatedHandling(false);
+
+// Step 1: Fetch all regular events
+//List<EventEntry> events = calendar.getEvents(EventCalendar.RANGE_UPCOMING_AND_IN_PROGRESS, cms, EVENTS_FOLDER_INTRANET, null, null, null, false, false, EVENT_ENTRIES_MAX);
+List<EventEntry> events = eventsCollector.get(RANGE, EVENT_ENTRIES_MAX);
 
 // Step 2: Mix in events from the public site
 try {
     // Switch to public site
     cms.getRequestContext().setSiteRoot(SITE_ROOT_EXTRANET);
-    // Inject events and sort the resulting list
-    events.addAll(calendar.getEvents(EventCalendar.RANGE_UPCOMING_AND_IN_PROGRESS, cms, EVENTS_FOLDER_EXTRANET, null, null, null, false, false, EVENT_ENTRIES_MAX));
-    Collections.sort(events, no.npolar.common.eventcalendar.EventEntry.COMPARATOR_START_TIME);
+    // Inject events from public site, then sort the resulting list
+    eventsCollector = new EventsCollector(cms, EVENTS_FOLDER_EXTRANET)
+                                        .setSortOrder(false)
+                                        .setOverlapLeniency(true)
+                                        .setExpiredHandling(false)
+                                        .setRecurrencesHandling(true)
+                                        .setUndatedHandling(false);
+    events.addAll(eventsCollector.get(RANGE, EVENT_ENTRIES_MAX));
+    Collections.sort(events, EventEntry.COMPARATOR_START_TIME);
     // Switch back to intranet site
     cms.getRequestContext().setSiteRoot(SITE_ROOT_INTRANET);
 } catch (Exception e) {
@@ -199,11 +239,11 @@ try {
         Collections.sort(promotedEvents, EventEntry.COMPARATOR_START_TIME);
         events.removeAll(promotedEvents); // avoid duplicates
         events.addAll(0, promotedEvents);
-        
-        // Step 5: Trim the events list
-        if (events.size() > EVENT_ENTRIES_MAX) {
-            events = events.subList(0, EVENT_ENTRIES_MAX);
-        }
+    }
+    
+    // Step 5: Trim the events list
+    if (events.size() > EVENT_ENTRIES_MAX) {
+        events = events.subList(0, EVENT_ENTRIES_MAX);
     }
 } catch (Exception e) {
     // ignore
@@ -222,6 +262,10 @@ if (iEvents.hasNext()) {
         //Date startDate = new Date(event.getStartTime());
         //SimpleDateFormat startDateFormat = datetime;
         boolean promotedEvent = ++i <= promotedEvents.size();
+        String eventUri = event.getUri(cmso);
+        if (event.hasRecurrenceRule()) {
+            eventUri = CmsRequestUtil.appendParameter(eventUri, "begin", Long.toString(event.getStartTime()));
+        }
         
         //if (event.hasEndTime() && event.isDisplayDateOnly()) {
         //    Format start date (i.e. either "18 Dec 2014", "18 Dec" or just "18") depending on end date
@@ -229,7 +273,7 @@ if (iEvents.hasNext()) {
         //}
         %>
         <li class="event<%= promotedEvent ? " event--promoted" : "" %>" itemscope="" itemtype="http://schema.org/Event">
-            <a href="<%= cms.link(event.getUri(cmso)) %>">
+            <a href="<%= cms.link(eventUri) %>">
                 <!--<div class="card">-->
                     <!--<div class="autonomous">-->
                         <strong class="event_title" itemprop="name"><%= event.getTitle() %></strong>
