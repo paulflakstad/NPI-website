@@ -739,7 +739,7 @@ if (cms.template("breadcrumb")) {
         html += "\n<li>" + (i.hasNext() ? ("<a href=\"" + cms.link(mi.getUrl()) + "\" class=\"breadcrumb\" title=\"" + navAttrTitle + "\">" + navText + "</a> <i class=\"icon-right-open-mini\"></i>") : navText) + "</li>"; // No link on last item
     }
     
-    out.println("\n<ul id=\"nav_breadcrumb\">" + html + "\n</ul><!-- #nav_breadcrumb -->");
+    out.println("\n<ul class=\"nav__items list list--h list--tight\" id=\"nav_breadcrumb\">" + html + "\n</ul><!-- #nav_breadcrumb -->");
 }
 
 
