@@ -1,10 +1,12 @@
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
 	
     <xsd:include schemaLocation="opencms://opencms-xmlcontent.xsd"/>
+    <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.pageelements/schemas/image.xsd"/>
     <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.pageelements/schemas/paragraph.xsd"/>
     <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.pageelements/schemas/extension.xsd"/>
     <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.pageelements/schemas/linklist.xsd"/>
     <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.pageelements/schemas/linklistgroup.xsd"/>
+    <xsd:include schemaLocation="opencms://system/modules/no.npolar.common.species/schemas/localized-string.xsd"/>
     
     <xsd:element name="SpeciesPages" type="OpenCmsSpeciesPages"/>
 
@@ -23,10 +25,12 @@
             <xsd:element name="ShareLinks" type="OpenCmsBoolean" default="false" />
             <xsd:element name="Category" type="OpenCmsString" minOccurs="0" maxOccurs="20" />
             <xsd:element name="Extension" type="OpenCmsExtension" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="AlternateName" type="OpenCmsLocalizedString" minOccurs="0" maxOccurs="5" />
             <xsd:element name="RedListStatus" type="OpenCmsString" />
             <xsd:element name="RedListLink" type="OpenCmsVarLink" />
             <xsd:element name="MOSJKeyword" type="OpenCmsString" />
             <xsd:element name="Intro" type="OpenCmsHtml" />
+            <xsd:element name="MainImage" type="OpenCmsImage" minOccurs="0" maxOccurs="1" />
             <xsd:element name="Paragraph" type="OpenCmsParagraph" minOccurs="1" maxOccurs="unbounded" />
             <xsd:element name="FactPages" type="OpenCmsVfsFile" minOccurs="0" maxOccurs="10" />
             <!-- attached links -->
@@ -46,6 +50,7 @@
                 <mapping element="MappingURL" mapto="property:mapping-url" />
                 <mapping element="PageTitle" mapto="property:Title" />
                 <mapping element="Intro" mapto="property:Description" />
+                <mapping element="MainImage/URI" mapto="property:image.thumb" />
                 <mapping element="Extension/URI" mapto="property:template-include-file" />
                 <mapping element="Extension/WrapInside" mapto="property:template-include-file-wrap" />
                 <mapping element="Extension/SearchFolder" mapto="property:template-search-folder" />
@@ -64,6 +69,7 @@
             <searchsettings>
                 <searchsetting element="MappingURL" searchcontent="false" />
                 <searchsetting element="Category" searchcontent="false" />
+                <searchsetting element="MainImage" searchcontent="false" />
                 <searchsetting element="Attachments" searchcontent="false" />
                 <searchsetting element="RelatedPages" searchcontent="false" />
                 <searchsetting element="FactSheets" searchcontent="false" />
@@ -83,3 +89,4 @@
     </xsd:annotation> 
     
 </xsd:schema>
+
