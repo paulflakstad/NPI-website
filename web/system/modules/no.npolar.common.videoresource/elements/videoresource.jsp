@@ -351,14 +351,24 @@ String caption = overrideCaption.isEmpty() ? description : overrideCaption;
 credit = overrideCredit.isEmpty() ? credit : overrideCredit;
 
 
+if (CmsAgent.elementExists(caption) || CmsAgent.elementExists(credit)) {
+    out.println("<span class=\"media__caption caption\">"
+            + (CmsAgent.elementExists(caption) && !includeTemplate ? CmsAgent.stripParagraph(caption) : "")
+            + (CmsAgent.elementExists(credit) ? ("<span class=\"credit media__credit\">Video: " + credit + "</span>") : "")
+            + "</span>");
+}
+/*
 if (!includeTemplate && CmsAgent.elementExists(caption)) {
     out.println("<span class=\"caption\">" + CmsAgent.stripParagraph(caption) + "</span>");
 }
 
 if (CmsAgent.elementExists(credit)) {
-    out.println("<span class=\"credit\">Video: " + credit + /*("yt".equals(type) || "vimeo".equals(type) ? (" / ".concat("yt".equals(type) ? "YouTube" : "Vimeo")) : "" ) +*/ "</span>");
+    out.println("<span class=\"credit\">"
+            + "Video: " + credit 
+            //+ ("yt".equals(type) || "vimeo".equals(type) ? (" / ".concat("yt".equals(type) ? "YouTube" : "Vimeo")) : "" ) 
+            + "</span>");
 }
-
+//*/
 if (!(type.equalsIgnoreCase(VIDEO_TYPE_LOCAL))) {
     out.println("</span><!-- media wrapper (typically .media) -->");
 }
