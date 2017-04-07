@@ -13,6 +13,10 @@
 <%@page import="java.util.*"%>
 <%@page import="java.util.regex.Matcher"%>
 <%@page import="java.util.regex.Pattern"%>
+<%@page import="no.npolar.data.api.*"%>
+<%@page import="no.npolar.util.search.SearchResults"%>
+<%@page import="no.npolar.util.search.SearchResultHit"%>
+<%@page import="no.npolar.util.search.SearchSource"%>
 <%@page import="org.opencms.file.*"%>
 <%@page import="org.opencms.json.*"%>
 <%@page import="org.opencms.jsp.*"%>
@@ -39,211 +43,6 @@
 /**Used for notes to the end user; error messages, size trims, etc. */
 public static String note = "";
 
-/**
- * Represents a single hit in a SERP.
- */
-public static class SearchResultHit implements Comparator<SearchResultHit> {
-    private String title;
-    private String snippet;
-    private String category;
-    private String uri;
-    private String displayUri;
-    private String source;
-    private int score;
-    
-    public static final int TITLE = 0;
-    public static final int SNIPPET = 1;
-    public static final int CATEGORY = 2;
-    public static final int URI = 3;
-    public static final int DISPLAY_URI = 4;
-    public static final int SOURCE = 5;
-    public static final int SCORE = 6;
-        
-    /*public static final Comparator<SearchResultHit> SCORE_COMP = new Comparator<SearchResultHit>() {
-        public int compare(SearchResultHit thisResult, SearchResultHit thatResult) {
-            if (thisResult.getScore() < thatResult.getScore())
-                return -1;
-            else if (thisResult.getScore() > thatResult.getScore())
-                return 1;
-            return 0;
-        }
-    };*/
-    
-    /**
-     * Creates a new hit.
-     */
-    public SearchResultHit(String title, 
-                            String snippet,
-                            String category,
-                            String uri,
-                            String displayUri,
-                            String source,
-                            int score) {
-        this.title = title;
-        this.snippet = snippet;
-        this.category = category;
-        this.uri = uri;
-        this.displayUri = displayUri;
-        this.source = source;
-        this.score = score;
-    }
-
-    /**
-     * Gets a detail from this hit - usage like Calendar#get(Calendar#DATE)
-     */
-    public String get(int type) {
-        switch (type) {
-            case TITLE:
-                return this.title;
-            case SNIPPET:
-                return this.snippet;
-            case CATEGORY:
-                return this.category;
-            case URI:
-                return this.uri;
-            case DISPLAY_URI:
-                return this.displayUri;
-            case SOURCE:
-                return this.source;
-            case SCORE:
-                return String.valueOf(this.score);
-            default:
-                return null;
-        }
-    }
-    /** Gets the title. */
-    public String getTitle() { return title; }
-    /** Gets the snippet. */
-    public String getSnippet() { return snippet; }
-    /** Gets the category (if any). */
-    public String getCategory() { return category; }
-    /** Gets the URI. */
-    public String getUri() { return uri; }
-    /** Gets the source. */
-    public String getSource() { return source; }
-    /** Gets the score. */
-    public int getScore() { return score; }
-    
-    /** Compares by score. */
-    public int compare(SearchResultHit thisResult, SearchResultHit thatResult) {
-        if (thisResult.getScore() < thatResult.getScore())
-            return -1;
-        else if (thisResult.getScore() > thatResult.getScore())
-            return 1;
-        return 0;
-    }
-}
-/**
- * Represents a searchable source, e.g. "Personalhåndboka" or "Isblink".
- */
-public static class SearchSource implements Comparable {
-    /** The name of the source. */
-    private String name = null;
-    /** The number of hits in this source. */
-    private int numHits = -1;
-    
-    /** Creates a new source with the given name, and with zero hits. */
-    public SearchSource(String name) {
-        this.name = name;
-        numHits = 0;
-    }
-    /** Gets the name of the source. */
-    public String getName() {
-        return name;
-    }
-    /** Increments the number of hits for this source by 1. */
-    public int addOneHit() {
-        return ++numHits;
-    }
-    /** Gets the number of hits for this source. */
-    public int getNumHits() {
-        return numHits;
-    }
-    /** Compares this source to the given one. */
-    public int compareTo(Object that) {
-        if (that instanceof SearchSource) {
-            return this.name.compareTo(((SearchSource)that).name);
-        }
-        throw new IllegalArgumentException("Only other SearchSource instances can be compared to this SearchSource.");
-    }
-    /** Checks if this source is equal to the given one. */
-    public boolean equals(Object that) {
-        if (that == null || !(that instanceof SearchSource))
-            return false;
-        return this.name.equals(((SearchSource)that).name);
-    }
-}
-/**
- * Represents a SERP; a collection of search hits that together form the 
- * complete search result.
- */
-public static class SearchResults {
-    /** Comparator that compares hits by their score. */
-    public Comparator<SearchResultHit> SCORE_COMP = new Comparator<SearchResultHit>() {
-        public int compare(SearchResultHit thisResult, SearchResultHit thatResult) {
-            if (thisResult.getScore() < thatResult.getScore())
-                return 1;
-            else if (thisResult.getScore() > thatResult.getScore())
-                return -1;
-            return 0;
-        }
-    };
-    /** The search hits in this SERP. */
-    private List<SearchResultHit> hits = null;
-    /** The sources represented in this SERP. */
-    private List<SearchSource> sources = null;
-    
-    /** Creates a new, blank SERP. */
-    public SearchResults() {
-        hits = new ArrayList<SearchResultHit>();
-        sources = new ArrayList<SearchSource>();
-    }
-    /** Gets all sources represented in this SERP. */
-    public List<SearchSource> getSources() {
-        return sources;
-    }
-    /** Adds a hit to this SERP. */
-    public boolean add(SearchResultHit hit) {
-        String hitSource = hit.getSource();
-        if (hitSource != null) {
-            hitSource = hitSource.trim();
-            if (!hitSource.isEmpty()) { 
-                SearchSource source = new SearchSource(hitSource);
-                if (!sources.contains(source)) {
-                    sources.add(source);
-                }
-                sources.get(sources.indexOf(source)).addOneHit();
-            }
-        }
-        return hits.add(hit);
-    }
-    /** Gets the size of this SERP (the number of hits it contains). */
-    public int size() {
-        return hits.size();
-    }
-    /** Removes a hit from this SERP. */
-    public boolean remove(SearchResultHit hit) {
-        return hits.remove(hit);
-    }
-    /** Clears all hits, and their sources, from this SERP. */
-    public void clear() {
-        hits.clear();
-        sources.clear();
-    }
-    /** Gets an iterator for the hits in this SERP. */
-    public Iterator<SearchResultHit> iterator() {
-        return hits.iterator();
-    }
-    /** Gets the hits in this SERP, unsorted. */
-    public List<SearchResultHit> getHits() {
-        return hits;
-    }
-    /** Gets the hits in this SERP, sorted. */
-    public List<SearchResultHit> getResults() {
-        Collections.sort(hits, SCORE_COMP);
-        return hits;
-    }
-}
 /**
  * Not done ... not even sure why this is here x)
  */
@@ -684,28 +483,50 @@ try {
         out.println(makeNote(note));
     }
     
+    // Use the "standardized" search filtering facilities
+    // Should refactor to use no.npolar.util.SearchFilter*** but that requires
+    // a bit of work...
+    SearchFilterSets filterSets = new SearchFilterSets();
+    
     // Construct the filter links / info
     String filters = "";
     if (sourceSelected != null) {
         // User has opted to display hits from specific source
-        filters += "<li style=\"display:inline-block; margin:0;\">"
+        filters += "<li>"
                     + "Viser nå kun treff i &laquo;" + sourceSelected + "&raquo;<br />"
                     + "<a class=\"button\" href=\"" + requestFileUri + "?" + PARAM_NAME_SEARCHPHRASE_LOCAL + "=" + q + "\">"
                         + "Vis treff i alle kilder"
                     + "</a></li>";
     } else {
         try {
+            //*
             List<SearchSource> sources = serp.getSources();
             if (sources != null && !sources.isEmpty()) {
                 Collections.sort(sources, NUM_HITS_COMP);
                 Iterator<SearchSource> iSources = sources.iterator();
                 while (iSources.hasNext()) {
                     SearchSource source = iSources.next();
-                    filters += "<li style=\"display:inline-block; margin:0 1em 1em 0;\">"
+                    filters += "<li>"
                                 + "<a class=\"button\" href=\"" + requestFileUri + "?" + PARAM_NAME_SEARCHPHRASE_LOCAL + "=" + q + "&amp;source=" + source.getName() + "\">" 
                                     + source.getName() + " (" + source.getNumHits() + ")" 
                                 + "</a></li>";
                 }
+            }
+            //*/
+            // Add the "standardized" filters
+            sources = serp.getSources();
+            if (sources != null && !sources.isEmpty()) {
+                Collections.sort(sources, NUM_HITS_COMP);
+                SearchFilterSet filterSetSource = new SearchFilterSet("source");
+                for (SearchSource source : serp.getSources()) {
+                    String sourceUri = requestFileUri + "?" 
+                            + PARAM_NAME_SEARCHPHRASE_LOCAL + "=" + q 
+                            + "&amp;source=" + source.getName();
+                    filterSetSource.add(
+                            new SearchFilter("source", source.getName(), source.getNumHits(), sourceUri)
+                    );
+                }
+                filterSets.add(filterSetSource);
             }
         } catch (Exception e) {
             // WTF
@@ -750,13 +571,21 @@ try {
                 </div>
             </div>
             -->
-        </form>
         
-        <div id="filters" style="margin:0; padding:0; text-align:center;">
-            <ul class="filters--simple" style="margin:0; padding:0; border:none; font-size:0.8em;">
-                <%= filters %>
-            </ul>
-        </div>
+            <div class="search-panel__filters" style="text-align:center;">
+                <ul class="filters filters--simple list--inline">
+                    <%= filters %>
+                </ul>
+            </div>
+            <%
+            if (!filterSets.isEmpty()) {
+                // This holds translations
+                ResourceBundle labels = ResourceBundle.getBundle(Labels.getBundleName(), locale);
+                // Not ready yet
+                //out.println(filterSets.toHtml(LABEL_FILTERS, cms, labels));
+            }
+            %>
+        </form>
         <h2><%= numHits %><%= (loc.equalsIgnoreCase("no") ? " treff" : (" hit" + (numHits > 1 ? "s" : "")) )%></h2>
         <%
         while (iterator.hasNext()) {
