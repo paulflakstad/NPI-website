@@ -2,7 +2,8 @@
     Document   : species
     Created on : May 8, 2013, 12:34:03 PM
     Author     : flakstad
---%><%@ page import="no.npolar.util.CmsAgent,
+--%><%@page import="no.npolar.util.ImageUtil"%>
+<%@ page import="no.npolar.util.CmsAgent,
                  no.npolar.util.contentnotation.*,
                  java.util.Locale,
                  java.util.Date,
@@ -132,6 +133,14 @@ I_CmsXmlContentContainer container  = null;
 // String variables for structured content elements
 String pageTitle                    = null;
 String pageIntro                    = null;
+
+String mainImageUri                 = null;
+String mainImageAlt                 = null;
+String mainImageCaptionTitle        = null;
+String mainImageCaptionText         = null;
+String mainImageSource              = null;
+ImageUtil mainImageHandle = null;
+
 String redListStatus                = null;
 String redListLink                  = null;
 String redListInfo                  = null;
@@ -189,12 +198,21 @@ cms.editable(EDITABLE);
 while (container.hasMoreContent()) {
     //out.println("<div class=\"page\">"); // REMOVED <div class="page">
     
-    out.println("<article class=\"main-content\">");
+    //out.println("<article class=\"main-content\">");
     
     pageTitle = cms.contentshow(container, "PageTitle");
     pageIntro = cms.contentshow(container, "Intro");
     author = cms.contentshow(container, "Author");
     authorMail = cms.contentshow(container, "AuthorMail");
+    I_CmsXmlContentContainer imageContainer = cms.contentloop(container, "MainImage");
+    if (imageContainer.hasMoreResources()) {
+        mainImageHandle = new ImageUtil(cms, imageContainer);
+        mainImageUri = cms.contentshow(imageContainer, "URI");
+        mainImageAlt = cms.contentshow(imageContainer, "Title");
+        mainImageCaptionTitle = cms.contentshow(imageContainer, "TextHeading");
+        mainImageCaptionText = cms.contentshow(imageContainer, "Text");
+        mainImageSource = cms.contentshow(imageContainer, "Source");
+    }
     /*shareLinksString= cms.contentshow(container, "ShareLinks");
     if (!CmsAgent.elementExists(shareLinksString))
         shareLinksString = "false"; // Default value if this element does not exist in the file (backward compatibility)
@@ -230,9 +248,36 @@ while (container.hasMoreContent()) {
     //
     // Red List status
     //
+    
+    // Svalbard Red List categories (http://www.artsdatabanken.no/Rodliste/Svalbard 2017-03-29):
+    // 
+    // NE - Not evaluated / Ikke vurdert
+    // NA - Not applicable / Ikke egnet
+    // LC - Least concern / Livskraftig
+    // DD - *Data deficient / Datamangel
+    // NT - *Near threatened / Nær truet
+    // VU - *'Vulnerable / Sårbar
+    // EN - *'Endangered / Sterkt truet
+    // CR - *'Critically endangered / Kritisk truet
+    // RE - *Regionally extinct / Regionalt utdødd
+    // ' = Threatened
+    // * = Red-listed
+    // 
+    // Other, global Red List categories:
+    // EW - Extinct in the wild
+    // EX - Extinct
+    //
+    
+    String redListHeading = TITLE_RED_LIST_STATUS;
+    String redListCode = null;
+    String redListLabel = null;
+    String redListMoreLink = null;
+    
     redListStatus = cms.contentshow(container, "RedListStatus");
     redListLink = cms.contentshow(container, "RedListLink");
     if (CmsAgent.elementExists(redListStatus)) {
+        // NOTE:
+        // We are no longer using the "auto" status, due to performance issues
         if (redListStatus.equalsIgnoreCase("auto")) {
             if (CmsAgent.elementExists(redListLink)) {
                 String redListLinkUrl = redListLink;
@@ -327,28 +372,135 @@ while (container.hasMoreContent()) {
             byline = CmsAgent.obfuscateEmailAddr(byline, false);
     }
     */
-    out.println(CmsAgent.elementExists(pageTitle) ? ("<h1>" + pageTitle + "</h1>") : "");
-    if (byline != null)
-        out.println(byline);
-    if (CmsAgent.elementExists(redListStatus)) {
-        out.print("<div class=\"redlist-status\"><p>");
+    
+    if (mainImageHandle != null) {
+    //if (CmsAgent.elementExists(mainImageUri)) {
+        %>
+        <div class="hero article-hero article-header">
+            <div class="standout standout--alt hero__part hero__part--text">
+                <h1><%= pageTitle %></h1>
+                <%
+                // BEGIN copy
+                if (byline != null) {
+                    out.println(byline);
+                }
+                if (CmsAgent.elementExists(redListStatus)) {
+                    out.print("<div class=\"redlist-status\"><p>");
+                    if (CmsAgent.elementExists(redListLink))
+                        out.print("<a href=\"" + redListLink + "\">");
+                    if (redListInfo != null)
+                        out.print("<span data-hoverbox=\"" + StringEscapeUtils.escapeHtml(redListInfo) + "\"><i class=\"icon-info-circled-1\"></i>");
+                    out.print(TITLE_RED_LIST_STATUS);
+                    if (redListSvalbardSpecific)
+                        out.print(" (Svalbard)");
+                    out.print(": " + redListStatus.toUpperCase() + " - " + cms.labelUnicode("label.species.redlist.".concat(redListStatus.substring(0, 2)).toLowerCase()));
+                    if (redListInfo != null)
+                        out.print("</span>");
+                    if (CmsAgent.elementExists(redListLink))
+                        out.print("</a>");
+                    out.println("</p></div>");
+                }
+                if (CmsAgent.elementExists(pageIntro))
+                    out.println("<div class=\"ingress summary\" id=\"page-summary\">" + pageIntro + "</div><!-- .ingress -->");
+                // END copy
+                %>
+            </div>
+            <div class="standout standout--alt hero__part hero__part--media">
+                <%= mainImageHandle.getImage("media big", ImageUtil.CROP_RATIO_16_9).replace("<figcaption>", "<figcaption class=\"media__caption\">") %>
+            </div>
+        </div>
+        <%
+    } else {
+        out.println(CmsAgent.elementExists(pageTitle) ? ("<h1>" + pageTitle + "</h1>") : "");
+        if (byline != null)
+            out.println(byline);
+
         
-        if (CmsAgent.elementExists(redListLink))
-            out.print("<a href=\"" + redListLink + "\">");
-        if (redListInfo != null)
-            out.print("<span data-hoverbox=\"" + StringEscapeUtils.escapeHtml(redListInfo) + "\"><i class=\"icon-info-circled-1\"></i>");
-        out.print(TITLE_RED_LIST_STATUS);
-        if (redListSvalbardSpecific)
-            out.print(" (Svalbard)");
-        out.print(": " + redListStatus.toUpperCase() + " - " + cms.labelUnicode("label.species.redlist.".concat(redListStatus.substring(0, 2)).toLowerCase()));
-        if (redListInfo != null)
-            out.print("</span>");
-        if (CmsAgent.elementExists(redListLink))
-            out.print("</a>");
-        out.println("</p></div>");
+
+        if (CmsAgent.elementExists(redListStatus)) {
+            out.print("<div class=\"redlist-status\"><p>");
+            if (CmsAgent.elementExists(redListLink)) {
+                out.print("<a href=\"" + redListLink + "\">");
+            }
+            if (redListInfo != null)
+                out.print("<span data-hoverbox=\"" + StringEscapeUtils.escapeHtml(redListInfo) + "\"><i class=\"icon-info-circled-1\"></i>");
+            out.print(TITLE_RED_LIST_STATUS);
+            if (redListSvalbardSpecific) {
+                out.print(" (Svalbard)");
+            }
+
+            
+            
+
+            out.print(": " + redListStatus.toUpperCase() + " - " + cms.labelUnicode("label.species.redlist.".concat(redListStatus.substring(0, 2)).toLowerCase()));
+            if (redListInfo != null)
+                out.print("</span>");
+            if (CmsAgent.elementExists(redListLink))
+                out.print("</a>");
+            out.println("</p></div>");
+        }
+        if (CmsAgent.elementExists(pageIntro))
+            out.println("<div class=\"ingress summary\" id=\"page-summary\">" + pageIntro + "</div><!-- .ingress -->");
     }
-    if (CmsAgent.elementExists(pageIntro))
-        out.println("<div class=\"ingress\" id=\"page-summary\">" + pageIntro + "</div><!-- .ingress -->");
+
+    Map<String, String> altNames = new HashMap<String, String>(); // "en" : "Polar bear"
+    I_CmsXmlContentContainer altNamesLoop = cms.contentloop(container, "AlternateName");
+    while (altNamesLoop.hasMoreResources()) {
+        altNames.put(
+                cms.contentshow(altNamesLoop, "Language"),
+                cms.contentshow(altNamesLoop, "Content")
+        );
+    }
+
+
+    // Red list status / alternate names combo
+    %>
+    <aside class="article-meta species-standard-info">
+        <%
+        if (CmsAgent.elementExists(redListStatus)) {
+            if (redListSvalbardSpecific) {
+                redListHeading += " (Svalbard)";
+            }
+            redListCode = redListStatus.substring(0, 2).toLowerCase();
+            redListLabel = cms.labelUnicode("label.species.redlist.".concat(redListCode));
+            if (CmsAgent.elementExists(redListLink)) {
+                redListLabel = "<a href=\"" + redListLink + "\">" + redListLabel + "</a>";
+            }
+        %>
+        
+        <dl class="redlist blocklist species-standard-info__item">
+            <dt class="redlist__title species-standard-info__title"><%= redListHeading %></dt>
+            <dd class="redlist__cat redlist__cat--<%= redListCode %>"><%= redListLabel %></dd>
+        </dl>
+        
+        <%
+        }
+
+        if (!altNames.isEmpty()) {
+        %>
+        
+        <div class="alt-names species-standard-info__item">
+            <h2 class="alt-names__title species-standard-info__title">In other languages</h2>
+            
+            <dl class="alt-names__content">
+            <%
+            for (String langCode : altNames.keySet()) {    
+            %>
+            <dt><%= Locale.forLanguageTag(langCode).getDisplayLanguage(locale) %></dt>
+                <dd lang="<%= langCode %>"><%= altNames.get(langCode) %></dd>
+            <%    
+            } 
+            %>
+                
+            </dl>
+                
+        </div>
+        
+        <%
+        }
+        %>
+    </aside>
+    <%
 
     //
     // Paragraphs, handled by a separate file
@@ -403,8 +555,8 @@ while (container.hasMoreContent()) {
     }*/
     
     
-    out.println("</article><!-- .main-content -->");
-    out.println("<div id=\"rightside\" class=\"column small\">");
+    //out.println("</article><!-- .main-content -->");
+    //out.println("<div id=\"rightside\" class=\"column small\">");
     
     //
     // Handle additional navigation - used by "big events" (big event = an event with multiple pages)
@@ -421,7 +573,7 @@ while (container.hasMoreContent()) {
     //request.setAttribute("autoRelatedPages", "true"); // Must be set to let the linklist handler know we want to list the fact pages
     sess.setAttribute("autoRelatedPages", "true"); // Must be set to let the linklist handler know we want to list the fact pages
     cms.include(LINKLIST_HANDLER);
-    out.println("</div><!-- #rightside -->");
+    //out.println("</div><!-- #rightside -->");
     
     
     
