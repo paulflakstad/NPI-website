@@ -410,8 +410,8 @@ while (container.hasMoreContent()) {
         }
         %>
         <aside class="article-meta">
-            <h2 class="article-meta__heading"><%= listCount > 1 ? LABEL_SEE_ALSO : linkListTitle %></h2>
-            <div class="article-meta__content<%= listCount == 1 ? " content" : "" %>">
+            <h2 class="article-meta__heading"><%= listCount > 0 ? LABEL_SEE_ALSO : linkListTitle %></h2>
+            <div class="article-meta__content toggler-panel toggler-panel--allow-tabs allow-tabs<%= listCount == 1 ? " content" : "" %>">
                 <%= htmlStr %>
             </div>
         </aside>
