@@ -45,7 +45,7 @@ public String stdErr(CmsObject cmso, String altUrl, ServletContext application) 
 private void sendErrorNotification(CmsObject cmso) throws EmailException {
     CmsSimpleMail sm = new CmsSimpleMail();
     sm.setFrom("no-reply@npolar.no", "NPI website");
-    sm.addTo("nettredaktor@npolar.no");
+    sm.addTo("web@npolar.no");
     sm.setSubject("Error on available positions page");
     sm.setMsg("An error was registered just now on the available positions page " + OpenCms.getLinkManager().getOnlineLink(cmso, cmso.getRequestContext().getUri()) + "."
             + " Please check the page and correct any errors. Do not reply to this e-mail, it was sent by OpenCms.");
