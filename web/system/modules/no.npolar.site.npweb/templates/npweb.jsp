@@ -383,9 +383,16 @@ try {
 } catch (Exception e) {}
 
 cms.editable(false);
+
+
 //
-// TODO: ADD NEWS RSS TO TEMPLATE!! USE A PROPERTY TO DO THIS.
+// ToDo: 
+//  - Add <link rel="alternate" ...> for the different/alt. (language) versions.
+//      CmsAgent should provide a method for getting alternate versions.
+//  - Add news RSS to template (?), using a property (?)
 //
+
+
 %><cms:template element="header"><!DOCTYPE html>
 <html lang="<%= loc.getLanguage() %>">
 <head>
