@@ -85,7 +85,7 @@ CmsObject cmso = cms.getCmsObject();
     final URL FEED_URL = new URL(URL);
     
     //final SimpleDateFormat DATE_FORMAT_RSS = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss Z"); // Standardized in the RSS spec
-    final SimpleDateFormat DATE_FORMAT_DEADLINE = new SimpleDateFormat("dd.MM.yyyy"); // How deadlines are represented in the feed
+    final SimpleDateFormat DATE_FORMAT_DEADLINE = new SimpleDateFormat(loc.equalsIgnoreCase("no") ? "d. MMMM yyyy" : "EEEE, MMMM d, yyyy", locale); // How deadlines are represented in the feed
     final SimpleDateFormat DATE_FORMAT_OUTPUT = new SimpleDateFormat(loc.equalsIgnoreCase("no") ? "d. MMMM" : "d MMMM", locale); // Output format
     
     StringBuilder sb = new StringBuilder(256);
@@ -137,8 +137,21 @@ CmsObject cmso = cms.getCmsObject();
                 try { locationNode = itemNode.selectSingleNode("jn:location"); } catch (Exception e) {}
                 try { deptNode = itemNode.selectSingleNode("jn:departmentname"); } catch (Exception e) {}
                 
-                Date deadlineDate = DATE_FORMAT_DEADLINE.parse(deadlineNode.getText());
-                boolean deadlineClose = deadlineDate.getTime() - new Date().getTime() < (2*24*60*60*1000); // 2 days
+                Date deadlineDate = null;
+                boolean deadlineClose = false;
+                
+                try {
+                    deadlineDate = DATE_FORMAT_DEADLINE.parse(deadlineNode.getText());
+                    deadlineClose = deadlineDate.getTime() - new Date().getTime() < (2*24*60*60*1000); // 2 days
+                } catch (Exception e) {
+                    sb.append("\n<!-- Deadline \"" + deadlineNode.getText() + "\" cannot be interpreted, error was: " + e.getMessage() + " -->");
+                    /*
+                    sb.append("\n<!-- Format locale was \"" + locale + "\""
+                            + ", pattern was \"" + DATE_FORMAT_DEADLINE.toPattern() + "\""
+                            + " - Example: \"" + DATE_FORMAT_DEADLINE.format(new Date()) + "\""
+                            + " -->");
+                    //*/
+                }
                 
                 //sb.append(deptNode.selectSingleNode("duh").getText()); // Uncomment to test error handling
 
@@ -150,7 +163,8 @@ CmsObject cmso = cms.getCmsObject();
                     sb.append("<td" 
                                 + (deadlineClose ? " style=\"color:#c00; font-weight:bold;\"" : "") 
                                 + ">" 
-                                    + DATE_FORMAT_OUTPUT.format(deadlineDate) 
+                                    //+ DATE_FORMAT_OUTPUT.format(deadlineDate) 
+                                    + (deadlineDate == null ? deadlineNode.getText() : DATE_FORMAT_OUTPUT.format(deadlineDate)) 
                             + "</td>");
                 sb.append("</tr>");
             }
